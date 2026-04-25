@@ -1,0 +1,20 @@
+# Core — paper2code generation pipeline
+openai>=1.65.4
+tiktoken>=0.9.0
+transformers>=4.46.3
+tqdm
+
+# Ingestion — s2orc-doc2json PDF parsing
+beautifulsoup4==4.7.1
+requests==2.21.0
+lxml
+python-magic==0.4.18
+latex2mathml==2.16.2
+Flask==1.0.2
+itsdangerous==2.0.1
+boto3
+
+# agentswarm — no extra dependencies (uses only Python stdlib)
+
+# Optional: local vLLM backend for paper2code
+# vllm>=0.6.4.post1
