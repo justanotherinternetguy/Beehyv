@@ -123,7 +123,13 @@ def parse_args() -> argparse.Namespace:
 
 
 args = parse_args()
-client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=os.environ["OPENROUTER_API_KEY"])
+_local_url = os.environ.get("LOCAL_LLM_URL")
+if _local_url:
+    args.model = os.environ.get("LOCAL_LLM_MODEL", "gemma4:31b")
+client = OpenAI(
+    base_url=f"{_local_url.rstrip('/')}/v1" if _local_url else "https://openrouter.ai/api/v1",
+    api_key="ollama" if _local_url else os.environ["OPENROUTER_API_KEY"],
+)
 
 if not os.path.exists(args.error_file_name):
     raise FileNotFoundError(f"Error file not found: {args.error_file_name}")
@@ -246,7 +252,7 @@ result = model(input_data)
     },
 ]
 response = client.chat.completions.create(
-    model="tencent/hy3-preview:free",
+    model=args.model,
     messages=msg,
 )
 

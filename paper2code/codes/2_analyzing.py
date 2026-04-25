@@ -19,10 +19,16 @@ parser.add_argument('--output_dir',type=str, default="")
 
 args    = parser.parse_args()
 
-client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=os.environ["OPENROUTER_API_KEY"])
+_local_url = os.environ.get("LOCAL_LLM_URL")
+client = OpenAI(
+    base_url=f"{_local_url.rstrip('/')}/v1" if _local_url else "https://openrouter.ai/api/v1",
+    api_key="ollama" if _local_url else os.environ["OPENROUTER_API_KEY"],
+)
 
 paper_name = args.paper_name
 gpt_version = args.gpt_version
+if _local_url:
+    gpt_version = os.environ.get("LOCAL_LLM_MODEL", "gemma4:31b")
 paper_format = args.paper_format
 pdf_json_path = args.pdf_json_path
 pdf_latex_path = args.pdf_latex_path
@@ -137,7 +143,7 @@ You DON'T need to provide the actual code yet; focus on a thorough, clear analys
 
 def api_call(msg):
     completion = client.chat.completions.create(
-        model="tencent/hy3-preview:free",
+        model=gpt_version,
         messages=msg
     )
     return completion

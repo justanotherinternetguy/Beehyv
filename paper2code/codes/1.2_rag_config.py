@@ -33,7 +33,13 @@ def parse_args() -> argparse.Namespace:
 
 
 args = parse_args()
-client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=os.environ["OPENROUTER_API_KEY"])
+_local_url = os.environ.get("LOCAL_LLM_URL")
+if _local_url:
+    args.gpt_version = os.environ.get("LOCAL_LLM_MODEL", "gemma4:31b")
+client = OpenAI(
+    base_url=f"{_local_url.rstrip('/')}/v1" if _local_url else "https://openrouter.ai/api/v1",
+    api_key="ollama" if _local_url else os.environ["OPENROUTER_API_KEY"],
+)
 
 planning_config_path = os.path.join(
     args.output_dir, f"planning_config.yaml"
@@ -85,7 +91,7 @@ Detect the model name and dataset names in the configuration file so that they c
 ]
 
 response = client.chat.completions.create(
-    model="tencent/hy3-preview:free",
+    model=args.gpt_version,
     messages=messages,
 )
 
