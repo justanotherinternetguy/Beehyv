@@ -6,6 +6,7 @@ from itertools import count
 from typing import TYPE_CHECKING
 
 from .blackboard import Claim, Critique
+from .code_retriever import CodeRetriever
 from .llm import OpenRouterLLM, PaperExpertLLM
 from .paper_loader import Paper
 from .retriever import KeywordRetriever
@@ -25,6 +26,7 @@ class PaperExpertAgent:
         top_k: int = 4,
         llm: PaperExpertLLM | None = None,
         logger=None,
+        code_retriever: CodeRetriever | None = None,
     ) -> None:
         self.paper = paper
         self.agent_id = f"expert:{paper.paper_id}"
@@ -32,6 +34,7 @@ class PaperExpertAgent:
         self.top_k = top_k
         self.llm = llm or OpenRouterLLM()
         self.logger = logger
+        self.code_retriever = code_retriever
         self._claim_counter = count(1)
         self._critique_counter = count(1)
 
@@ -181,22 +184,38 @@ class PaperExpertAgent:
 
         lead = evidence[0]
         supporting = evidence[1:3]
+
+        code_snippets = (
+            self.code_retriever.search(question, top_k=2)
+            if self.code_retriever else []
+        )
+
+        user_parts = [
+            f"Question: {question}",
+            "Retrieved evidence from your assigned paper:",
+            _format_evidence([lead, *supporting]),
+        ]
+        if code_snippets:
+            user_parts.append(
+                "Relevant code from the generated implementation of this paper:\n\n"
+                + "\n\n".join(s.format() for s in code_snippets)
+            )
+
+        instruction = (
+            "Answer as the expert for this paper. Use only the retrieved evidence. "
+            "Be direct, cite section labels in brackets, and say when the evidence is limited."
+        )
+        if code_snippets:
+            instruction += (
+                " The code snippets above show a concrete implementation of this paper's "
+                "methods — weave them into your explanation where they clarify a concept, "
+                "referencing specific class or function names."
+            )
+        user_parts.append(instruction)
+
         messages = [
             {"role": "system", "content": self._system_prompt()},
-            {
-                "role": "user",
-                "content": "\n\n".join(
-                    [
-                        f"Question: {question}",
-                        "Retrieved evidence from your assigned paper:",
-                        _format_evidence([lead, *supporting]),
-                        (
-                            "Answer as the expert for this paper. Use only the retrieved evidence. "
-                            "Be direct, cite section labels in brackets, and say when the evidence is limited."
-                        ),
-                    ]
-                ),
-            },
+            {"role": "user", "content": "\n\n".join(user_parts)},
         ]
         return self._llm_call(messages, stage="answering")
 
@@ -207,22 +226,35 @@ class PaperExpertAgent:
                 "no relevant evidence was retrieved."
             )
 
+        code_snippets = (
+            self.code_retriever.search(target.text, top_k=2)
+            if self.code_retriever else []
+        )
+
+        user_parts = [
+            f"Original claim from {target.agent_id}: {target.text}",
+            "Relevant evidence from your assigned paper:",
+            _format_evidence(evidence),
+        ]
+        if code_snippets:
+            user_parts.append(
+                "Relevant code from the generated implementation of this paper:\n\n"
+                + "\n\n".join(s.format() for s in code_snippets)
+            )
+
+        instruction = (
+            "Respond as this paper's expert. State whether your paper supports, "
+            "qualifies, or cannot assess the claim. Use only the evidence above."
+        )
+        if code_snippets:
+            instruction += (
+                " If the code snippets illustrate your point, quote or reference them directly."
+            )
+        user_parts.append(instruction)
+
         messages = [
             {"role": "system", "content": self._system_prompt()},
-            {
-                "role": "user",
-                "content": "\n\n".join(
-                    [
-                        f"Original claim from {target.agent_id}: {target.text}",
-                        "Relevant evidence from your assigned paper:",
-                        _format_evidence(evidence),
-                        (
-                            "Respond as this paper's expert. State whether your paper supports, "
-                            "qualifies, or cannot assess the claim. Use only the evidence above."
-                        ),
-                    ]
-                ),
-            },
+            {"role": "user", "content": "\n\n".join(user_parts)},
         ]
         return self._llm_call(messages, stage="critiquing")
 

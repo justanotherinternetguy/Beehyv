@@ -1,0 +1,451 @@
+```python
+## evaluation.py
+import os
+import pickle
+from typing import Dict, List, Tuple, Optional, Any
+
+import torch
+import sacrebleu
+import matplotlib.pyplot as plt
+import numpy as np
+from torch.utils.data import DataLoader
+
+# Import model classes for type checking
+from model import RNNEncDec, RNNsearch
+
+
+class Evaluation:
+    """Handles model evaluation and qualitative analysis for the NMT experiment.
+
+    Implements BLEU scoring with SacreBLEU, beam search decoding, and alignment
+    visualization as described in the paper.
+    """
+
+    def __init__(self, model: object, test_loader: DataLoader, config: dict):
+        """Initialize the Evaluation module.
+
+        Args:
+            model: Trained RNNEncDec or RNNsearch model.
+            test_loader: DataLoader for the test set (WMT14 news-test-2014).
+            config: Configuration dictionary loaded from config.yaml.
+        """
+        self.model = model
+        self.test_loader = test_loader
+        self.config = config
+
+        # Beam width: default 10 (paper unspecified, per Shared Knowledge)
+        beam_cfg = config.get('evaluation', {}).get('beam_search', {})
+        self.beam_width = beam_cfg.get('width', 10)
+        if isinstance(self.beam_width, str):  # config may store "Unspecified in paper"
+            self.beam_width = 10
+
+        # UNK blocking flag
+        no_unk_cfg = config.get('evaluation', {}).get('no_unk_evaluation', {})
+        self.block_unk = no_unk_cfg.get('block_unk_generation', True)
+
+        # Special token IDs (Shared Knowledge and config)
+        self.start_tid = 0  # <start>
+        self.end_tid = 1    # <end>
+        self.unk_tid = 2    # [UNK]
+
+        # Max decode length factor (2 * source length)
+        self.max_decode_len_factor = 2
+
+        # Check model type
+        self.is_rnnsearch = isinstance(self.model, RNNsearch)
+
+        # Load vocabularies (from pickle files saved by DatasetLoader)
+        self.src_vocab = None
+        self.tgt_vocab = None
+        self.src_id2token = None
+        self.tgt_id2token = None
+        self._load_vocabularies()
+
+        # Cache all test samples for efficient evaluation
+        self.test_samples = []
+        self._cache_test_samples()
+
+        # Detokenizer for French (target language)
+        import sacremoses
+        self.fr_detokenizer = sacremoses.MosesDetokenizer(lang='fr')
+
+    def _load_vocabularies(self) -> None:
+        """Load source and target vocabularies from pickle files."""
+        try:
+            with open('src_vocab.pkl', 'rb') as f:
+                self.src_vocab = pickle.load(f)
+            with open('tgt_vocab.pkl', 'rb') as f:
+                self.tgt_vocab = pickle.load(f)
+        except FileNotFoundError as e:
+            raise FileNotFoundError(
+                "Vocabulary files (src_vocab.pkl, tgt_vocab.pkl) not found. "
+                "Please run DatasetLoader to build vocabularies first."
+            ) from e
+
+        # Create reverse mappings (ID -> token)
+        self.src_id2token = {idx: token for token, idx in self.src_vocab.items()}
+        self.tgt_id2token = {idx: token for token, idx in self.tgt_vocab.items()}
+
+    def _cache_test_samples(self) -> None:
+        """Iterate over test_loader and cache sample information."""
+        pad_idx = 0  # padding index used in collate_batch
+
+        for batch in self.test_loader:
+            if len(batch) == 2:
+                src_tensor, tgt_tensor = batch
+            elif len(batch) == 4:
+                src_tensor, _, tgt_tensor, _ = batch
+            else:
+                raise ValueError(f"Unexpected batch format: {type(batch)}")
+
+            batch_size = src_tensor.size(0)
+            for i in range(batch_size):
+                src_ids = src_tensor[i]  # 1D tensor, shape (src_len,)
+                tgt_ref_ids = tgt_tensor[i]  # 1D tensor, shape (tgt_len,)
+
+                # Compute source length (non-padding tokens)
+                src_len = (src_ids != pad_idx).sum().item()
+                src_ids_trimmed = src_ids[:src_len].tolist()
+
+                # Convert source IDs to tokens
+                src_tokens = [self.src_id2token.get(idx, '[UNK]') for idx in src_ids_trimmed]
+
+                # Process target reference: remove <start> (0) and <end> (1) and padding
+                tgt_ref_ids_list = tgt_ref_ids.tolist()
+                # Find the first <end> token (ID 1)
+                if self.end_tid in tgt_ref_ids_list:
+                    end_idx = tgt_ref_ids_list.index(self.end_tid)
+                    # Exclude <start> (index 0) and <end> (at end_idx)
+                    tgt_ref_ids_no_special = tgt_ref_ids_list[1:end_idx]
+                else:
+                    # Fallback: remove all padding and special tokens
+                    tgt_ref_ids_no_special = [
+                        idx for idx in tgt_ref_ids_list
+                        if idx != pad_idx and idx != self.start_tid and idx != self.end_tid
+                    ]
+
+                # Convert to tokens
+                tgt_ref_tokens = [self.tgt_id2token.get(idx, '[UNK]') for idx in tgt_ref_ids_no_special]
+
+                self.test_samples.append({
+                    'src_ids': src_ids,          # 1D tensor (padded)
+                    'src_len': src_len,          # int
+                    'tgt_ref_ids': tgt_ref_ids,  # 1D tensor (padded)
+                    'src_tokens': src_tokens,    # list of str
+                    'tgt_ref_tokens': tgt_ref_tokens  # list of str
+                })
+
+        print(f"Cached {len(self.test_samples)} test samples.")
+
+    def evaluate(self) -> dict:
+        """Evaluate the model on the test set and compute BLEU scores.
+
+        Returns:
+            Dictionary containing BLEU scores and optional hypothesis/reference lists.
+        """
+        all_hypotheses = []
+        all_references = []
+        no_unk_hypotheses = []
+        no_unk_references = []
+
+        # Iterate over cached test samples
+        for sample in self.test_samples:
+            src_ids = sample['src_ids']
+            src_len = sample['src_len']
+            tgt_ref_tokens = sample['tgt_ref_tokens']
+
+            # Run beam search for this source sentence
+            hyp_ids = self.beam_search(src_ids, torch.tensor(src_len))
+            hyp_tokens = [
+                self.tgt_id2token.get(idx, '[UNK]')
+                for idx in hyp_ids
+                if idx not in (self.start_tid, self.end_tid)
+            ]
+
+            # Detokenize hypothesis and reference
+            hyp_str = self.fr_detokenizer.detokenize(hyp_tokens)
+            ref_str = self.fr_detokenizer.detokenize(tgt_ref_tokens)
+
+            # Append to full set
+            all_hypotheses.append(hyp_str)
+            all_references.append(ref_str)
+
+            # Check if sample should be included in "No UNK" evaluation
+            has_unk_src = self.unk_tid in src_ids[:src_len].tolist()
+            has_unk_ref = any(
+                idx == self.unk_tid
+                for idx in sample['tgt_ref_ids'].tolist()
+                if idx != 0 and idx != 1  # ignore padding, start, end
+            )
+            if not has_unk_src and not has_unk_ref:
+                no_unk_hypotheses.append(hyp_str)
+                no_unk_references.append(ref_str)
+
+        # Compute BLEU scores with SacreBLEU (Moses tokenization, case-sensitive)
+        bleu_all = sacrebleu.corpus_bleu(
+            all_hypotheses, [all_references],
+            tokenize='moses', lowercase=False
+        )
+
+        bleu_no_unk = None
+        if no_unk_hypotheses:
+            bleu_no_unk = sacrebleu.corpus_bleu(
+                no_unk_hypotheses, [no_unk_references],
+                tokenize='moses', lowercase=False
+            )
+
+        return {
+            'bleu_all': bleu_all.score,
+            'bleu_no_unk': bleu_no_unk.score if bleu_no_unk else None,
+            'all_hypotheses': all_hypotheses,
+            'all_references': all_references
+        }
+
+    def beam_search(self, src: torch.Tensor, src_lengths: torch.Tensor) -> List[int]:
+        """Beam search decoding for a single source sentence.
+
+        Args:
+            src: Source token indices, shape (src_len,) or (1, src_len).
+            src_lengths: Source sentence length, scalar tensor or int.
+
+        Returns:
+            List of generated token IDs (excluding <start> and <end>).
+        """
+        device = next(self.model.parameters()).device
+
+        # Ensure src is 2D: (1, src_len)
+        if src.dim() == 1:
+            src = src.unsqueeze(0)
+        if isinstance(src_lengths, torch.Tensor):
+            src_len = src_lengths.item()
+        else:
+            src_len = int(src_lengths)
+
+        # Encode source
+        if isinstance(self.model, RNNEncDec):
+            c = self.model.encode(src, torch.tensor([src_len]))  # (1, hidden_dim)
+            s0 = torch.tanh(torch.nn.functional.linear(c, self.model.W_s))
+            beams = [{
+                'seq': [self.start_tid],
+                'score': 0.0,
+                's_prev': s0,
+                'context': c,
+                'finished': False
+            }]
+        elif isinstance(self.model, RNNsearch):
+            annotations = self.model.encode(src, torch.tensor([src_len]))  # list of (1, 2*hidden_dim)
+            # Initial state: s0 = tanh(W_s * backward part of first annotation)
+            first_annot = annotations[0]  # (1, 2*hidden_dim)
+            backward_first = first_annot[:, :self.model.hidden_dim]  # (1, hidden_dim)
+            s0 = torch.tanh(torch.nn.functional.linear(backward_first, self.model.W_s))
+            beams = [{
+                'seq': [self.start_tid],
+                'score': 0.0,
+                's_prev': s0,
+                'annotations': annotations,
+                'finished': False
+            }]
+        else:
+            raise ValueError(f"Unknown model type: {type(self.model)}")
+
+        max_steps = self.max_decode_len_factor * src_len
+
+        for step in range(max_steps):
+            if all(b['finished'] for b in beams):
+                break
+
+            # Collect unfinished beams
+            unfinished_beams = [b for b in beams if not b['finished']]
+            if not unfinished_beams:
+                break
+
+            # Prepare inputs for batch decoding of unfinished beams
+            batch_size = len(unfinished_beams)
+            prev_tokens = torch.tensor(
+                [b['seq'][-1] for b in unfinished_beams],
+                dtype=torch.long, device=device
+            )
+            s_prev_batch = torch.cat([b['s_prev'] for b in unfinished_beams], dim=0)  # (batch, hidden_dim)
+
+            # Embed previous tokens
+            y_emb = self.model.tgt_emb(prev_tokens)  # (batch, emb_dim)
+
+            # Decode one step based on model type
+            if isinstance(self.model, RNNEncDec):
+                # Fixed context for all beams
+                c_batch = unfinished_beams[0]['context'].expand(batch_size, -1)  # (batch, hidden_dim)
+                # Decoder cell: expects (input, s_prev, context)
+                r = torch.sigmoid(
+                    torch.nn.functional.linear(y_emb, self.model.decoder_cell.W_r) +
+                    torch.nn.functional.linear(s_prev_batch, self.model.decoder_cell.U_r) +
+                    self.model.decoder_cell.b_r
+                )
+                z = torch.sigmoid(
+                    torch.nn.functional.linear(y_emb, self.model.decoder_cell.W_z) +
+                    torch.nn.functional.linear(s_prev_batch, self.model.decoder_cell.U_z) +
+                    self.model.decoder_cell.b_z
+                )
+                s_prev_modulated = r * s_prev_batch
+                candidate = torch.tanh(
+                    torch.nn.functional.linear(y_emb, self.model.decoder_cell.W) +
+                    torch.nn.functional.linear(s_prev_modulated, self.model.decoder_cell.U) +
+                    self.model.decoder_cell.b
+                )
+                s_new_batch = (1 - z) * s_prev_batch + z * candidate
+
+                # Output layer (using s_prev as per paper)
+                logits_batch = self.model.output_layer(s_prev_batch, y_emb, c_batch)  # (batch, vocab_size)
+
+            elif isinstance(self.model, RNNsearch):
+                # Each beam has its own annotations list; we need to compute alignments per beam
+                logits_list = []
+                s_new_list = []
+                for i, beam in enumerate(unfinished_beams):
+                    s_prev = s_prev_batch[i:i+1]  # (1, hidden_dim)
+                    y_emb_i = y_emb[i:i+1]       # (1, emb_dim)
+                    annotations = beam['annotations']
+
+                    # Stack annotations into tensor: (1, src_len, 2*hidden_dim)
+                    annot_tensor = torch.stack(annotations, dim=1)  # (1, src_len, 2*hidden_dim)
+                    src_len_i = annot_tensor.size(1)
+
+                    # Alignment model
+                    # Precompute U_a * h_j for all annotations (already stored in the model, but we recompute for clarity)
+                    U_a = self.model.alignment_model.U_a  # (hidden_dim, 2*hidden_dim)
+                    U_a_h = torch.matmul(annot_tensor, U_a.t())  # (1, src_len, hidden_dim)
+
+                    W_a = self.model.alignment_model.W_a  # (hidden_dim, hidden_dim)
+                    W_a_s = torch.nn.functional.linear(s_prev, W_a)  # (1, hidden_dim)
+                    W_a_s_exp = W_a_s.unsqueeze(1).expand(-1, src_len_i, -1)  # (1, src_len, hidden_dim)
+
+                    energy = torch.tanh(W_a_s_exp + U_a_h)  # (1, src_len, hidden_dim)
+                    v_a = self.model.alignment_model.v_a  # (hidden_dim,)
+                    scores = torch.matmul(energy, v_a)  # (1, src_len)
+
+                    alpha = torch.softmax(scores, dim=1)  # (1, src_len)
+                    alpha_unsqueezed = alpha.unsqueeze(2)  # (1, src_len, 1)
+
+                    c_i = torch.sum(alpha_unsqueezed * annot_tensor, dim=1)  # (1, 2*hidden_dim)
+
+                    # Decoder cell with context
+                    r = torch.sigmoid(
+                        torch.nn.functional.linear(y_emb_i, self.model.decoder_cell.W_r) +
+                        torch.nn.functional.linear(s_prev, self.model.decoder_cell.U_r) +
+                        torch.nn.functional.linear(c_i, self.model.decoder_cell.C_r) +
+                        self.model.decoder_cell.b_r
+                    )
+                    z = torch.sigmoid(
+                        torch.nn.functional.linear(y_emb_i, self.model.decoder_cell.W_z) +
+                        torch.nn.functional.linear(s_prev, self.model.decoder_cell.U_z) +
+                        torch.nn.functional.linear(c_i, self.model.decoder_cell.C_z) +
+                        self.model.decoder_cell.b_z
+                    )
+                    s_prev_modulated = r * s_prev
+                    candidate = torch.tanh(
+                        torch.nn.functional.linear(y_emb_i, self.model.decoder_cell.W) +
+                        torch.nn.functional.linear(s_prev_modulated, self.model.decoder_cell.U) +
+                        torch.nn.functional.linear(c_i, self.model.decoder_cell.C) +
+                        self.model.decoder_cell.b
+                    )
+                    s_new = (1 - z) * s_prev + z * candidate
+
+                    # Output layer (using s_prev as per paper)
+                    logits = self.model.output_layer(s_prev, y_emb_i, c_i)  # (1, vocab_size)
+
+                    logits_list.append(logits)
+                    s_new_list.append(s_new)
+
+                logits_batch = torch.cat(logits_list, dim=0)  # (batch, vocab_size)
+                s_new_batch = torch.cat(s_new_list, dim=0)  # (batch, hidden_dim)
+
+            # Compute log probabilities
+            log_probs = torch.log_softmax(logits_batch, dim=-1)  # (batch, vocab_size)
+
+            # Block UNK if configured
+            if self.block_unk:
+                log_probs[:, self.unk_tid] = -float('inf')
+
+            # Expand beams
+            new_beams = []
+            for i, beam in enumerate(unfinished_beams):
+                top_log_probs, top_indices = log_probs[i].topk(self.beam_width)
+                for log_prob, token_id in zip(top_log_probs, top_indices):
+                    token_id = token_id.item()
+                    new_seq = beam['seq'] + [token_id]
+                    new_score = beam['score'] + log_prob.item()
+                    new_finished = token_id == self.end_tid
+                    new_beam = {
+                        'seq': new_seq,
+                        'score': new_score,
+                        's_prev': s_new_batch[i:i+1],
+                        'finished': new_finished
+                    }
+                    if isinstance(self.model, RNNEncDec):
+                        new_beam['context'] = beam['context']
+                    else:
+                        new_beam['annotations'] = beam['annotations']
+                    new_beams.append(new_beam)
+
+            # Merge with finished beams
+            finished_beams = [b for b in beams if b['finished']]
+            all_beams = finished_beams + new_beams
+
+            # Keep top beam_width beams
+            all_beams.sort(key=lambda x: x['score'], reverse=True)
+            beams = all_beams[:self.beam_width]
+
+        # Select best hypothesis (prefer finished beams)
+        finished_beams = [b for b in beams if b['finished']]
+        if finished_beams:
+            best_beam = max(finished_beams, key=lambda x: x['score'])
+        else:
+            best_beam = max(beams, key=lambda x: x['score'])
+
+        # Return token IDs excluding <start> and <end>
+        return [tid for tid in best_beam['seq'] if tid not in (self.start_tid, self.end_tid)]
+
+    def visualize_alignments(self, src_tokens: List[str], tgt_tokens: List[str],
+                             alpha_weights: torch.Tensor) -> None:
+        """Plot grayscale heatmap of alignment weights α_ij.
+
+        Args:
+            src_tokens: List of source (English) words.
+            tgt_tokens: List of target (French) words.
+            alpha_weights: Tensor of shape (len(tgt_tokens), len(src_tokens)) containing α_ij.
+        """
+        if not self.is_rnnsearch:
+            raise ValueError("Alignment visualization is only supported for RNNsearch model.")
+
+        # Validate shape
+        if alpha_weights.shape != (len(tgt_tokens), len(src_tokens)):
+            raise ValueError(
+                f"alpha_weights shape {alpha_weights.shape} does not match "
+                f"({len(tgt_tokens)}, {len(src_tokens)})"
+            )
+
+        # Convert to numpy
+        alpha_np = alpha_weights.cpu().numpy()
+
+        # Create figure
+        fig, ax = plt.subplots(
+            figsize=(max(6, len(src_tokens) / 2), max(4, len(tgt_tokens) / 2))
+        )
+
+        # Plot heatmap (grayscale: 0=black, 1=white)
+        im = ax.imshow(alpha_np, cmap='gray', vmin=0, vmax=1, aspect='auto')
+
+        # Set ticks and labels
+        ax.set_xticks(range(len(src_tokens)))
+        ax.set_xticklabels(src_tokens, rotation=45, ha='right')
+        ax.set_yticks(range(len(tgt_tokens)))
+        ax.set_yticklabels(tgt_tokens)
+
+        ax.set_xlabel('Source (English)')
+        ax.set_ylabel('Target (French)')
+        ax.set_title('Soft Alignment Weights α_ij')
+
+        plt.tight_layout()
+        plt.savefig('alignment_visualization.png', dpi=150)
+        plt.close(fig)
+        print("Alignment visualization saved to 'alignment_visualization.png'.")
+```

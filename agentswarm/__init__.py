@@ -7,6 +7,7 @@ from .brainstorm import (
     CrossPollinatedIdea,
     ResearchIdea,
 )
+from .code_retriever import CodeRetriever, CodeSnippet
 from .expert import PaperExpertAgent
 from .llm import OPENROUTER_MODEL, OpenRouterLLM, PaperExpertLLM
 from .log import SwarmLogger
@@ -19,6 +20,8 @@ __all__ = [
     "BrainstormBlackboard",
     "BrainstormOrchestrator",
     "Claim",
+    "CodeRetriever",
+    "CodeSnippet",
     "CrossPollinatedIdea",
     "Critique",
     "Evidence",

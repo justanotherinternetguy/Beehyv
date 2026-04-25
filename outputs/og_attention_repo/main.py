@@ -1,0 +1,248 @@
+## main.py
+import argparse
+import json
+import os
+import pickle
+import random
+import sys
+import torch
+import yaml
+
+# Import project modules (assumed to be in the same directory)
+from dataset_loader import DatasetLoader
+from model import RNNEncDec, RNNsearch
+from trainer import Trainer
+from evaluation import Evaluation
+
+
+class Main:
+    """Main entry point for the NMT experiment reproduction.
+
+    Follows the design exactly: only public methods are __init__ and run_experiment.
+    All other attributes are as specified in the design.
+    """
+
+    def __init__(self, config_path: str):
+        """Load configuration from the given YAML file.
+
+        Args:
+            config_path: Path to the configuration file (config.yaml).
+        """
+        with open(config_path, 'r') as f:
+            self.config = yaml.safe_load(f)
+
+        # Attributes as per design
+        self.dataset_loader = None
+        self.model = None
+        self.trainer = None
+        self.evaluator = None
+
+        # These will be set later via CLI arguments (model_type, length_variant)
+        self.model_type = None
+        self.length_variant = None
+
+    def run_experiment(self) -> None:
+        """Run the full experiment: data loading, training, evaluation, and visualization.
+
+        Raises:
+            ValueError: If model_type or length_variant are not set, or if an unknown model type is given.
+        """
+        if self.model_type is None or self.length_variant is None:
+            raise ValueError("model_type and length_variant must be set before calling run_experiment()")
+
+        # Adjust config so that DatasetLoader uses the selected length variant
+        self.config['dataset']['splits']['train']['max_length_variants'] = [self.length_variant]
+
+        # ------------------------------------------------------------
+        # 1. Initialize DatasetLoader and load data
+        # ------------------------------------------------------------
+        print(f"Initializing DatasetLoader for model={self.model_type}, length={self.length_variant}")
+        self.dataset_loader = DatasetLoader(self.config)
+        train_loader, dev_loader, test_loader = self.dataset_loader.load_data()
+        print(f"Data loaded. Train batches: {len(train_loader)}, Dev batches: {len(dev_loader)}, Test batches: {len(test_loader)}")
+
+        # ------------------------------------------------------------
+        # 2. Initialize model
+        # ------------------------------------------------------------
+        vocab_size = self.config['dataset']['vocab_size']
+        emb_dim = self.config['dataset']['embedding_dim']
+        hidden_dim = self.config['model']['hidden_dim']
+        maxout_dim = self.config['model']['maxout_output_dim']
+
+        if self.model_type == "rnnencdec":
+            self.model = RNNEncDec(
+                src_vocab_size=vocab_size,
+                tgt_vocab_size=vocab_size,
+                emb_dim=emb_dim,
+                hidden_dim=hidden_dim,
+                maxout_dim=maxout_dim
+            )
+        elif self.model_type == "rnnsearch":
+            self.model = RNNsearch(
+                src_vocab_size=vocab_size,
+                tgt_vocab_size=vocab_size,
+                emb_dim=emb_dim,
+                hidden_dim=hidden_dim,
+                maxout_dim=maxout_dim
+            )
+        else:
+            raise ValueError(f"Unknown model type: {self.model_type}")
+
+        # Move model to GPU if available (optional, but follows paper's GPU usage)
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.model.to(device)
+        print(f"Model '{self.model_type}' initialized on device: {device}")
+
+        # ------------------------------------------------------------
+        # 3. Initialize Trainer and train the model
+        # ------------------------------------------------------------
+        self.trainer = Trainer(
+            model=self.model,
+            train_loader=train_loader,
+            dev_loader=dev_loader,
+            config=self.config
+        )
+        print("Starting training...")
+        self.trainer.train()
+        print("Training finished.")
+
+        # ------------------------------------------------------------
+        # 4. Initialize Evaluator and evaluate on test set
+        # ------------------------------------------------------------
+        self.evaluator = Evaluation(
+            model=self.model,
+            test_loader=test_loader,
+            config=self.config
+        )
+        print("Evaluating model on test set...")
+        results = self.evaluator.evaluate()
+        print(f"BLEU (all): {results['bleu_all']:.2f}")
+        if results['bleu_no_unk'] is not None:
+            print(f"BLEU (no UNK): {results['bleu_no_unk']:.2f}")
+
+        # Save results to JSON file
+        results_file = f"results_{self.model_type}_{self.length_variant}.json"
+        # Remove large lists to keep file small (optional)
+        if 'all_hypotheses' in results:
+            del results['all_hypotheses']
+        if 'all_references' in results:
+            del results['all_references']
+        with open(results_file, 'w') as f:
+            json.dump(results, f, indent=2)
+        print(f"Results saved to {results_file}")
+
+        # ------------------------------------------------------------
+        # 5. Alignment visualization (if configured and model is RNNsearch)
+        # ------------------------------------------------------------
+        if self.config.get('evaluation', {}).get('alignment_visualization', {}).get('use', False):
+            if self.model_type == "rnnsearch":
+                self._visualize_sample_alignment()
+            else:
+                print("Alignment visualization is only supported for RNNsearch model.")
+
+    def _visualize_sample_alignment(self) -> None:
+        """Find a suitable sample sentence and generate an alignment heatmap.
+
+        Searches for a sentence pair (source and target) with length between 10 and 20 words,
+        no UNK tokens, and then computes the alignment weights using the trained model.
+        Calls Evaluation.visualize_alignments to produce the plot.
+        """
+        if not hasattr(self.evaluator, 'test_samples'):
+            print("No test samples cached in evaluator. Skipping alignment visualization.")
+            return
+
+        # Search for a suitable sample
+        sample = None
+        for s in self.evaluator.test_samples:
+            src_tokens = s['src_tokens']
+            tgt_tokens = s['tgt_ref_tokens']
+            src_len = s['src_len']
+            # Check length constraints (10-20 words)
+            if not (10 <= len(src_tokens) <= 20 and 10 <= len(tgt_tokens) <= 20):
+                continue
+            # Check for UNK in source (src_ids is a tensor)
+            src_ids = s['src_ids']
+            if self.evaluator.unk_tid in src_ids[:src_len].tolist():
+                continue
+            # Check for UNK in reference target (exclude start/end tokens)
+            tgt_ref_ids = s['tgt_ref_ids']
+            tgt_ids_list = tgt_ref_ids.tolist()
+            # Remove padding and special tokens (<start>=0, <end>=1)
+            filtered_tgt = [idx for idx in tgt_ids_list if idx not in (0, 1)]
+            if any(idx == self.evaluator.unk_tid for idx in filtered_tgt):
+                continue
+            sample = s
+            break
+
+        if sample is None:
+            print("No suitable sample found for alignment visualization (10-20 words, no UNK).")
+            return
+
+        print(f"Visualizing alignment for sample: {' '.join(sample['src_tokens'])}")
+        print(f"Reference translation: {' '.join(sample['tgt_ref_tokens'])}")
+
+        # Prepare source tensor
+        src_ids = sample['src_ids'].unsqueeze(0)  # (1, src_len)
+        src_len = sample['src_len']
+
+        # Prepare target reference IDs (excluding <start> and <end>)
+        tgt_ref_ids = sample['tgt_ref_ids']
+        if self.evaluator.end_tid in tgt_ref_ids.tolist():
+            end_idx = (tgt_ref_ids == self.evaluator.end_tid).nonzero()[0].item()
+            tgt_ids_for_decode = tgt_ref_ids[1:end_idx]  # exclude start and end
+        else:
+            # fallback: exclude start token (0) and take the rest up to padding
+            tgt_ids_for_decode = tgt_ref_ids[1:src_len]  # rough guess
+
+        # Set model to evaluation mode
+        self.model.eval()
+        with torch.no_grad():
+            # Encode source sentence
+            annotations = self.model.encode(src_ids, torch.tensor([src_len]))
+            # Initial decoder state (as done in model.forward)
+            first_annot = annotations[0]  # (1, 2*hidden_dim)
+            backward_first = first_annot[:, self.model.hidden_dim:]  # (1, hidden_dim)
+            s_prev = torch.tanh(torch.nn.functional.linear(backward_first, self.model.W_s))
+
+            # Collect alignment weights for each target token
+            alphas = []
+            for tgt_id in tgt_ids_for_decode:
+                y_prev = tgt_id.unsqueeze(0)  # (1,)
+                # Decode one step (logits, new_state, alpha)
+                _, s_new, alpha = self.model.decode(s_prev, y_prev, annotations)
+                alphas.append(alpha.squeeze(0).cpu())  # alpha shape (1, src_len) -> (src_len,)
+                s_prev = s_new
+
+            if not alphas:
+                print("No alignment weights collected. Skipping visualization.")
+                return
+
+            # Build alpha matrix: shape (tgt_len, src_len)
+            alpha_matrix = torch.stack(alphas, dim=0)  # (tgt_len, src_len)
+
+        # Call the evaluator's visualization method
+        self.evaluator.visualize_alignments(
+            src_tokens=sample['src_tokens'],
+            tgt_tokens=sample['tgt_ref_tokens'],
+            alpha_weights=alpha_matrix
+        )
+        print("Alignment visualization saved.")
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Reproduce NMT experiment from Bahdanau et al. (2014)')
+    parser.add_argument('--config', type=str, default='config.yaml',
+                        help='Path to configuration file (default: config.yaml)')
+    parser.add_argument('--model-type', type=str, required=True, choices=['rnnencdec', 'rnnsearch'],
+                        help='Model type: rnnencdec or rnnsearch')
+    parser.add_argument('--length-variant', type=int, required=True, choices=[30, 50],
+                        help='Length variant: 30 or 50 (maximum sentence length for training)')
+    args = parser.parse_args()
+
+    # Create Main instance and set experiment parameters
+    main = Main(args.config)
+    main.model_type = args.model_type
+    main.length_variant = args.length_variant
+
+    # Run the experiment
+    main.run_experiment()

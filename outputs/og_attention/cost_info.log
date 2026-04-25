@@ -118,3 +118,23 @@
 🪙 Accumulated total cost so far: $0.00000000
 ============================================
 
+🌟 Usage Summary 🌟
+[CODING] evaluation.py
+🛠️ Model: tencent/hy3-preview:free
+📥 Input tokens: 40989 (Cost: $0.00000000)
+📦 Cached input tokens: 0 (Cost: $0.00000000)
+📤 Output tokens: 8585 (Cost: $0.00000000)
+💵 Current total cost: $0.00000000
+🪙 Accumulated total cost so far: $0.00000000
+============================================
+
+🌟 Usage Summary 🌟
+[CODING] main.py
+🛠️ Model: tencent/hy3-preview:free
+📥 Input tokens: 44093 (Cost: $0.00000000)
+📦 Cached input tokens: 0 (Cost: $0.00000000)
+📤 Output tokens: 9925 (Cost: $0.00000000)
+💵 Current total cost: $0.00000000
+🪙 Accumulated total cost so far: $0.00000000
+============================================
+

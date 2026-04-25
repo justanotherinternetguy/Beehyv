@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 
 from .brainstorm import BrainstormOrchestrator
+from .code_retriever import CodeRetriever
 from .expert import PaperExpertAgent
 from .llm import OPENROUTER_MODEL, OpenRouterLLM
 from .log import SwarmLogger
@@ -14,14 +15,28 @@ from .orchestrator import SwarmOrchestrator
 from .paper_loader import load_papers
 from .retriever import KeywordRetriever
 
+_OUTPUTS_DIR = Path(__file__).parent.parent / "outputs"
+
 
 # ── shared setup ──────────────────────────────────────────────────────────────
 
 def _build_agents(papers, retriever, llm, top_k, logger):
-    return [
-        PaperExpertAgent(paper, retriever, top_k=top_k, llm=llm, logger=logger)
-        for paper in papers
-    ]
+    agents = []
+    for paper in papers:
+        code_retriever = CodeRetriever.for_paper(paper.paper_id, _OUTPUTS_DIR)
+        if code_retriever and logger:
+            logger.info(
+                f"{paper.paper_id}: code repo found "
+                f"({len(code_retriever._snippets)} snippets indexed)"
+            )
+        agents.append(
+            PaperExpertAgent(
+                paper, retriever,
+                top_k=top_k, llm=llm, logger=logger,
+                code_retriever=code_retriever,
+            )
+        )
+    return agents
 
 
 def _load(paper_args, logger) -> tuple:
