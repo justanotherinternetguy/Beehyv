@@ -1,0 +1,363 @@
+## dataset_loader.py
+import os
+import re
+import random
+from typing import List, Tuple, Dict, Optional
+from collections import Counter
+
+import torch
+from torch.utils.data import Dataset, DataLoader, Sampler
+import sacremoses
+import numpy as np
+
+
+class TranslationDataset(Dataset):
+    """Custom Dataset for storing translation example pairs."""
+    def __init__(self, examples: List[Tuple[List[int], List[int]]]):
+        self.examples = examples
+
+    def __len__(self) -> int:
+        return len(self.examples)
+
+    def __getitem__(self, idx: int) -> Tuple[List[int], List[int]]:
+        return self.examples[idx]
+
+
+class DatasetLoader:
+    """Handles all data loading, preprocessing, and batch creation for NMT experiments.
+    
+    Follows the paper's specifications for tokenization, vocabulary building, data selection,
+    and minibatch sorting as described in Appendix A.2.
+    """
+    def __init__(self, config: dict):
+        """Initialize DatasetLoader with experiment configuration.
+        
+        Args:
+            config: Dictionary loaded from config.yaml containing all experiment parameters.
+        """
+        self.config = config
+        self.src_vocab: Dict[str, int] = {}
+        self.tgt_vocab: Dict[str, int] = {}
+        
+        # Initialize Moses tokenizers (no lowercasing/stemming per paper Sec 4.1)
+        self.src_tokenizer = sacremoses.MosesTokenizer(lang='en')
+        self.tgt_tokenizer = sacremoses.MosesTokenizer(lang='fr')
+        
+        # Padding index (matches <start> token ID 0; only tgt uses <start>, src has no 0 IDs)
+        self.pad_idx = 0
+
+    def build_vocab(self, corpus: List[str], max_size: int = 30000) -> Dict[str, int]:
+        """Build vocabulary with special tokens and most frequent words.
+        
+        Args:
+            corpus: List of raw sentences (strings) in the target language.
+            max_size: Total vocabulary size (including 3 special tokens).
+            
+        Returns:
+            Vocabulary dictionary mapping tokens to integer IDs.
+        """
+        # Initialize with special tokens (Shared Knowledge: <start>:0, <end>:1, [UNK]:2)
+        vocab = {
+            '<start>': 0,
+            '<end>': 1,
+            '[UNK]': 2
+        }
+        
+        # Determine if building source or target vocab (src_vocab is built first)
+        if not self.src_vocab:
+            tokenizer = self.src_tokenizer
+            vocab_path = 'src_vocab.pkl'
+        else:
+            tokenizer = self.tgt_tokenizer
+            vocab_path = 'tgt_vocab.pkl'
+        
+        # Count word frequencies across corpus
+        word_counts = Counter()
+        for sentence in corpus:
+            tokens = tokenizer.tokenize(sentence, return_str=False)
+            word_counts.update(tokens)
+        
+        # Add top max_size-3 frequent words (excluding special tokens)
+        for word, _ in word_counts.most_common():
+            if word in vocab:
+                continue
+            if len(vocab) >= max_size:
+                break
+            vocab[word] = len(vocab)
+        
+        # Persist vocabulary to disk
+        import pickle
+        with open(vocab_path, 'wb') as f:
+            pickle.dump(vocab, f)
+        
+        # Update instance vocabulary references
+        if tokenizer == self.src_tokenizer:
+            self.src_vocab = vocab
+        else:
+            self.tgt_vocab = vocab
+        
+        return vocab
+
+    def tokenize(self, text: str) -> List[str]:
+        """Tokenize text using Moses tokenizer (defaults to source language).
+        
+        Args:
+            text: Raw text string to tokenize.
+            
+        Returns:
+            List of token strings.
+        """
+        return self.src_tokenizer.tokenize(text, return_str=False)
+
+    def collate_batch(self, batch: List[Tuple[List[int], List[int]]]) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Pad sequences in a batch and return padded tensors.
+        
+        Args:
+            batch: List of tuples (src_ids, tgt_ids), each a list of integer token IDs.
+            
+        Returns:
+            Tuple of (padded_source_tensor, padded_target_tensor) with shape
+            (batch_size, max_src_len) and (batch_size, max_tgt_len) respectively.
+        """
+        src_list = [ex[0] for ex in batch]
+        tgt_list = [ex[1] for ex in batch]
+        
+        # Compute maximum sequence lengths in batch
+        max_src_len = max(len(s) for s in src_list) if src_list else 0
+        max_tgt_len = max(len(t) for t in tgt_list) if tgt_list else 0
+        
+        # Pad sequences with pad_idx (0)
+        padded_src = []
+        for src_ids in src_list:
+            pad_len = max_src_len - len(src_ids)
+            padded = src_ids + [self.pad_idx] * pad_len
+            padded_src.append(padded)
+        
+        padded_tgt = []
+        for tgt_ids in tgt_list:
+            pad_len = max_tgt_len - len(tgt_ids)
+            padded = tgt_ids + [self.pad_idx] * pad_len
+            padded_tgt.append(padded)
+        
+        # Convert to long tensors
+        src_tensor = torch.tensor(padded_src, dtype=torch.long)
+        tgt_tensor = torch.tensor(padded_tgt, dtype=torch.long)
+        
+        return (src_tensor, tgt_tensor)
+
+    def load_data(self) -> Tuple[DataLoader, DataLoader, DataLoader]:
+        """Load, preprocess, and create DataLoaders for train/dev/test splits.
+        
+        Returns:
+            Tuple of (train_loader, dev_loader, test_loader) following paper specifications.
+        """
+        # Load raw parallel corpora
+        src_lines, tgt_lines = self._load_raw_corpora()
+        
+        # Apply Axelrod et al. (2011) data selection to reduce to 348M words
+        src_lines, tgt_lines = self._apply_axelrod_selection(src_lines, tgt_lines)
+        
+        # Build vocabularies if not already initialized
+        vocab_size = self.config['dataset']['vocab_size']
+        if not self.src_vocab:
+            self.build_vocab(src_lines, max_size=vocab_size)
+        if not self.tgt_vocab:
+            self.build_vocab(tgt_lines, max_size=vocab_size)
+        
+        # Process and filter training data
+        train_examples = self._process_training_data(src_lines, tgt_lines)
+        
+        # Create train DataLoader with minibatch sorting (Appendix A.2)
+        train_loader = self._create_train_loader(train_examples)
+        
+        # Load and process development set (news-test-2012 + news-test-2013)
+        dev_src, dev_tgt = self._load_dev_data()
+        dev_examples = self._process_split(dev_src, dev_tgt)
+        dev_loader = DataLoader(
+            TranslationDataset(dev_examples),
+            batch_size=self.config['training']['batch_size'],
+            shuffle=False,
+            collate_fn=self.collate_batch
+        )
+        
+        # Load and process test set (news-test-2014)
+        test_src, test_tgt = self._load_test_data()
+        test_examples = self._process_split(test_src, test_tgt)
+        test_loader = DataLoader(
+            TranslationDataset(test_examples),
+            batch_size=self.config['training']['batch_size'],
+            shuffle=False,
+            collate_fn=self.collate_batch
+        )
+        
+        return (train_loader, dev_loader, test_loader)
+
+    # ========== Internal Helper Methods ==========
+    def _load_raw_corpora(self) -> Tuple[List[str], List[str]]:
+        """Load raw WMT14 parallel corpora (simplified for reproducibility).
+        
+        Note: Assumes parallel data is stored in 'src.txt' and 'tgt.txt' in the working directory.
+        In practice, this would load Europarl, news commentary, UN, and crawled corpora.
+        """
+        src_path = self.config['dataset'].get('src_path', 'src.txt')
+        tgt_path = self.config['dataset'].get('tgt_path', 'tgt.txt')
+        
+        with open(src_path, 'r', encoding='utf-8') as f:
+            src_lines = [line.strip() for line in f if line.strip()]
+        with open(tgt_path, 'r', encoding='utf-8') as f:
+            tgt_lines = [line.strip() for line in f if line.strip()]
+        
+        # Ensure equal corpus lengths
+        min_len = min(len(src_lines), len(tgt_lines))
+        return src_lines[:min_len], tgt_lines[:min_len]
+
+    def _apply_axelrod_selection(self, src_lines: List[str], tgt_lines: List[str]) -> Tuple[List[str], List[str]]:
+        """Apply Axelrod et al. (2011) data selection to reduce to 348M total words.
+        
+        Note: This is a simplified implementation that sequentially selects pairs until
+        reaching the target word count. The original method uses cross-entropy scoring.
+        """
+        target_words = self.config['dataset']['selected_total_words']  # 348M
+        total_words = 0
+        selected_src = []
+        selected_tgt = []
+        
+        for src, tgt in zip(src_lines, tgt_lines):
+            src_word_count = len(src.split())
+            tgt_word_count = len(tgt.split())
+            pair_words = src_word_count + tgt_word_count
+            
+            if total_words + pair_words > target_words:
+                break
+            
+            selected_src.append(src)
+            selected_tgt.append(tgt)
+            total_words += pair_words
+        
+        return selected_src, selected_tgt
+
+    def _process_training_data(self, src_lines: List[str], tgt_lines: List[str]) -> List[Tuple[List[int], List[int]]]:
+        """Process training data: tokenize, convert to IDs, filter by length variant."""
+        # Get current length variant (default to first variant in config: 30)
+        max_length_variants = self.config['dataset']['splits']['train']['max_length_variants']
+        current_max_length = max_length_variants[0]
+        
+        # Tokenize all sentences
+        src_tokenized = [self.src_tokenizer.tokenize(s, return_str=False) for s in src_lines]
+        tgt_tokenized = [self.tgt_tokenizer.tokenize(t, return_str=False) for t in tgt_lines]
+        
+        # Convert to IDs and filter by length
+        train_examples = []
+        for src_tok, tgt_tok in zip(src_tokenized, tgt_tokenized):
+            src_len = len(src_tok)
+            tgt_len = len(tgt_tok)
+            
+            # Filter pairs where both source and target lengths ≤ max_length (paper Sec 4.2)
+            if src_len > current_max_length or tgt_len > current_max_length:
+                continue
+            
+            # Convert to token IDs (unknown words map to [UNK]: 2)
+            src_ids = [self.src_vocab.get(t, 2) for t in src_tok]
+            # Add <start> (0) and <end> (1) tokens to target
+            tgt_ids = [0] + [self.tgt_vocab.get(t, 2) for t in tgt_tok] + [1]
+            
+            train_examples.append((src_ids, tgt_ids))
+        
+        return train_examples
+
+    def _create_train_loader(self, train_examples: List[Tuple[List[int], List[int]]]) -> DataLoader:
+        """Create train DataLoader with minibatch sorting logic (Appendix A.2)."""
+        batch_size = self.config['training']['batch_size']  # 80
+        chunk_size = self.config['training']['minibatch_sorting']['sentences_per_retrieval']  # 1600
+        
+        # Shuffle training data once (paper Appendix A.2)
+        random.seed(42)
+        all_train_indices = list(range(len(train_examples)))
+        random.shuffle(all_train_indices)
+        
+        # Precompute max length (max(src_len, tgt_len)) for each example
+        example_max_lens = [max(len(e[0]), len(e[1])) for e in train_examples]
+        
+        # Create batches in chunks of 1600 sentences (every 20 updates)
+        all_batches = []
+        for chunk_start in range(0, len(all_train_indices), chunk_size):
+            chunk_indices = all_train_indices[chunk_start:chunk_start + chunk_size]
+            chunk_max_lens = [example_max_lens[i] for i in chunk_indices]
+            
+            # Sort chunk by max length descending (Appendix A.2)
+            sorted_chunk_indices = [
+                x for _, x in sorted(zip(chunk_max_lens, chunk_indices), key=lambda p: -p[0])
+            ]
+            
+            # Split into batches of 80 sentences
+            for batch_start in range(0, len(sorted_chunk_indices), batch_size):
+                batch_indices = sorted_chunk_indices[batch_start:batch_start + batch_size]
+                all_batches.append(batch_indices)
+        
+        # Define custom batch sampler for precomputed batches
+        class SortedBatchSampler(Sampler):
+            def __init__(self, batches: List[List[int]]):
+                self.batches = batches
+            
+            def __iter__(self):
+                return iter(self.batches)
+            
+            def __len__(self):
+                return len(self.batches)
+        
+        # Initialize dataset and batch sampler
+        train_dataset = TranslationDataset(train_examples)
+        batch_sampler = SortedBatchSampler(all_batches)
+        
+        return DataLoader(
+            train_dataset,
+            batch_sampler=batch_sampler,
+            collate_fn=self.collate_batch
+        )
+
+    def _load_dev_data(self) -> Tuple[List[str], List[str]]:
+        """Load development set (concatenation of news-test-2012 and news-test-2013)."""
+        dev_sources = self.config['dataset']['splits']['dev']['sources']
+        dev_src = []
+        dev_tgt = []
+        
+        for source_name in dev_sources:
+            src_path = f"{source_name}.src"
+            tgt_path = f"{source_name}.tgt"
+            
+            with open(src_path, 'r', encoding='utf-8') as f:
+                dev_src.extend([line.strip() for line in f if line.strip()])
+            with open(tgt_path, 'r', encoding='utf-8') as f:
+                dev_tgt.extend([line.strip() for line in f if line.strip()])
+        
+        # Ensure equal lengths
+        min_len = min(len(dev_src), len(dev_tgt))
+        return dev_src[:min_len], dev_tgt[:min_len]
+
+    def _load_test_data(self) -> Tuple[List[str], List[str]]:
+        """Load test set (news-test-2014, 3003 sentences)."""
+        test_source = self.config['dataset']['splits']['test']['source']
+        src_path = f"{test_source}.src"
+        tgt_path = f"{test_source}.tgt"
+        
+        with open(src_path, 'r', encoding='utf-8') as f:
+            test_src = [line.strip() for line in f if line.strip()]
+        with open(tgt_path, 'r', encoding='utf-8') as f:
+            test_tgt = [line.strip() for line in f if line.strip()]
+        
+        # Ensure equal lengths
+        min_len = min(len(test_src), len(test_tgt))
+        return test_src[:min_len], test_tgt[:min_len]
+
+    def _process_split(self, src_lines: List[str], tgt_lines: List[str]) -> List[Tuple[List[int], List[int]]]:
+        """Process a data split (dev/test): tokenize, convert to IDs, no filtering."""
+        src_tokenized = [self.src_tokenizer.tokenize(s, return_str=False) for s in src_lines]
+        tgt_tokenized = [self.tgt_tokenizer.tokenize(t, return_str=False) for t in tgt_lines]
+        
+        examples = []
+        for src_tok, tgt_tok in zip(src_tokenized, tgt_tokenized):
+            src_ids = [self.src_vocab.get(t, 2) for t in src_tok]
+            tgt_ids = [0] + [self.tgt_vocab.get(t, 2) for t in tgt_tok] + [1]
+            examples.append((src_ids, tgt_ids))
+        
+        return examples

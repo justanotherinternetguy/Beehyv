@@ -1,0 +1,82 @@
+## config.yaml
+dataset:
+  name: "wmt14_en_fr"
+  original_total_words: 850000000  # 850M total combined corpus (Europarl 61M + news commentary 5.5M + UN 421M + crawled 90M + 272.5M) (Sec 4.1)
+  selected_total_words: 348000000  # After Axelrod et al. (2011) data selection (Sec 4.1)
+  vocab_size: 30000  # 30k most frequent words per language (Sec 4.1)
+  embedding_dim: 620  # m, word embedding dimensionality (Appendix A.2.3)
+  tokenization: "moses"  # Sec 4.1, no lowercasing/stemming applied
+  special_tokens:
+    unk: "[UNK]"  # Maps OOV words to this token
+    end: "<end>"  # Sentence end token (explicitly used in sample translations)
+  splits:
+    train:
+      # Filter sentence pairs where both source and target length ≤ max_length
+      max_length_variants: [30, 50]  # RNNencdec-30/RNNsearch-30 (30), RNNencdec-50/RNNsearch-50 (50) (Sec 4.2)
+    dev:
+      sources: ["news-test-2012", "news-test-2013"]
+      concat: true  # Development set is concatenation of these two (Sec 4.1)
+    test:
+      source: "news-test-2014"
+      num_sentences: 3003  # Not present in training data (Sec 4.1)
+
+model:
+  types: ["rnnencdec", "rnnsearch"]  # Baseline and proposed models (Sec 4.2)
+  rnn_cell: "gated_hidden_unit"  # Cho et al. (2014a), not LSTM (Appendix A.1.1)
+  hidden_dim: 1000  # n, number of hidden units (Appendix A.2.3)
+  maxout_output_dim: 500  # l, maxout hidden layer size (2l=1000 input to maxout) (Appendix A.2.3)
+  rnnencdec:
+    encoder_hidden: 1000  # Sec 4.2
+    decoder_hidden: 1000  # Sec 4.2
+    context_type: "fixed_last_hidden"  # c = h_Tx (last encoder forward hidden state)
+  rnnsearch:
+    encoder:
+      forward_rnn_hidden: 1000  # Sec 4.2
+      backward_rnn_hidden: 1000  # Sec 4.2
+      annotation_dim: 2000  # Concatenation of forward (1000) and backward (1000) hidden states
+    decoder_hidden: 1000  # Sec 4.2
+    alignment_model:
+      hidden_dim: 1000  # n (Appendix A.2.3)
+      w_a_shape: [1000, 1000]  # W_a ∈ R n×n (Appendix A.1.2)
+      u_a_shape: [1000, 2000]  # U_a ∈ R n×2n (Appendix A.1.2)
+      v_a_shape: [1000]  # v_a ∈ R n (Appendix A.1.2)
+  output_layer:
+    type: "maxout"  # Single maxout hidden layer + softmax (Appendix A.1.1)
+    maxout_units: 500  # l (Appendix A.2.3)
+    vocab_size: 30000  # Target vocabulary size
+
+training:
+  optimizer: "adadelta"
+  adadelta_eps: 1e-6  # ε (Appendix B.2)
+  adadelta_rho: 0.95  # ρ (Appendix B.2)
+  batch_size: 80  # Minibatch size (Sec 4.2)
+  gradient_clip_norm: 1.0  # L2 norm threshold (Appendix A.2)
+  minibatch_sorting:
+    update_frequency: 20  # Every 20 updates (Appendix A.2)
+    sentences_per_retrieval: 1600  # Retrieve 1600 sentence pairs (Appendix A.2)
+    sort_key: "max_source_target_length"  # Sort by max(source len, target len) (Appendix A.2)
+    minibatches_per_retrieval: 20  # Split into 20 minibatches of 80 (Appendix A.2)
+  training_duration:
+    rnnencdec_30: "~5 days"  # Sec 4.2
+    rnnencdec_50: "~5 days"  # Sec 4.2
+    rnnsearch_30: "~5 days"  # Sec 4.2
+    rnnsearch_50: "Until validation BLEU stops improving (early stopping)"  # Sec 5.1
+  epoch_definition: "One full pass through the shuffled training set"  # Table 2 note
+
+evaluation:
+  metric: "bleu"  # Sec 5.1
+  beam_search:
+    use: true  # Sec 4.2
+    width: "Unspecified in paper"  # No value provided in the paper
+  no_unk_evaluation:
+    filter_test_set: true  # Only sentences with no UNK in source/reference
+    block_unk_generation: true  # Disallow model from generating [UNK]
+  alignment_visualization:
+    use: true  # Sec 5.2.1
+    filter: "10-20 word sentences with no UNK"  # Sec 5.2.1 Fig 3
+
+initialization:
+  recurrent_weights: "Random orthogonal matrices"  # U, U_z, U_r for all RNNs (Appendix B.1)
+  alignment_w_a_u_a: "Gaussian N(0, 0.001²)"  # W_a, U_a (Appendix B.1)
+  alignment_v_a_bias: "0"  # v_a and all bias vectors (Appendix B.1)
+  other_weights: "Gaussian N(0, 0.01²)"  # All remaining weights (Appendix B.1)

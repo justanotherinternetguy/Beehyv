@@ -1,0 +1,145 @@
+## Logic Analysis: `main.py`
+This analysis strictly follows the provided research paper, experimental plan, system design (including data structures/interfaces), task specifications, and `config.yaml` configuration. No code is provided—only structured, actionable logic for implementation.
+
+---
+### 1. Role Overview
+`main.py` is the single entry point for the full experiment lifecycle. It coordinates all components (data loading, model initialization, training, evaluation) per the paper’s specifications, using only configuration values from `config.yaml` and validated CLI arguments.
+
+---
+### 2. Dependencies
+Explicitly required as per task specifications:
+- All project files: `dataset_loader.py`, `model.py`, `trainer.py`, `evaluation.py`
+- `pyyaml` (for loading `config.yaml`)
+- `argparse` (for CLI argument parsing)
+
+---
+### 3. Class Structure (Strict Adherence to Design)
+The `Main` class is defined exactly as per the design’s data structure specification, with no additional public methods or attributes:
+```
+class Main:
+    # Attributes (all private as per design)
+    - config: dict  # Loaded from config.yaml
+    - dataset_loader: DatasetLoader  # Initialized in run_experiment()
+    - model: object  # RNNEncDec or RNNsearch instance
+    - trainer: Trainer  # Initialized in run_experiment()
+    - evaluator: Evaluation  # Initialized in run_experiment()
+
+    # Public Methods (only those specified)
+    + __init__(config_path: str) -> None
+    + run_experiment() -> None
+```
+
+---
+### 4. `__init__(config_path: str)` Logic
+Responsible for loading configuration and parsing CLI arguments. No other initialization is performed here.
+#### 4.1 Load Configuration from `config.yaml`
+- Use `yaml.safe_load()` to load the file at `config_path` into `self.config`.
+- Validate that all required config sections exist: `dataset`, `model`, `training`, `evaluation`, `initialization`.
+- All subsequent values are referenced exclusively from `self.config` (no hardcoded values):
+  | Config Key | Description | Paper/Plan Reference |
+  |------------|-------------|-----------------------|
+  | `dataset.vocab_size` | 30000 (per-language vocabulary size) | Sec 4.1 |
+  | `dataset.embedding_dim` | 620 (word embedding dimensionality `m`) | Appendix A.2.3 |
+  | `dataset.embedding_dim` | 620 (word embedding dimensionality `m`) | Appendix A.2.3 |
+  | `model.hidden_dim` | 1000 (RNN hidden units `n`) | Appendix A.2.3 |
+  | `model.maxout_output_dim` | 500 (maxout layer size `l`) | Appendix A.2.3 |
+  | `model.types` | `["rnnencdec", "rnnsearch"]` (valid model types) | Sec 4.2 |
+  | `dataset.splits.train.max_length_variants` | `[30,50]` (valid length variants) | Sec 4.2 |
+  | `training.batch_size` | 80 (minibatch size) | Sec 4.2 |
+  | `evaluation.beam_search.width` | Unspecified in config (use `10` per task Shared Knowledge) | Plan Sec 3.4.1 |
+
+#### 4.2 Parse CLI Arguments
+- Use `argparse` to parse two required arguments (validated against config values):
+  1. `--model-type`: Choices restricted to `self.config["model"]["types"]` (either `rnnencdec` or `rnnsearch`)
+  2. `--length-variant`: Choices restricted to `self.config["dataset"]["splits"]["train"]["max_length_variants"]` (either `30` or `50`)
+- Store arguments as instance variables: `self.model_type`, `self.length_variant`.
+
+#### 4.3 Initialize Attributes
+Set all instance attributes to `None` initially:
+`self.config = loaded_config`, `self.dataset_loader = None`, `self.model = None`, `self.trainer = None`, `self.evaluator = None`.
+
+---
+### 5. `run_experiment() -> None` Logic
+Orchestrates the full experiment lifecycle, using only public methods defined in the design for all subcomponents.
+#### 5.1 Initialize DatasetLoader
+- Add a temporary key to `self.config` to pass the selected length variant to `DatasetLoader` (since `DatasetLoader` only accepts a config dict per design):
+  `self.config["dataset"]["splits"]["train"]["selected_max_length"] = self.length_variant`
+- Initialize: `self.dataset_loader = DatasetLoader(self.config)` (matches design’s `DatasetLoader.__init__(config: dict)`)
+
+#### 5.2 Load Data
+- Call the design-specified `DatasetLoader.load_data()` method (no arguments, returns 3 DataLoaders):
+  `train_loader, dev_loader, test_loader = self.dataset_loader.load_data()`
+- This method handles all paper-specified preprocessing: Moses tokenization, Axelrod data selection, 30k vocabulary building (with `<start>`, `<end>`, `[UNK]` special tokens per Shared Knowledge), length filtering for training data (both source and target ≤ `self.length_variant`), and minibatch sorting logic (retrieve 1600 sentences every 20 updates, sort by max source/target length, split into 20 minibatches of 80).
+
+#### 5.3 Initialize Model
+Select the model class based on `self.model_type`, using only config values for all hyperparameters (no hardcoded values):
+- If `self.model_type == "rnnencdec"`:
+  `self.model = RNNEncDec(
+      src_vocab_size=self.config["dataset"]["vocab_size"],
+      tgt_vocab_size=self.config["dataset"]["vocab_size"],
+      emb_dim=self.config["dataset"]["embedding_dim"],
+      hidden_dim=self.config["model"]["hidden_dim"],
+      maxout_dim=self.config["model"]["maxout_output_dim"]
+  )`
+- If `self.model_type == "rnnsearch"`:
+  `self.model = RNNsearch(
+      src_vocab_size=self.config["dataset"]["vocab_size"],
+      tgt_vocab_size=self.config["dataset"]["vocab_size"],
+      emb_dim=self.config["dataset"]["embedding_dim"],
+      hidden_dim=self.config["model"]["hidden_dim"],
+      maxout_dim=self.config["model"]["maxout_output_dim"]
+  )`
+- Weight initialization is handled internally by the model classes per Appendix B.1 (orthogonal recurrent weights, Gaussian alignment weights, etc.), so no additional steps are needed here.
+
+#### 5.4 Initialize Trainer
+- Use the design-specified `Trainer.__init__(model, train_loader, dev_loader, config)`:
+  `self.trainer = Trainer(model=self.model, train_loader=train_loader, dev_loader=dev_loader, config=self.config)`
+- The trainer automatically configures the Adadelta optimizer (`eps=1e-6`, `rho=0.95` from config), gradient clipping (L2 norm 1.0 from config), and early stopping for RNNsearch-50 (per `config["training"]["training_duration"]["rnnsearch_50"]`).
+
+#### 5.5 Train Model
+- Call the design-specified `Trainer.train()` method (no arguments):
+  `self.trainer.train()`
+- This runs the full training loop, including minibatch sorting, teacher forcing, joint backpropagation, and validation every 1000 updates. For RNNsearch-50, training continues until validation BLEU stops improving (early stopping). All other models train for ~5 days (or equivalent epochs for modern hardware, as the paper uses fixed time per model).
+
+#### 5.6 Initialize Evaluator
+- Use the design-specified `Evaluation.__init__(model, test_loader, config)`:
+  `self.evaluator = Evaluation(model=self.model, test_loader=test_loader, config=self.config)`
+- The evaluator automatically configures beam search (width=10 per Shared Knowledge, or config if specified), UNK blocking for "No UNK" evaluation, and alignment visualization settings.
+
+#### 5.7 Evaluate Model
+- Call the design-specified `Evaluation.evaluate()` method (no arguments):
+  `results = self.evaluator.evaluate()`
+- Returns a dict with `bleu_all` (full test set) and `bleu_no_unk` (filtered test set with no UNK, model blocked from generating UNK), matching the paper’s Table 1 reporting.
+- If `config["evaluation"]["alignment_visualization"]["use"]` is `True`, call the design-specified `Evaluation.visualize_alignments()` method for 10-20 word no-UNK sample sentences to generate alignment heatmaps (matching Figure 3 in the paper).
+
+#### 5.8 Save Results
+- Save BLEU scores to a JSON file named `results_{self.model_type}_{self.length_variant}.json`.
+- Save alignment plots to the `plots/` directory if generated.
+
+---
+### 6. `__main__` Block Logic
+- Parse only the `config_path` CLI argument using `argparse`.
+- Instantiate `Main`: `main = Main(config_path=args.config_path)`
+- Run the experiment: `main.run_experiment()`
+
+---
+### 7. Key Adherence Checks
+#### 7.1 Config.yaml Reference
+Every parameter used is explicitly mapped to a `config.yaml` key (or task Shared Knowledge where config is ambiguous):
+- No hardcoded values (e.g., 1000 hidden units are pulled from `model.hidden_dim`, not hardcoded).
+- Beam width uses `10` only from task Shared Knowledge, as `config.yaml` lists it as unspecified.
+
+#### 7.2 Design Compliance
+- No additional public methods are added to `Main` beyond `__init__` and `run_experiment`.
+- All subcomponents are accessed only via their design-specified public methods (e.g., `DatasetLoader.load_data()`, not internal methods like `build_vocab`).
+
+#### 7.3 Paper Alignment
+- Only gated RNN cells (Cho et al. 2014a) are used, no LSTM.
+- No monolingual data, no lowercasing/stemming, exact vocabulary sizes and hyperparameters from the paper.
+- Minibatch sorting, Adadelta optimizer, gradient clipping, and beam search decoding match the paper’s specifications.
+
+---
+### 8. Ambiguity Handling
+- **Beam width**: Use `10` per plan suggestion and task Shared Knowledge, as paper does not specify.
+- **Special tokens**: `<start>` is added as ID 0 (per Shared Knowledge) even though not in `config.yaml`, as required by the plan and translation decoding logic.
+- **RNNencdec initial state**: Handled internally by `RNNEncDec` (per plan: `s₀ = tanh(W_s * c)`), no action needed in `main.py`.

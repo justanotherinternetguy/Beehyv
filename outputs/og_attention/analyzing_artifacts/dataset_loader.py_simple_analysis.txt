@@ -1,0 +1,227 @@
+## Logic Analysis: `dataset_loader.py`
+
+### Overview
+The `DatasetLoader` class is responsible for all data-related operations, including downloading/loading the WMT 2014 English-French parallel corpus, preprocessing (tokenization, vocabulary building, data selection), and creating PyTorch DataLoaders for training, development, and testing. It must strictly follow the paper’s specifications: Moses tokenization without lowercasing or stemming, a vocabulary of 30,000 most frequent words per language plus special tokens (`<start>`, `<end>`, `[UNK]`), Axelrod et al. (2011) data selection to reduce the corpus to 348M words, and filtering of training sentences into length variants (≤30 or ≤50 words). The class also implements a custom collate function for padding and the minibatch sorting logic described in Appendix A.2 (retrieve 1600 sentences every 20 updates, sort by max(source_len, target_len), split into 20 minibatches of 80).
+
+The implementation uses the following dependencies (as per task description):
+- `torch` and `torch.utils.data` for data structures and DataLoader.
+- `sacremoses` for Moses tokenization.
+- `numpy` for statistical operations if needed.
+- `pyyaml` to read the configuration.
+- `os`, `re` for file path and text processing.
+
+All configuration parameters are taken from `config.yaml`; no hardcoded values outside those explicitly listed in the config are used.
+
+---
+
+### Class Attributes (from design)
+- `config: dict` – stores the loaded configuration.
+- `src_vocab: dict` – mapping from source tokens to integer IDs.
+- `tgt_vocab: dict` – mapping from target tokens to integer IDs.
+
+---
+
+### Method-by-Method Logic
+
+#### 1. `__init__(self, config: dict)`
+**Purpose**: Initialize the DatasetLoader with configuration settings.
+
+**Logic**:
+- Store the provided `config` dictionary.
+- Initialize empty dictionaries for `src_vocab` and `tgt_vocab`.
+- Set up Moses tokenizers for English (source) and French (target) using `sacremoses.MosesTokenizer`. According to the paper (Sec 4.1), tokenization is performed with the Moses tokenizer, without lowercasing or stemming. Therefore, we initialize:
+  - `self.src_tokenizer = MosesTokenizer(lang='en')`
+  - `self.tgt_tokenizer = MosesTokenizer(lang='fr')`
+  (The public `tokenize` method may default to the source tokenizer; target tokenization is handled internally.)
+- Read any relevant config sections (e.g., `dataset`, `training`) for later use.
+- Note: The config does not contain file paths for the WMT corpora; we assume they are available in a known location or specified via additional config keys (e.g., `dataset.path`). For the logic analysis, we assume the paths can be derived or are set in the environment.
+
+---
+
+#### 2. `build_vocab(self, corpus: List[str], max_size: int = 30000) -> dict`
+**Purpose**: Build a vocabulary for one language, incorporating special tokens and the most frequent words.
+
+**Parameters**:
+- `corpus`: List of strings, each string being a raw sentence in the language.
+- `max_size`: Maximum vocabulary size (total). From config: `dataset.vocab_size = 30000`.
+
+**Logic**:
+- Determine which language’s vocabulary is being built. Since `build_vocab` will be called once for source and once for target, we can rely on the fact that `self.src_vocab` is built first (or we can accept a `lang` parameter internally). For flexibility, we assume the method is called separately for source and target; inside, we choose the appropriate tokenizer:
+  - If building source vocab, use `self.src_tokenizer` to tokenize each sentence.
+  - If building target vocab, use `self.tgt_tokenizer`.
+  (We can decide based on which of `self.src_vocab` or `self.tgt_vocab` is currently empty, or we can have two internal helper methods. For clarity in the analysis, we describe the steps generically.)
+- Tokenize each sentence in `corpus` using the chosen tokenizer (call `tokenize` method or directly the tokenizer). The paper uses Moses tokenization, so we apply `tokenizer.tokenize(text, return_str=False)` to obtain a list of tokens.
+- Count word frequencies across all tokenized sentences.
+- Insert special tokens with predefined IDs (as per plan and task):
+  - `<start>`: ID 0 (used only in target vocabulary; source vocabulary may still reserve the ID but not use it)
+  - `<end>`: ID 1
+  - `[UNK]`: ID 2
+  (The config’s `dataset.special_tokens` only defines `unk` and `end`; we add `<start>` as per plan.)
+- After inserting special tokens, collect the most frequent words from the frequency count, excluding any that are already in the special tokens, until the total vocabulary size reaches `max_size`. Since we already have 3 special tokens, we need `max_size - 3` additional words.
+- Build a dictionary mapping token to ID (the special tokens keep their IDs, the frequent words get IDs starting from 3).
+- Save the vocabulary to a file (e.g., `src_vocab.pkl` or `tgt_vocab.pkl`) for later use.
+- Return the vocabulary dict.
+
+**Note**: The vocabulary size `max_size` should match `config['dataset']['vocab_size']` (30000). If we also need a padding token (PAD) for sequence padding, we could add it as another special token, but the paper does not mention it. To avoid conflicts, we may use a padding index not in the vocabulary (e.g., `len(vocab)`) and handle it in the embedding layer. However, the `collate_batch` method will need to pad sequences; we can use 0 as padding and mask it, but 0 is `<start>`. Since `<start>` is only used in target sequences, source sequences will not contain ID 0 if we don’t put `<start>` in source vocab. But we added it to both. A better approach: for source vocab, omit `<start>` and `<end>`; only include `[UNK]` as a special token. However, the plan says to add the three special tokens to each language. We will follow the plan, but note that in practice, for source sentences we would never use `<start>` or `<end>`. So when building source vocab, we can still assign them IDs but never output them. This is acceptable.
+
+---
+
+#### 3. `tokenize(self, text: str) -> List[str]`
+**Purpose**: Tokenize a given text string using the Moses tokenizer.
+
+**Logic**:
+- This public method is a convenience; internally, we need to know whether the text is source or target. Since the method signature does not include a language parameter, we assume it is used for source texts by default (or we can store a flag). For clarity, we can implement it as:
+  - Use `self.src_tokenizer.tokenize(text, return_str=False)` to obtain tokens.
+- However, for target texts, we will directly use `self.tgt_tokenizer` inside `load_data`. The public `tokenize` may not be used for target; or we can extend it with an optional `lang` parameter, but the interface says only `text`. In the analysis, we describe that `tokenize` is used for source tokenization, and target tokenization is done via a separate internal call.
+- The tokenization must follow the paper: no lowercasing, no stemming. MosesTokenizer’s default settings are appropriate; we explicitly disable lowercasing if the library version supports it (in `sacremoses`, the `tokenize` method has a `lowercase` parameter default False).
+
+---
+
+#### 4. `load_data(self) -> Tuple[DataLoader, DataLoader, DataLoader]`
+**Purpose**: Main method to load, preprocess, and create DataLoaders for train, dev, and test sets.
+
+**Steps**:
+
+##### a. Locate and load raw parallel corpora
+- The WMT 2014 English-French corpora consist of Europarl (61M), news commentary (5.5M), UN (421M), and two crawled corpora (90M + 272.5M) – total 850M words (config: `dataset.original_total_words`).
+- We assume the files are accessible (e.g., in a directory specified by `config['dataset']['path']` or via environment variable). We read each corpus file, extracting parallel sentences. For each corpus, we obtain a list of (src_sentence, tgt_sentence) pairs.
+
+##### b. Apply Axelrod et al. (2011) data selection
+- Combine all sentence pairs and apply data selection to reduce the total number of words (source + target) to 348M (`dataset.selected_total_words`).
+- The paper cites Axelrod et al. (2011); we can use Fairseq’s implementation or a reimplementation. The logic: score each sentence pair based on some criteria (e.g., cross-entropy difference) and select the top fraction until the total word count reaches 348M.
+- After selection, we have a filtered list of sentence pairs.
+
+##### c. Tokenization
+- For each selected pair:
+  - Source: `src_tokens = self.src_tokenizer.tokenize(src_sentence, return_str=False)`
+  - Target: `tgt_tokens = self.tgt_tokenizer.tokenize(tgt_sentence, return_str=False)`
+- We now have tokenized parallel data.
+
+##### d. Build vocabularies
+- Use `build_vocab` for source and target separately.
+- Source corpus: list of source tokenized sentences (as strings? we need to pass list of sentences). We’ll collect all source tokenized sentences into a list of strings (maybe by joining tokens? but `build_vocab` expects a list of strings, each string a sentence). However, `build_vocab` expects raw sentences (strings) and will tokenize again. To avoid double tokenization, we can modify `build_vocab` to accept either raw or tokenized. In the analysis, we assume we have a list of raw source sentences (the original text) and we tokenize inside `build_vocab`. So we pass the raw source sentences from the selected corpus.
+- Similarly for target.
+- The `max_size` parameter is taken from `config['dataset']['vocab_size']` (30000).
+- After building, store the vocabularies in `self.src_vocab` and `self.tgt_vocab`.
+- Save them to files.
+
+##### e. Convert tokenized sentences to ID sequences
+- For each sentence pair:
+  - Source IDs: For each token in `src_tokens`, look up in `self.src_vocab`; if not found, use `[UNK]` ID (2). Do not add any special tokens to source.
+  - Target IDs: For each token in `tgt_tokens`, look up in `self.tgt_vocab`; if not found, use `[UNK]` ID. Then, prepend the `<start>` token (ID 0) and append the `<end>` token (ID 1). Thus, the target sequence becomes `[0] + token_ids + [1]`.
+- Also compute lengths (without special tokens? For filtering, we need the original token counts). We’ll store both the original token count (for filtering) and the ID sequence with special tokens.
+
+##### f. Filter training data into length variants
+- The config contains `dataset.splits.train.max_length_variants: [30, 50]`. Since `load_data` returns a single train DataLoader, we need to decide which variant to use. We assume that the configuration also specifies a `max_length` for the current run (e.g., `config['dataset']['max_length']`). If not, we may default to the first variant (30) or rely on the caller to set it. In the analysis, we describe that we filter based on a chosen `max_length` (either 30 or 50). The paper filters sentences where both source and target lengths are ≤ `max_length`. “Lengths” refer to the number of words (tokens) after tokenization, before adding special tokens.
+- So, for each pair, compute `src_len = len(src_tokens)`, `tgt_len = len(tgt_tokens)`. Keep pairs where `src_len ≤ max_length` and `tgt_len ≤ max_length`.
+- This yields the filtered training set for the chosen variant.
+
+##### g. Prepare training examples
+- Each training example is a tuple: `(src_ids, tgt_ids, src_len, tgt_len)` where `src_ids` and `tgt_ids` are lists of integers (with special tokens added to tgt), and `src_len`, `tgt_len` are the original token counts (without special tokens) for sorting/filtering.
+- Store all examples in a list `train_examples`.
+
+##### h. Shuffle training data once
+- As per Appendix A.2: “The training data was shuffled once before training and was traversed sequentially.” We create a list of indices for `train_examples` and shuffle it with a fixed random seed (seed can be taken from config or set to 42 for reproducibility). Then reorder `train_examples` according to the shuffled indices. Alternatively, we keep the examples in a list and shuffle the list directly.
+
+##### i. Implement minibatch sorting logic
+- The paper (and config `training.minibatch_sorting`) specifies:
+  - Every 20 updates (i.e., every 20 minibatches), retrieve the next 1600 sentence pairs from the (shuffled) training data.
+  - Sort these 1600 pairs by the maximum of source and target lengths (descending).
+  - Split the sorted list into 20 minibatches of 80 sentences each.
+- We need to translate this into a batch creation scheme for the entire training set.
+- Process:
+  - Let `chunk_size = 1600` (from config `sentences_per_retrieval`).
+  - Let `batch_size = 80` (config `batch_size`).
+  - Iterate over `train_examples` in steps of `chunk_size`:
+    - Take a chunk of up to `chunk_size` examples (the last chunk may be smaller).
+    - For each chunk, sort the examples by `max(src_len, tgt_len)` descending.
+    - Split the sorted chunk into batches of `batch_size` (so each chunk should produce `chunk_size // batch_size = 20` batches, but if the chunk is smaller, produce as many batches as possible, possibly with the last batch smaller).
+    - Collect all batches in order into a list `all_batches`. Each batch is a list of example indices (or the examples themselves).
+- After processing all chunks, `all_batches` contains the sequence of minibatches for one epoch.
+- Note: The paper says “before every 20-th update, we retrieved 1600 sentence pairs …”. This implies that the training data is traversed sequentially in chunks of 1600, and within each chunk, we sort and split. Our method does exactly that for the whole epoch.
+
+##### j. Create training dataset and batch sampler
+- Define a PyTorch Dataset class (e.g., `TranslationDataset`) that stores `train_examples` and returns an example by index: `(src_ids, tgt_ids, src_len, tgt_len)`.
+- Create a custom `BatchSampler` that yields batches according to `all_batches`. This sampler’s `__iter__` method will iterate over `all_batches` and yield each batch (list of indices). It also implements `__len__` returning the number of batches.
+- The collate function for the DataLoader will be `self.collate_batch`.
+- Instantiate the training DataLoader with:
+  - `dataset = train_dataset`
+  - `batch_sampler = train_batch_sampler` (and set `batch_size = None` because the sampler defines batches)
+  - `collate_fn = self.collate_batch`
+  - `num_workers = 0` (or as needed)
+
+##### k. Development set
+- Load development set: concatenation of `news-test-2012` and `news-test-2013` (from config `splits.dev.sources`, `concat: true`).
+- Tokenize, convert to IDs (with special tokens for target), but do **not** filter by length.
+- Create a `TranslationDataset` for dev examples.
+- For dev DataLoader, we can use a standard `DataLoader` with `batch_size=80`, `shuffle=False`, and the same `collate_fn`. No need for the special sorting logic.
+
+##### l. Test set
+- Load test set: `news-test-2014` (config `splits.test.source`), with `num_sentences = 3003`.
+- Process similarly to dev: tokenize, convert to IDs, no filtering.
+- Create test DataLoader like dev DataLoader.
+
+##### m. Return
+- Return tuple: `(train_loader, dev_loader, test_loader)`.
+
+---
+
+#### 5. `collate_batch(self, batch: List[Tuple[List[int], List[int]]]) -> Tuple[Tensor, Tensor, Tensor, Tensor]`
+**Purpose**: Pad sequences in a batch and return padded tensors and length tensors.
+
+**Input**: `batch` is a list of examples. Each example is a tuple; we assume the dataset returns `(src_ids, tgt_ids, src_len, tgt_len)`. However, the method signature in the task says `batch: List[Tuple[List[int], List[int]]]` (only src and tgt IDs). To include lengths, the dataset may return a tuple of four elements; we can adapt. For the analysis, we assume each element in `batch` is `(src_ids, tgt_ids, src_len, tgt_len)`.
+
+**Logic**:
+- Separate source and target components:
+  - `src_list = [ex[0] for ex in batch]` (list of lists of ints)
+  - `tgt_list = [ex[1] for ex in batch]`
+  - `src_lengths = [ex[2] for ex in batch]` (or compute from src_ids without special tokens; but we already stored lengths)
+  - `tgt_lengths = [ex[3] for ex in batch]`
+- Compute maximum lengths in the batch:
+  - `max_src_len = max(len(ids) for ids in src_list)`
+  - `max_tgt_len = max(len(ids) for ids in tgt_list)`
+- Pad sequences:
+  - Use a padding index. We need to decide a padding value. Since we have special tokens, we can use a dedicated PAD token ID (e.g., `len(vocab)`). However, to avoid modifying vocab size, we can pad with 0 and mask padding in the model. But 0 is `<start>`; source sequences shouldn’t contain 0, but if they do, it could be ambiguous. A safer approach: add a PAD token to the vocabulary (e.g., ID 3, shifting other tokens). But the config’s vocab_size is fixed. Instead, we can pad with a value that is not used, such as `-1`, but tensors expect non-negative. Common practice: use `0` for padding and later ignore it in loss and attention via masks. We’ll adopt that.
+  - For each src_ids, pad to `max_src_len` with zeros (or a pad index defined as `self.pad_idx = 0`).
+  - Similarly for tgt_ids.
+- Convert to tensors:
+  - `src_padded = torch.tensor(padded_src_list, dtype=torch.long)` shape `(batch, max_src_len)`
+  - `tgt_padded = torch.tensor(padded_tgt_list, dtype=torch.long)` shape `(batch, max_tgt_len)`
+  - `src_lengths_tensor = torch.tensor(src_lengths, dtype=torch.long)`
+  - `tgt_lengths_tensor = torch.tensor(tgt_lengths, dtype=torch.long)`
+- Return: `(src_padded, src_lengths_tensor, tgt_padded, tgt_lengths_tensor)`.
+
+**Note**: The task description says `collate_batch` returns `Tuple[Tensor, Tensor]` according to the design, but the task list says four tensors. We follow the task list (four tensors) as it matches the required return for the DataLoader.
+
+---
+
+### Referencing Configuration
+Throughout the logic, we reference the following config values (from `config.yaml`):
+- `dataset.name`, `original_total_words`, `selected_total_words`
+- `dataset.vocab_size = 30000`
+- `dataset.embedding_dim = 620` (not used in dataset_loader, but may be used elsewhere)
+- `dataset.tokenization = "moses"`
+- `dataset.special_tokens.unk`, `end` (we also add `start`)
+- `dataset.splits.train.max_length_variants = [30,50]` – used to determine filtering max length.
+- `dataset.splits.dev.sources`, `concat`
+- `dataset.splits.test.source`, `num_sentences`
+- `training.batch_size = 80`
+- `training.minibatch_sorting.update_frequency = 20`, `sentences_per_retrieval = 1600`, `sort_key = "max_source_target_length"`, `minibatches_per_retrieval = 20`
+- `initialization` settings are not used in dataset_loader.
+
+---
+
+### Potential Ambiguities and Resolutions
+1. **Beam search width** – not relevant for dataset_loader.
+2. **Sentence length filtering** – we assume both source and target lengths must be ≤ max_length, and length is counted after tokenization but before adding special tokens.
+3. **Special tokens** – we include `<start>`, `<end>`, `[UNK]` as per plan, assigning IDs 0,1,2. The config only lists `unk` and `end`; we add `<start>` artificially.
+4. **RNNencdec initial decoder state** – not relevant here.
+5. **Axelrod data selection parameters** – we assume existence of an implementation that reduces to 348M words; exact parameters not given, so we rely on Fairseq defaults.
+6. **Moses tokenizer** – we use `sacremoses` Python port; we assume it matches the paper’s tokenization (no lowercasing/stemming).
+7. **Vocabulary size** – we treat `max_size` as total including special tokens; thus we add 29997 frequent words.
+8. **Padding** – we pad with 0 (or a separate PAD token). We also store original lengths for packing if needed.
+9. **Minibatch sorting** – implemented as a precomputed list of batches for the entire epoch, following the paper’s sequential traversal of shuffled data.
+
+---
+
+This logic analysis provides a clear, step-by-step guide for implementing `dataset_loader.py` in accordance with the paper, the plan, the design, and the configuration. It respects the required methods and their signatures while detailing the internal decisions needed to reproduce the experiments.

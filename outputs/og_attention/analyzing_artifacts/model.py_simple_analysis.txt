@@ -1,0 +1,232 @@
+## Logic Analysis for `model.py`
+
+### Overview
+This analysis covers the implementation logic for all model components defined in `model.py`, strictly adhering to the paper's architecture, hyperparameters from `config.yaml`, and the provided design. The classes include `GatedRNNCell`, `AlignmentModel`, `MaxoutOutputLayer`, `RNNEncDec`, and `RNNsearch`. All components use PyTorch and follow the paper's initialization rules (Appendix B.1) and mathematical formulations.
+
+---
+
+### 1. `GatedRNNCell`
+**Purpose**: Implements the gated hidden unit from Cho et al. (2014a) used in all RNN components (encoder/decoder). Supports optional context vector for decoder cells.
+
+**Initialization (`__init__`)**:
+- Parameters:
+  - `input_dim`: Embedding dimension of input (from `config['dataset']['embedding_dim'] = 620`).
+  - `hidden_dim`: Hidden state size (from `config['model']['hidden_dim'] = 1000`).
+  - `context_dim`: Optional dimension of context vector (default `None`). For encoder cells, `None`; for decoder cells, `1000` (RNNencdec) or `2000` (RNNsearch).
+- Weights and biases (all `torch.Tensor`):
+  - **Recurrent weights** (`U`, `U_z`, `U_r`): Shape `(hidden_dim, hidden_dim)`. Initialized as random orthogonal matrices (per Appendix B.1).
+  - **Input weights** (`W`, `W_z`, `W_r`): Shape `(hidden_dim, input_dim)`. Initialized as Gaussian with mean 0 and variance 0.01² (non‑recurrent, non‑alignment weights).
+  - **Context weights** (`C`, `C_z`, `C_r`): Only if `context_dim` is not `None`; shape `(hidden_dim, context_dim)`. Initialized as Gaussian with mean 0 and variance 0.01².
+  - **Biases** (`b`, `b_z`, `b_r`): Shape `(hidden_dim,)`. Initialized to 0 (paper states all bias vectors are zero).
+- Note: The paper omits biases in equations but initializes them to zero; we include them for completeness.
+
+**Forward Pass (`forward`)**:
+- Inputs:
+  - `x`: Input embedding, shape `(batch_size, input_dim)`.
+  - `s_prev`: Previous hidden state, shape `(batch_size, hidden_dim)`.
+  - `c`: Optional context vector, shape `(batch_size, context_dim)` or `None`.
+- Output: New hidden state, shape `(batch_size, hidden_dim)`.
+- Computation (element‑wise operations):
+  1. Reset gate:  
+     `r = σ(W_r @ x + U_r @ s_prev + (C_r @ c if c is not None else 0) + b_r)`
+  2. Update gate:  
+     `z = σ(W_z @ x + U_z @ s_prev + (C_z @ c if c is not None else 0) + b_z)`
+  3. Candidate state:  
+     `ã = tanh(W @ x + U @ (r * s_prev) + (C @ c if c is not None else 0) + b)`
+  4. New state:  
+     `s_new = (1 - z) * s_prev + z * ã`
+- Reference: Equations in Appendix A.1.1.
+
+---
+
+### 2. `AlignmentModel`
+**Purpose**: Feedforward network that scores alignment between decoder previous state and source annotations (used only in RNNsearch).
+
+**Initialization (`__init__`)**:
+- Parameters:
+  - `hidden_dim`: Decoder hidden size (`1000` from config).
+  - `context_dim`: Annotation dimension (`2000` for RNNsearch from `config['model']['rnnsearch']['encoder']['annotation_dim']`).
+- Weights (no biases):
+  - `W_a`: Shape `(hidden_dim, hidden_dim)`. Initialized as Gaussian with mean 0 and variance 0.001² (Appendix B.1).
+  - `U_a`: Shape `(hidden_dim, context_dim)`. Same initialization as `W_a`.
+  - `v_a`: Shape `(hidden_dim,)`. Initialized to 0.
+- Note: Paper specifies `v_a` and biases zero; no bias terms in alignment model.
+
+**Forward Pass (`forward`)**:
+- Inputs:
+  - `s_prev`: Decoder previous hidden state, shape `(batch_size, hidden_dim)` or `(hidden_dim,)` for single example.
+  - `h_j`: Annotation(s), shape `(batch_size, context_dim)` for one annotation or `(batch_size, num_annotations, context_dim)` for multiple.
+- Output: Alignment score(s) `e_ij`, shape `(batch_size,)` or `(batch_size, num_annotations)`.
+- Logic:
+  - Compute `W_a_s = W_a @ s_prev` → `(batch_size, hidden_dim)` (unsqueeze if needed).
+  - For each annotation (or vectorized):
+    - `U_a_h = U_a @ h_j` → `(batch_size, hidden_dim)` for one, or vectorized for multiple.
+    - `energy = v_a @ tanh(W_a_s + U_a_h)` → scalar per annotation (sum over hidden dim).
+  - Return scores. Pre‑computation of `U_a @ h_j` (does not depend on `i`) can be done once per source sentence for efficiency.
+
+---
+
+### 3. `MaxoutOutputLayer`
+**Purpose**: Computes output logits over target vocabulary using a maxout hidden layer (single maxout layer + softmax).
+
+**Initialization (`__init__`)**:
+- Parameters (from design):
+  - `hidden_dim`: Decoder hidden size (1000).
+  - `maxout_dim`: Maxout output dimension (500 from `config['model']['maxout_output_dim']`).
+  - `vocab_size`: Target vocabulary size (30000 from `config['dataset']['vocab_size']`).
+- Additional context needed (not in design but required by paper):
+  - `emb_dim`: Embedding dimension of previous word (620).
+  - `context_dim`: Dimension of context vector (1000 for RNNencdec, 2000 for RNNsearch).
+- Weights (initialized as Gaussian with mean 0 and variance 0.01² unless noted):
+  - `U_o`: Shape `(2*maxout_dim, hidden_dim)` = `(1000, 1000)`.
+  - `V_o`: Shape `(2*maxout_dim, emb_dim)` = `(1000, 620)`.
+  - `C_o`: Shape `(2*maxout_dim, context_dim)`. For RNNencdec: `(1000, 1000)`; for RNNsearch: `(1000, 2000)`.
+  - `W_o`: Shape `(vocab_size, maxout_dim)` = `(30000, 500)`.
+- Note: Design does not include `emb_dim` or `context_dim` in `__init__`. In practice, the model (RNNEncDec/RNNsearch) must pass these when constructing the layer. We assume the layer can be adapted accordingly without changing the public interface (e.g., by setting these weights after initialization).
+
+**Forward Pass (`forward`)**:
+- Inputs:
+  - `s_prev`: Previous decoder hidden state, shape `(batch_size, hidden_dim)`.
+  - `y_prev_emb`: Embedding of previous target word, shape `(batch_size, emb_dim)`.
+  - `c`: Context vector, shape `(batch_size, context_dim)`.
+- Output: Logits over vocabulary, shape `(batch_size, vocab_size)`.
+- Steps:
+  1. Compute combined feature:  
+     `t_i = U_o @ s_prev + V_o @ y_prev_emb + C_o @ c` → `(batch_size, 2*maxout_dim)`.
+  2. Apply maxout: Reshape `t_i` to `(batch_size, maxout_dim, 2)`, take max over last dimension → `(batch_size, maxout_dim)`.
+  3. Compute logits: `logits = W_o @ maxout_output` → `(batch_size, vocab_size)`.
+  4. Return logits (softmax applied later during inference/loss).
+
+---
+
+### 4. `RNNEncDec` (Baseline)
+**Purpose**: Reproduces the baseline RNN Encoder‑Decoder from Cho et al. (2014a).
+
+**Initialization (`__init__`)**:
+- Parameters from design/config:
+  - `src_vocab_size=30000`, `tgt_vocab_size=30000`, `emb_dim=620`, `hidden_dim=1000`, `maxout_dim=500`.
+- Components:
+  - `src_emb`: Embedding for source, shape `(src_vocab_size, emb_dim)`. Initialized with Gaussian 0.01².
+  - `tgt_emb`: Embedding for target, same shape.
+  - `encoder_cell`: `GatedRNNCell(emb_dim, hidden_dim, context_dim=None)`.
+  - `decoder_cell`: `GatedRNNCell(emb_dim, hidden_dim, context_dim=hidden_dim)` (context is fixed vector of size `hidden_dim`).
+  - `output_layer`: `MaxoutOutputLayer` — must be configured with `context_dim=hidden_dim`.
+  - `W_s`: Weight for initial decoder state, shape `(hidden_dim, hidden_dim)`. Initialized as Gaussian 0.01². (Paper: `s0 = tanh(W_s * c)`).
+
+**Encode Method (`encode`)**:
+- Inputs: `src` (token indices, shape `(batch, src_len)`), `src_lengths` (not used in simple loop; could be used for packing).
+- Output: Fixed context vector `c`, shape `(batch, hidden_dim)` (last encoder hidden state).
+- Steps:
+  1. Embed source: `src_embeds = src_emb(src)` → `(batch, src_len, emb_dim)`.
+  2. Initialize `h_prev = zeros(batch, hidden_dim)`.
+  3. Loop over timesteps `t = 0` to `src_len-1`:
+     - `x_t = src_embeds[:, t, :]`
+     - `h_t = encoder_cell(x_t, h_prev, c=None)`
+     - Update `h_prev = h_t`.
+  4. Return `h_prev` as `c`.
+
+**Decode Method (`decode`)**:
+- Inputs: `s_prev` (shape `(batch, hidden_dim)`), `y_prev` (previous target token indices, shape `(batch,)`), `c` (context vector, shape `(batch, hidden_dim)`).
+- Outputs: `logits` (shape `(batch, vocab_size)`), `s_new` (shape `(batch, hidden_dim)`).
+- Steps:
+  1. `y_emb = tgt_emb(y_prev)` → `(batch, emb_dim)`.
+  2. `s_new = decoder_cell(y_emb, s_prev, c)`.
+  3. `logits = output_layer(s_prev, y_emb, c)` (uses previous state `s_prev` as per paper).
+  4. Return `logits, s_new`.
+
+**Forward Method (`forward`)**:
+- Inputs: `src`, `tgt` (target token indices, shape `(batch, tgt_len)`), `src_lengths`.
+- Output: Logits for all target steps, shape `(batch, tgt_len, vocab_size)`.
+- Steps:
+  1. `c = encode(src, src_lengths)`.
+  2. `s = tanh(W_s @ c)` (initial decoder state).
+  3. Loop over `i = 0` to `tgt_len-1`:
+     - `y_prev = tgt[:, i]`
+     - `logits_i, s = decode(s, y_prev, c)`
+     - Collect `logits_i`.
+  4. Stack logits along time dimension and return.
+- Note: Assumes `tgt` starts with `<start>` token; teacher forcing is used.
+
+---
+
+### 5. `RNNsearch` (Proposed Model)
+**Purpose**: Implements the bidirectional encoder + attention‑based decoder.
+
+**Initialization (`__init__`)**:
+- Parameters: same as RNNEncDec.
+- Components:
+  - `src_emb`, `tgt_emb`: same.
+  - `fwd_encoder_cell`: `GatedRNNCell(emb_dim, hidden_dim, context_dim=None)`.
+  - `bwd_encoder_cell`: `GatedRNNCell(emb_dim, hidden_dim, context_dim=None)`.
+  - `decoder_cell`: `GatedRNNCell(emb_dim, hidden_dim, context_dim=2*hidden_dim)` (context is annotation of size 2000).
+  - `alignment_model`: `AlignmentModel(hidden_dim=1000, context_dim=2000)`.
+  - `output_layer`: `MaxoutOutputLayer` with `context_dim=2000`.
+  - `W_s`: For initial state, shape `(hidden_dim, hidden_dim)` (aper: `s0 = tanh(W_s * ←h_1)`).
+
+**Encode Method (`encode`)**:
+- Inputs: `src`, `src_lengths`.
+- Output: List of annotations `h_j`, each shape `(batch, 2*hidden_dim)`, length `src_len`.
+- Steps:
+  1. Embed source → `src_embeds`.
+  2. **Forward RNN**:
+     - `h_fwd_prev = zeros(batch, hidden_dim)`
+     - `forward_states = []`
+     - For `t` in `0` to `src_len-1`:
+        `h_fwd_t = fwd_encoder_cell(src_embeds[:, t, :], h_fwd_prev, c=None)`
+        `forward_states.append(h_fwd_t)`
+  3. **Backward RNN** (process from end to start):
+     - `h_bwd_prev = zeros(batch, hidden_dim)`
+     - `backward_states = [None] * src_len`
+     - For `idx` from `src_len-1` down to `0`:
+        `x = src_embeds[:, idx, :]`
+        `h_bwd_idx = bwd_encoder_cell(x, h_bwd_prev, c=None)`
+        `backward_states[idx] = h_bwd_idx`
+        `h_bwd_prev = h_bwd_idx`
+  4. For each position `j`:
+     - `h_j = torch.cat([forward_states[j], backward_states[j]], dim=-1)` → `(batch, 2000)`.
+  5. Return list of `h_j`.
+- Note: The backward state for the first word (`←h_1`) is `backward_states[0]`; it is used later for `s0`.
+
+**Decode Method (`decode`)**:
+- Inputs: `s_prev`, `y_prev` (token indices), `annotations` (list of tensors, each `(batch, 2000)`).
+- Outputs: `logits`, `s_new`, `alpha` (alignment weights, shape `(batch, src_len)`).
+- Steps:
+  1. `y_emb = tgt_emb(y_prev)`.
+  2. **Alignment**:
+     - Precompute `U_a_h_j` for each annotation (can be done once per source sentence and passed along).
+     - `W_a_s = alignment_model.W_a @ s_prev` → `(batch, hidden_dim)`.
+     - For each annotation `j`:
+        `score_j = alignment_model.v_a @ torch.tanh(W_a_s + U_a_h_j)` → `(batch,)`.
+     - Stack scores → `(batch, src_len)`, then `alpha = softmax(scores, dim=1)`.
+  3. **Context vector**:
+     - `annotations_tensor = torch.stack(annotations, dim=1)` → `(batch, src_len, 2000)`.
+     - `c_i = torch.sum(alpha.unsqueeze(2) * annotations_tensor, dim=1)` → `(batch, 2000)`.
+  4. **New state**: `s_new = decoder_cell(y_emb, s_prev, c_i)`.
+  5. **Logits**: `logits = output_layer(s_prev, y_emb, c_i)`.
+  6. Return `logits, s_new, alpha`.
+
+**Forward Method (`forward`)**:
+- Inputs: `src`, `tgt`, `src_lengths`.
+- Output: Logits for all target steps.
+- Steps:
+  1. `annotations = encode(src, src_lengths)` → list of `(batch, 2000)`.
+  2. **Initial state**:
+     - Extract `←h_1` from first annotation: `h1 = annotations[0]` → `(batch, 2000)`.
+     - `backward_first = h1[:, hidden_dim:]` (second half) → `(batch, 1000)`.
+     - `s0 = torch.tanh(W_s @ backward_first)`.
+  3. Loop over target steps `i = 0` to `tgt_len-1`:
+     - `y_prev = tgt[:, i]`
+     - `logits_i, s0, _ = decode(s0, y_prev, annotations)`
+     - Collect logits.
+  4. Stack and return logits.
+
+---
+
+### Key Notes
+- **Initialization**: All weights follow Appendix B.1 exactly. Recurrent weights orthogonal; alignment `W_a`, `U_a` Gaussian 0.001²; others Gaussian 0.01²; biases zero.
+- **Config References**: Values are taken from `config.yaml` (e.g., dimensions, vocab sizes).
+- **Design Adherence**: Public interfaces match the design. Minor extensions (like `context_dim` in `MaxoutOutputLayer`) are necessary for correctness but should be handled without altering the visible interface (e.g., setting weights after initialization).
+- **Efficiency**: Pre‑compute `U_a @ h_j` for RNNsearch; use minibatch sorting as described in the plan.
+- **Teacher Forcing**: Used in both models during training (ground‑truth previous words fed to decoder).
+
+This logic analysis provides a clear, paper‑faithful foundation for implementing `model.py`.

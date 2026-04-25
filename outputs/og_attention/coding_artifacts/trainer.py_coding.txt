@@ -1,0 +1,366 @@
+```python
+## trainer.py
+"""
+Trainer module for the NMT experiment reproduction.
+
+Implements the Trainer class as specified in the design, handling training,
+validation with BLEU scoring, and early stopping for RNNsearch-50.
+"""
+
+import time
+import copy
+import pickle
+from typing import Dict, List, Tuple, Optional, Any
+
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import DataLoader
+import tqdm
+import sacrebleu
+import numpy as np
+
+# Import model classes (assuming model.py is in the same directory)
+from model import RNNEncDec, RNNsearch
+
+
+class Trainer:
+    """Trainer for RNNEncDec and RNNsearch models.
+
+    Attributes:
+        _model: The neural machine translation model (RNNEncDec or RNNsearch).
+        _train_loader: DataLoader for training data.
+        _dev_loader: DataLoader for development/validation data.
+        _optimizer: Adadelta optimizer as specified in the paper.
+        _clip_norm: Gradient clipping L2 norm threshold.
+        _config: Full configuration dictionary from config.yaml.
+    """
+
+    def __init__(self, model: object, train_loader: DataLoader, dev_loader: DataLoader, config: Dict):
+        """Initialize the Trainer with model, data loaders, and configuration.
+
+        Args:
+            model: Instance of RNNEncDec or RNNsearch.
+            train_loader: DataLoader yielding training batches.
+            dev_loader: DataLoader yielding development batches.
+            config: Configuration dictionary loaded from config.yaml.
+        """
+        self._model = model
+        self._train_loader = train_loader
+        self._dev_loader = dev_loader
+        self._config = config
+
+        # Training hyperparameters from config
+        train_cfg = config['training']
+        self._clip_norm = train_cfg['gradient_clip_norm']  # 1.0
+
+        # Optimizer: Adadelta with parameters from config
+        self._optimizer = optim.Adadelta(
+            model.parameters(),
+            eps=train_cfg['adadelta_eps'],
+            rho=train_cfg['adadelta_rho']
+        )
+
+        # Training state
+        self._update_counter = 0
+        self._best_val_bleu = 0.0
+        self._best_model_state = None
+
+        # Beam width for decoding (default 10, as per shared knowledge)
+        self._beam_width = 10
+
+        # Early stopping for RNNsearch-50 (paper: train until BLEU stops improving)
+        self._patience = 0
+        self._patience_limit = 3
+        self._is_rnnsearch_50 = False
+        if isinstance(model, RNNsearch):
+            training_duration = train_cfg.get('training_duration', {})
+            if 'rnnsearch_50' in training_duration:
+                if 'early stopping' in str(training_duration['rnnsearch_50']).lower():
+                    self._is_rnnsearch_50 = True
+
+        # Time‑based stopping for other models (~5 days as per paper)
+        self._start_time = None
+        self._max_time_seconds = 5 * 24 * 3600  # 5 days in seconds
+
+    def train(self) -> None:
+        """Run the main training loop.
+
+        Implements minibatch processing, gradient clipping, periodic validation,
+        and the two stopping criteria: time‑based (non‑RNNsearch‑50) and
+        early stopping (RNNsearch‑50).
+        """
+        self._model.train()
+        self._start_time = time.time()
+
+        # Flag to decide whether to apply time‑based stopping
+        use_time_stopping = not self._is_rnnsearch_50
+
+        epoch = 0
+        while True:
+            epoch += 1
+            print(f"Epoch {epoch}")
+
+            # Iterate over training batches
+            # NOTE: The train_loader is assumed to already implement the
+            # minibatch sorting described in Appendix A.2 (every 20 updates:
+            # retrieve 1600 sentences, sort by max length, split into 20 minibatches).
+            for batch_idx, batch in enumerate(self._train_loader):
+                # The batch may be (src, tgt) or (src, src_len, tgt, tgt_len)
+                # depending on the dataset_loader implementation.
+                if len(batch) == 2:
+                    src_tensor, tgt_tensor = batch
+                    src_lengths = (src_tensor != 0).sum(dim=1)
+                    tgt_lengths = (tgt_tensor != 0).sum(dim=1)
+                elif len(batch) == 4:
+                    src_tensor, src_lengths, tgt_tensor, tgt_lengths = batch
+                else:
+                    raise ValueError(f"Unexpected batch format: {type(batch)}")
+
+                batch_size = src_tensor.size(0)
+                device = next(self._model.parameters()).device
+                src_tensor = src_tensor.to(device)
+                tgt_tensor = tgt_tensor.to(device)
+                src_lengths = src_lengths.to(device)
+                tgt_lengths = tgt_lengths.to(device)
+
+                # Forward pass with teacher forcing
+                logits = self._model.forward(src_tensor, tgt_tensor, src_lengths)
+                # logits shape: (batch, tgt_len, vocab_size)
+
+                # Prepare target and mask for loss computation
+                tgt_len = tgt_tensor.size(1)
+                if tgt_len > 1:
+                    # Shift target: exclude <start> token (index 0)
+                    target_shift = tgt_tensor[:, 1:]          # (batch, tgt_len-1)
+                    logits_shift = logits[:, :-1, :]          # (batch, tgt_len-1, vocab)
+
+                    # Mask for valid tokens (ignore padding and the <start> token)
+                    # Valid positions are those with index < (tgt_lengths-1)
+                    valid_lengths = tgt_lengths - 1            # exclude <start>
+                    mask = torch.arange(tgt_len - 1, device=device).expand(batch_size, tgt_len - 1)
+                    mask = (mask < valid_lengths.unsqueeze(1)).float()  # (batch, tgt_len-1)
+
+                    # Compute negative log‑likelihood
+                    log_probs = torch.log_softmax(logits_shift, dim=-1)  # (batch, tgt_len-1, vocab)
+                    log_probs_flat = log_probs.reshape(-1, log_probs.size(-1))  # (batch*(tgt_len-1), vocab)
+                    target_flat = target_shift.reshape(-1)                    # (batch*(tgt_len-1))
+                    nll = -torch.gather(log_probs_flat, dim=1, index=target_flat.unsqueeze(1)).squeeze(1)
+                    mask_flat = mask.reshape(-1)
+                    loss = (nll * mask_flat).sum() / mask_flat.sum()
+                else:
+                    # No meaningful target, skip loss
+                    continue
+
+                # Backward pass
+                self._optimizer.zero_grad()
+                loss.backward()
+
+                # Gradient clipping (L2 norm ≤ clip_norm)
+                torch.nn.utils.clip_grad_norm_(self._model.parameters(), self._clip_norm)
+
+                self._optimizer.step()
+                self._update_counter += 1
+
+                # Periodic validation (every 1000 updates)
+                if self._update_counter % 1000 == 0:
+                    val_bleu = self.validate()
+                    print(f"Update {self._update_counter}, Validation BLEU: {val_bleu:.2f}")
+
+                    if val_bleu > self._best_val_bleu:
+                        self._best_val_bleu = val_bleu
+                        self._best_model_state = copy.deepcopy(self._model.state_dict())
+                        self._patience = 0
+                    else:
+                        if self._is_rnnsearch_50:
+                            self._patience += 1
+                            if self._patience >= self._patience_limit:
+                                print("Early stopping triggered.")
+                                if self._best_model_state is not None:
+                                    self._model.load_state_dict(self._best_model_state)
+                                return
+
+                # Time‑based stopping for non‑RNNsearch‑50 models
+                if use_time_stopping and (time.time() - self._start_time > self._max_time_seconds):
+                    print("Reached 5‑day training limit.")
+                    if self._best_model_state is not None:
+                        self._model.load_state_dict(self._best_model_state)
+                    return
+
+            print(f"Epoch {epoch} completed.")
+
+        # If loop ends (should not happen with proper stopping criteria)
+        if self._best_model_state is not None:
+            self._model.load_state_dict(self._best_model_state)
+
+    def validate(self) -> float:
+        """Evaluate the current model on the development set.
+
+        Returns:
+            BLEU score (float) computed with SacreBLEU.
+        """
+        self._model.eval()
+        hypotheses = []
+        references = []
+
+        # Load target vocabulary (saved by DatasetLoader as 'tgt_vocab.pkl')
+        tgt_vocab = self._load_vocab('tgt_vocab.pkl')
+        if tgt_vocab is None:
+            print("Warning: target vocabulary not found, skipping validation.")
+            return 0.0
+        id_to_word = {idx: word for word, idx in tgt_vocab.items()}
+
+        with torch.no_grad():
+            for batch in self._dev_loader:
+                if len(batch) == 2:
+                    src, tgt = batch
+                    src_lengths = (src != 0).sum(dim=1)
+                elif len(batch) == 4:
+                    src, src_lengths, tgt, _ = batch
+                else:
+                    raise ValueError
+
+                batch_size = src.size(0)
+                device = next(self._model.parameters()).device
+                src = src.to(device)
+                src_lengths = src_lengths.to(device)
+
+                for i in range(batch_size):
+                    src_i = src[i].unsqueeze(0)
+                    src_len_i = src_lengths[i].unsqueeze(0)
+
+                    # Generate translation with beam search
+                    generated_ids = self._beam_search(src_i, src_len_i)
+                    hyp_words = []
+                    for idx in generated_ids:
+                        word = id_to_word.get(idx, '[UNK]')
+                        hyp_words.append(word)
+                    hyp = ' '.join(hyp_words)
+                    hypotheses.append(hyp)
+
+                    # Reference: convert ground‑truth target sentence to string
+                    tgt_i = tgt[i]
+                    ref_words = []
+                    for idx in tgt_i:
+                        idx = idx.item()
+                        if idx == 0:          # <start> or padding – skip
+                            continue
+                        if idx == 1:          # <end> – stop reading
+                            break
+                        ref_words.append(id_to_word.get(idx, '[UNK]'))
+                    ref = ' '.join(ref_words)
+                    references.append(ref)
+
+        if len(hypotheses) == 0:
+            return 0.0
+
+        # Compute BLEU using SacreBLEU (case‑sensitive, as per WMT14)
+        bleu = sacrebleu.corpus_bleu(hypotheses, [references])
+        return bleu.score
+
+    def _beam_search(self, src: torch.Tensor, src_lengths: torch.Tensor) -> List[int]:
+        """Beam search decoding for a single source sentence.
+
+        Args:
+            src: Source token tensor of shape (1, src_len).
+            src_lengths: Source length tensor of shape (1,).
+
+        Returns:
+            List of generated token IDs (excluding <start> and <end>).
+        """
+        beam_width = self._beam_width
+        max_decode_len = 2 * src_lengths.item()  # heuristic from the paper
+        device = src.device
+
+        # Initial encoder pass
+        if isinstance(self._model, RNNEncDec):
+            c = self._model.encode(src, src_lengths)          # (1, hidden_dim)
+            s0 = torch.tanh(nn.functional.linear(c, self._model.W_s))
+            beams = [{
+                'score': 0.0,
+                'tokens': [0],          # start token
+                'state': s0,
+                'context': c
+            }]
+        elif isinstance(self._model, RNNsearch):
+            annotations = self._model.encode(src, src_lengths)   # list of (1, 2*hidden_dim)
+            # Initial state: s0 = tanh(W_s * backward part of first annotation)
+            first_annot = annotations[0]
+            backward_first = first_annot[:, self._model.hidden_dim:]   # (1, hidden_dim)
+            s0 = torch.tanh(nn.functional.linear(backward_first, self._model.W_s))
+            beams = [{
+                'score': 0.0,
+                'tokens': [0],
+                'state': s0,
+                'annotations': annotations
+            }]
+        else:
+            raise ValueError("Unknown model type")
+
+        for step in range(max_decode_len):
+            all_candidates = []
+
+            for beam in beams:
+                # If beam already ended with <end>, keep it
+                if beam['tokens'][-1] == 1:
+                    all_candidates.append(beam)
+                    continue
+
+                # Prepare previous token
+                y_prev = torch.tensor([beam['tokens'][-1]], device=device)
+                s_prev = beam['state']
+
+                # Decoder step
+                if isinstance(self._model, RNNEncDec):
+                    logits, s_new = self._model.decode(s_prev, y_prev, beam['context'])
+                else:  # RNNsearch
+                    logits, s_new, _ = self._model.decode(s_prev, y_prev, beam['annotations'])
+
+                # Log probabilities for the next token
+                log_probs = torch.log_softmax(logits, dim=-1).squeeze(0)  # (vocab_size,)
+
+                # Top-k candidates
+                top_log_probs, top_indices = torch.topk(log_probs, beam_width)
+
+                for log_prob, idx in zip(top_log_probs, top_indices):
+                    candidate = {
+                        'score': beam['score'] + log_prob.item(),
+                        'tokens': beam['tokens'] + [idx.item()],
+                        'state': s_new,
+                    }
+                    if isinstance(self._model, RNNEncDec):
+                        candidate['context'] = beam['context']
+                    else:
+                        candidate['annotations'] = beam['annotations']
+                    all_candidates.append(candidate)
+
+            # Keep only the best beam_width candidates
+            all_candidates.sort(key=lambda x: x['score'], reverse=True)
+            beams = all_candidates[:beam_width]
+
+            # If all beams have ended, stop decoding
+            if all(b['tokens'][-1] == 1 for b in beams):
+                break
+
+        # Return the best beam, excluding <start> and <end> tokens
+        best_beam = beams[0]
+        filtered_tokens = [t for t in best_beam['tokens'] if t != 0 and t != 1]
+        return filtered_tokens
+
+    @staticmethod
+    def _load_vocab(path: str) -> Optional[Dict]:
+        """Load a vocabulary dictionary from a pickle file.
+
+        Args:
+            path: Path to the pickle file.
+
+        Returns:
+            Vocabulary dict or None if file not found.
+        """
+        try:
+            with open(path, 'rb') as f:
+                vocab = pickle.load(f)
+            return vocab
+        except FileNotFoundError:
+            return None
+```

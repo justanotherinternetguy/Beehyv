@@ -1,0 +1,120 @@
+🌟 Usage Summary 🌟
+[Planning] Overall plan
+🛠️ Model: tencent/hy3-preview:free
+📥 Input tokens: 14277 (Cost: $0.00000000)
+📦 Cached input tokens: 0 (Cost: $0.00000000)
+📤 Output tokens: 14755 (Cost: $0.00000000)
+💵 Current total cost: $0.00000000
+🪙 Accumulated total cost so far: $0.00000000
+============================================
+
+🌟 Usage Summary 🌟
+[Planning] Architecture design
+🛠️ Model: tencent/hy3-preview:free
+📥 Input tokens: 18874 (Cost: $0.00000000)
+📦 Cached input tokens: 0 (Cost: $0.00000000)
+📤 Output tokens: 7954 (Cost: $0.00000000)
+💵 Current total cost: $0.00000000
+🪙 Accumulated total cost so far: $0.00000000
+============================================
+
+🌟 Usage Summary 🌟
+[Planning] Logic design
+🛠️ Model: tencent/hy3-preview:free
+📥 Input tokens: 3268 (Cost: $0.00000000)
+📦 Cached input tokens: 18752 (Cost: $0.00000000)
+📤 Output tokens: 7688 (Cost: $0.00000000)
+💵 Current total cost: $0.00000000
+🪙 Accumulated total cost so far: $0.00000000
+============================================
+
+🌟 Usage Summary 🌟
+[Planning] Configuration file generation
+🛠️ Model: tencent/hy3-preview:free
+📥 Input tokens: 24697 (Cost: $0.00000000)
+📦 Cached input tokens: 0 (Cost: $0.00000000)
+📤 Output tokens: 7258 (Cost: $0.00000000)
+💵 Current total cost: $0.00000000
+🪙 Accumulated total cost so far: $0.00000000
+============================================
+
+🌟 Usage Summary 🌟
+[ANALYSIS] dataset_loader.py
+🛠️ Model: tencent/hy3-preview:free
+📥 Input tokens: 24890 (Cost: $0.00000000)
+📦 Cached input tokens: 0 (Cost: $0.00000000)
+📤 Output tokens: 20666 (Cost: $0.00000000)
+💵 Current total cost: $0.00000000
+🪙 Accumulated total cost so far: $0.00000000
+============================================
+
+🌟 Usage Summary 🌟
+[ANALYSIS] model.py
+🛠️ Model: tencent/hy3-preview:free
+📥 Input tokens: 25246 (Cost: $0.00000000)
+📦 Cached input tokens: 0 (Cost: $0.00000000)
+📤 Output tokens: 20032 (Cost: $0.00000000)
+💵 Current total cost: $0.00000000
+🪙 Accumulated total cost so far: $0.00000000
+============================================
+
+🌟 Usage Summary 🌟
+[ANALYSIS] trainer.py
+🛠️ Model: tencent/hy3-preview:free
+📥 Input tokens: 24772 (Cost: $0.00000000)
+📦 Cached input tokens: 0 (Cost: $0.00000000)
+📤 Output tokens: 12570 (Cost: $0.00000000)
+💵 Current total cost: $0.00000000
+🪙 Accumulated total cost so far: $0.00000000
+============================================
+
+🌟 Usage Summary 🌟
+[ANALYSIS] evaluation.py
+🛠️ Model: tencent/hy3-preview:free
+📥 Input tokens: 24752 (Cost: $0.00000000)
+📦 Cached input tokens: 0 (Cost: $0.00000000)
+📤 Output tokens: 11071 (Cost: $0.00000000)
+💵 Current total cost: $0.00000000
+🪙 Accumulated total cost so far: $0.00000000
+============================================
+
+🌟 Usage Summary 🌟
+[ANALYSIS] main.py
+🛠️ Model: tencent/hy3-preview:free
+📥 Input tokens: 24649 (Cost: $0.00000000)
+📦 Cached input tokens: 0 (Cost: $0.00000000)
+📤 Output tokens: 8157 (Cost: $0.00000000)
+💵 Current total cost: $0.00000000
+🪙 Accumulated total cost so far: $0.00000000
+============================================
+
+🌟 Usage Summary 🌟
+[CODING] dataset_loader.py
+🛠️ Model: tencent/hy3-preview:free
+📥 Input tokens: 29515 (Cost: $0.00000000)
+📦 Cached input tokens: 0 (Cost: $0.00000000)
+📤 Output tokens: 19568 (Cost: $0.00000000)
+💵 Current total cost: $0.00000000
+🪙 Accumulated total cost so far: $0.00000000
+============================================
+
+🌟 Usage Summary 🌟
+[CODING] model.py
+🛠️ Model: tencent/hy3-preview:free
+📥 Input tokens: 32013 (Cost: $0.00000000)
+📦 Cached input tokens: 0 (Cost: $0.00000000)
+📤 Output tokens: 19725 (Cost: $0.00000000)
+💵 Current total cost: $0.00000000
+🪙 Accumulated total cost so far: $0.00000000
+============================================
+
+🌟 Usage Summary 🌟
+[CODING] trainer.py
+🛠️ Model: tencent/hy3-preview:free
+📥 Input tokens: 37645 (Cost: $0.00000000)
+📦 Cached input tokens: 0 (Cost: $0.00000000)
+📤 Output tokens: 16119 (Cost: $0.00000000)
+💵 Current total cost: $0.00000000
+🪙 Accumulated total cost so far: $0.00000000
+============================================
+

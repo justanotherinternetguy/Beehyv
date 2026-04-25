@@ -2,7 +2,7 @@
     "paper_id": "bert",
     "header": {
         "generated_with": "S2ORC 1.0.0",
-        "date_generated": "2026-04-25T13:11:34.326701Z"
+        "date_generated": "2026-04-25T14:54:49.940679Z"
     },
     "title": "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
     "authors": [
@@ -4073,60 +4073,60 @@
         },
         "ref_entries": {
             "FIGREF0": {
-                "type_str": "figure",
-                "text": "Figure1: Overall pre-training and fine-tuning procedures for BERT. Apart from output layers, the same architectures are used in both pre-training and fine-tuning. The same pre-trained model parameters are used to initialize models for different down-stream tasks. During fine-tuning, all parameters are fine-tuned.[CLS] is a special symbol added in front of every input example, and [SEP] is a special separator token (e.g. separating questions/answers).",
                 "uris": null,
+                "type_str": "figure",
                 "fig_num": "1",
+                "text": "Figure1: Overall pre-training and fine-tuning procedures for BERT. Apart from output layers, the same architectures are used in both pre-training and fine-tuning. The same pre-trained model parameters are used to initialize models for different down-stream tasks. During fine-tuning, all parameters are fine-tuned.[CLS] is a special symbol added in front of every input example, and [SEP] is a special separator token (e.g. separating questions/answers).",
                 "num": null
             },
             "FIGREF1": {
-                "type_str": "figure",
-                "text": "Figure2: BERT input representation. The input embeddings are the sum of the token embeddings, the segmentation embeddings and the position embeddings.",
                 "uris": null,
+                "type_str": "figure",
                 "fig_num": "2",
+                "text": "Figure2: BERT input representation. The input embeddings are the sum of the token embeddings, the segmentation embeddings and the position embeddings.",
                 "num": null
             },
             "FIGREF2": {
-                "type_str": "figure",
-                "text": "Figure3: Differences in pre-training model architectures. BERT uses a bidirectional Transformer. OpenAI GPT uses a left-to-right Transformer. ELMo uses the concatenation of independently trained left-to-right and right-toleft LSTMs to generate features for downstream tasks. Among the three, only BERT representations are jointly conditioned on both left and right context in all layers. In addition to the architecture differences, BERT and OpenAI GPT are fine-tuning approaches, while ELMo is a feature-based approach.",
                 "uris": null,
+                "type_str": "figure",
                 "fig_num": "3",
+                "text": "Figure3: Differences in pre-training model architectures. BERT uses a bidirectional Transformer. OpenAI GPT uses a left-to-right Transformer. ELMo uses the concatenation of independently trained left-to-right and right-toleft LSTMs to generate features for downstream tasks. Among the three, only BERT representations are jointly conditioned on both left and right context in all layers. In addition to the architecture differences, BERT and OpenAI GPT are fine-tuning approaches, while ELMo is a feature-based approach.",
                 "num": null
             },
             "FIGREF3": {
-                "type_str": "figure",
-                "text": "Figure 4: Illustrations of Fine-tuning BERT on Different Tasks.",
                 "uris": null,
+                "type_str": "figure",
                 "fig_num": "4",
+                "text": "Figure 4: Illustrations of Fine-tuning BERT on Different Tasks.",
                 "num": null
             },
             "TABREF0": {
+                "content": "<table><tr><td>System</td><td>MNLI-(m/mm)</td><td>QQP</td><td>QNLI</td><td>SST-2</td><td>CoLA</td><td>STS-B</td><td>MRPC</td><td>RTE</td><td>Average</td></tr><tr><td/><td>392k</td><td>363k</td><td>108k</td><td>67k</td><td>8.5k</td><td>5.7k</td><td>3.5k</td><td>2.5k</td><td>-</td></tr><tr><td>Pre-OpenAI SOTA</td><td>80.6/80.1</td><td>66.1</td><td>82.3</td><td>93.2</td><td>35.0</td><td>81.0</td><td>86.0</td><td>61.7</td><td>74.0</td></tr><tr><td>BiLSTM+ELMo+Attn</td><td>76.4/76.1</td><td>64.8</td><td>79.8</td><td>90.4</td><td>36.0</td><td>73.3</td><td>84.9</td><td>56.8</td><td>71.0</td></tr><tr><td>OpenAI GPT</td><td>82.1/81.4</td><td>70.3</td><td>87.4</td><td>91.3</td><td>45.4</td><td>80.0</td><td>82.3</td><td>56.0</td><td>75.1</td></tr><tr><td>BERTBASE</td><td>84.6/83.4</td><td>71.2</td><td>90.5</td><td>93.5</td><td>52.1</td><td>85.8</td><td>88.9</td><td>66.4</td><td>79.6</td></tr><tr><td>BERTLARGE</td><td>86.7/85.9</td><td>72.1</td><td>92.7</td><td>94.9</td><td>60.5</td><td>86.5</td><td>89.3</td><td>70.1</td><td>82.1</td></tr></table>",
                 "type_str": "table",
                 "html": null,
                 "text": "GLUE Test results, scored by the evaluation server (https://gluebenchmark.com/leaderboard). The number below each task denotes the number of training examples. The \"Average\" column is slightly different than the official GLUE score, since we exclude the problematic WNLI set. 8 BERT and OpenAI GPT are singlemodel, single task. F1 scores are reported for QQP and MRPC, Spearman correlations are reported for STS-B, and accuracy scores are reported for the other tasks. We exclude entries that use BERT as one of their components.",
-                "num": null,
-                "content": "<table><tr><td>System</td><td>MNLI-(m/mm)</td><td>QQP</td><td>QNLI</td><td>SST-2</td><td>CoLA</td><td>STS-B</td><td>MRPC</td><td>RTE</td><td>Average</td></tr><tr><td/><td>392k</td><td>363k</td><td>108k</td><td>67k</td><td>8.5k</td><td>5.7k</td><td>3.5k</td><td>2.5k</td><td>-</td></tr><tr><td>Pre-OpenAI SOTA</td><td>80.6/80.1</td><td>66.1</td><td>82.3</td><td>93.2</td><td>35.0</td><td>81.0</td><td>86.0</td><td>61.7</td><td>74.0</td></tr><tr><td>BiLSTM+ELMo+Attn</td><td>76.4/76.1</td><td>64.8</td><td>79.8</td><td>90.4</td><td>36.0</td><td>73.3</td><td>84.9</td><td>56.8</td><td>71.0</td></tr><tr><td>OpenAI GPT</td><td>82.1/81.4</td><td>70.3</td><td>87.4</td><td>91.3</td><td>45.4</td><td>80.0</td><td>82.3</td><td>56.0</td><td>75.1</td></tr><tr><td>BERTBASE</td><td>84.6/83.4</td><td>71.2</td><td>90.5</td><td>93.5</td><td>52.1</td><td>85.8</td><td>88.9</td><td>66.4</td><td>79.6</td></tr><tr><td>BERTLARGE</td><td>86.7/85.9</td><td>72.1</td><td>92.7</td><td>94.9</td><td>60.5</td><td>86.5</td><td>89.3</td><td>70.1</td><td>82.1</td></tr></table>"
+                "num": null
             },
             "TABREF1": {
+                "content": "<table><tr><td>System</td><td>Dev</td><td>Test</td></tr><tr><td/><td colspan=\"3\">EM F1 EM F1</td></tr><tr><td colspan=\"3\">Top Leaderboard Systems (Dec 10th, 2018)</td></tr><tr><td>Human</td><td>-</td><td colspan=\"2\">-82.3 91.2</td></tr><tr><td>#1 Ensemble -nlnet</td><td>-</td><td colspan=\"2\">-86.0 91.7</td></tr><tr><td>#2 Ensemble -QANet</td><td>-</td><td colspan=\"2\">-84.5 90.5</td></tr><tr><td colspan=\"2\">Published</td><td/></tr><tr><td>BiDAF+ELMo (Single)</td><td colspan=\"3\">-85.6 -85.8</td></tr><tr><td>R.M. Reader (Ensemble)</td><td colspan=\"3\">81.2 87.9 82.3 88.5</td></tr><tr><td>Ours</td><td/><td/></tr><tr><td>BERTBASE (Single)</td><td colspan=\"2\">80.8 88.5 -</td><td>-</td></tr><tr><td>BERTLARGE (Single)</td><td colspan=\"2\">84.1 90.9 -</td><td>-</td></tr><tr><td>BERTLARGE (Ensemble)</td><td colspan=\"2\">85.8 91.8 -</td><td>-</td></tr><tr><td colspan=\"4\">BERTLARGE (Sgl.+TriviaQA) 84.2 91.1 85.1 91.8</td></tr><tr><td colspan=\"4\">BERTLARGE (Ens.+TriviaQA) 86.2 92.2 87.4 93.2</td></tr><tr><td>System</td><td>Dev</td><td>Test</td></tr><tr><td/><td colspan=\"3\">EM F1 EM F1</td></tr><tr><td colspan=\"3\">Top Leaderboard Systems (Dec 10th, 2018)</td></tr><tr><td>Human</td><td colspan=\"3\">86.3 89.0 86.9 89.5</td></tr><tr><td colspan=\"2\">#1 Single -MIR-MRC (F-Net) -</td><td colspan=\"2\">-74.8 78.0</td></tr><tr><td>#2 Single -nlnet</td><td>-</td><td colspan=\"2\">-74.2 77.1</td></tr><tr><td colspan=\"2\">Published</td><td/></tr><tr><td>unet (Ensemble)</td><td>-</td><td colspan=\"2\">-71.4 74.9</td></tr><tr><td>SLQA+ (Single)</td><td>-</td><td colspan=\"2\">71.4 74.4</td></tr><tr><td>Ours</td><td/><td/></tr><tr><td>BERTLARGE (Single)</td><td colspan=\"3\">78.7 81.9 80.0 83.1</td></tr></table>",
                 "type_str": "table",
                 "html": null,
                 "text": "In fact, our single BERT model outperforms the top ensemble system in terms of F1 score. Without TriviaQA fine-SQuAD 1.1 results. The BERT ensemble is 7x systems which use different pre-training checkpoints and fine-tuning seeds.",
-                "num": null,
-                "content": "<table><tr><td>System</td><td>Dev</td><td>Test</td></tr><tr><td/><td colspan=\"3\">EM F1 EM F1</td></tr><tr><td colspan=\"3\">Top Leaderboard Systems (Dec 10th, 2018)</td></tr><tr><td>Human</td><td>-</td><td colspan=\"2\">-82.3 91.2</td></tr><tr><td>#1 Ensemble -nlnet</td><td>-</td><td colspan=\"2\">-86.0 91.7</td></tr><tr><td>#2 Ensemble -QANet</td><td>-</td><td colspan=\"2\">-84.5 90.5</td></tr><tr><td colspan=\"2\">Published</td><td/></tr><tr><td>BiDAF+ELMo (Single)</td><td colspan=\"3\">-85.6 -85.8</td></tr><tr><td>R.M. Reader (Ensemble)</td><td colspan=\"3\">81.2 87.9 82.3 88.5</td></tr><tr><td>Ours</td><td/><td/></tr><tr><td>BERTBASE (Single)</td><td colspan=\"2\">80.8 88.5 -</td><td>-</td></tr><tr><td>BERTLARGE (Single)</td><td colspan=\"2\">84.1 90.9 -</td><td>-</td></tr><tr><td>BERTLARGE (Ensemble)</td><td colspan=\"2\">85.8 91.8 -</td><td>-</td></tr><tr><td colspan=\"4\">BERTLARGE (Sgl.+TriviaQA) 84.2 91.1 85.1 91.8</td></tr><tr><td colspan=\"4\">BERTLARGE (Ens.+TriviaQA) 86.2 92.2 87.4 93.2</td></tr><tr><td>System</td><td>Dev</td><td>Test</td></tr><tr><td/><td colspan=\"3\">EM F1 EM F1</td></tr><tr><td colspan=\"3\">Top Leaderboard Systems (Dec 10th, 2018)</td></tr><tr><td>Human</td><td colspan=\"3\">86.3 89.0 86.9 89.5</td></tr><tr><td colspan=\"2\">#1 Single -MIR-MRC (F-Net) -</td><td colspan=\"2\">-74.8 78.0</td></tr><tr><td>#2 Single -nlnet</td><td>-</td><td colspan=\"2\">-74.2 77.1</td></tr><tr><td colspan=\"2\">Published</td><td/></tr><tr><td>unet (Ensemble)</td><td>-</td><td colspan=\"2\">-71.4 74.9</td></tr><tr><td>SLQA+ (Single)</td><td>-</td><td colspan=\"2\">71.4 74.4</td></tr><tr><td>Ours</td><td/><td/></tr><tr><td>BERTLARGE (Single)</td><td colspan=\"3\">78.7 81.9 80.0 83.1</td></tr></table>"
+                "num": null
             },
             "TABREF2": {
+                "content": "<table><tr><td>System</td><td>Dev Test</td></tr><tr><td>ESIM+GloVe</td><td>51.9 52.7</td></tr><tr><td>ESIM+ELMo</td><td>59.1 59.2</td></tr><tr><td>OpenAI GPT</td><td>-78.0</td></tr><tr><td>BERTBASE</td><td>81.6 -</td></tr><tr><td>BERTLARGE</td><td>86.6 86.3</td></tr><tr><td>Human (expert)  \u2020</td><td>-85.0</td></tr><tr><td colspan=\"2\">Human (5 annotations)  \u2020 -88.0</td></tr></table>",
                 "type_str": "table",
                 "html": null,
                 "text": "SWAG Dev and Test accuracies. \u2020 Human performance is measured with 100 samples, as reported in the SWAG paper.",
-                "num": null,
-                "content": "<table><tr><td>System</td><td>Dev Test</td></tr><tr><td>ESIM+GloVe</td><td>51.9 52.7</td></tr><tr><td>ESIM+ELMo</td><td>59.1 59.2</td></tr><tr><td>OpenAI GPT</td><td>-78.0</td></tr><tr><td>BERTBASE</td><td>81.6 -</td></tr><tr><td>BERTLARGE</td><td>86.6 86.3</td></tr><tr><td>Human (expert)  \u2020</td><td>-85.0</td></tr><tr><td colspan=\"2\">Human (5 annotations)  \u2020 -88.0</td></tr></table>"
+                "num": null
             },
             "TABREF3": {
+                "content": "<table><tr><td colspan=\"2\">Masking Rates</td><td/><td/><td>Dev Set Results</td><td/></tr><tr><td colspan=\"4\">MASK SAME RND MNLI</td><td>NER</td><td/></tr><tr><td/><td/><td/><td colspan=\"3\">Fine-tune Fine-tune Feature-based</td></tr><tr><td colspan=\"3\">80% 10% 10%</td><td>84.2</td><td>95.4</td><td>94.9</td></tr><tr><td>100%</td><td>0%</td><td>0%</td><td>84.3</td><td>94.9</td><td>94.0</td></tr><tr><td>80%</td><td colspan=\"2\">0% 20%</td><td>84.1</td><td>95.2</td><td>94.6</td></tr><tr><td colspan=\"2\">80% 20%</td><td>0%</td><td>84.4</td><td>95.2</td><td>94.7</td></tr><tr><td colspan=\"3\">0% 20% 80%</td><td>83.7</td><td>94.8</td><td>94.6</td></tr><tr><td>0%</td><td colspan=\"2\">0% 100%</td><td>83.6</td><td>94.9</td><td>94.6</td></tr></table>",
                 "type_str": "table",
                 "html": null,
                 "text": "Ablation over different masking strategies.",
-                "num": null,
-                "content": "<table><tr><td colspan=\"2\">Masking Rates</td><td/><td/><td>Dev Set Results</td><td/></tr><tr><td colspan=\"4\">MASK SAME RND MNLI</td><td>NER</td><td/></tr><tr><td/><td/><td/><td colspan=\"3\">Fine-tune Fine-tune Feature-based</td></tr><tr><td colspan=\"3\">80% 10% 10%</td><td>84.2</td><td>95.4</td><td>94.9</td></tr><tr><td>100%</td><td>0%</td><td>0%</td><td>84.3</td><td>94.9</td><td>94.0</td></tr><tr><td>80%</td><td colspan=\"2\">0% 20%</td><td>84.1</td><td>95.2</td><td>94.6</td></tr><tr><td colspan=\"2\">80% 20%</td><td>0%</td><td>84.4</td><td>95.2</td><td>94.7</td></tr><tr><td colspan=\"3\">0% 20% 80%</td><td>83.7</td><td>94.8</td><td>94.6</td></tr><tr><td>0%</td><td colspan=\"2\">0% 100%</td><td>83.6</td><td>94.9</td><td>94.6</td></tr></table>"
+                "num": null
             }
         }
     }

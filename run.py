@@ -18,7 +18,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).parent
+ROOT = Path(__file__).resolve().parent
 
 
 def cmd_ingest(args: argparse.Namespace) -> int:
@@ -76,18 +76,18 @@ def cmd_brainstorm(args: argparse.Namespace) -> int:
 
 def cmd_codegen(args: argparse.Namespace) -> int:
     """Run the paper→code generation pipeline (planning → analysis → coding)."""
-    cleaned_json = Path(args.cleaned_json)
+    cleaned_json = Path(args.cleaned_json).expanduser().resolve()
     if not cleaned_json.exists():
         print(f"Error: cleaned JSON not found: {cleaned_json}", file=sys.stderr)
         return 1
 
     paper_name = args.name or cleaned_json.stem.replace("_cleaned", "")
-    output_dir = ROOT / "outputs" / paper_name
-    repo_dir   = ROOT / "outputs" / f"{paper_name}_repo"
+    output_dir = (ROOT / "outputs" / paper_name).resolve()
+    repo_dir   = (ROOT / "outputs" / f"{paper_name}_repo").resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
     repo_dir.mkdir(parents=True, exist_ok=True)
 
-    codes = ROOT / "paper2code" / "codes"
+    codes = (ROOT / "paper2code" / "codes").resolve()
 
     model_flag   = "--gpt_version"
     planning_py  = "1_planning.py"
@@ -101,30 +101,34 @@ def cmd_codegen(args: argparse.Namespace) -> int:
 
     model = args.model or ("deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct" if args.local else "tencent/hy3-preview:free")
 
-    def run(script: str, extra: list[str] | None = None) -> int:
+    def run(script: str, extra: list[str] | None = None, include_model: bool = True) -> int:
         cmd = [
             sys.executable, str(codes / script),
             "--paper_name", paper_name,
-            model_flag, model,
-            "--pdf_json_path", str(cleaned_json),
             "--output_dir", str(output_dir),
-        ] + (extra or [])
+        ]
+        if include_model:
+            cmd += [
+                model_flag, model,
+                "--pdf_json_path", str(cleaned_json),
+            ]
+        cmd += extra or []
         print(f"\n=== {script} ===")
         r = subprocess.run(cmd, cwd=str(codes))
         return r.returncode
 
     steps = [
-        ("planning",  planning_py,  None),
-        ("config",    "1.1_extract_config.py", None),
-        ("analysis",  analyzing_py, None),
-        ("coding",    coding_py,    ["--output_repo_dir", str(repo_dir)]),
+        ("planning",  planning_py,  None, True),
+        ("config",    "1.1_extract_config.py", None, False),
+        ("analysis",  analyzing_py, None, True),
+        ("coding",    coding_py,    ["--output_repo_dir", str(repo_dir)], True),
     ]
 
-    for label, script, extra in steps:
+    for label, script, extra, include_model in steps:
         print(f"\n{'='*50}")
         print(f"  Stage: {label}")
         print(f"{'='*50}")
-        rc = run(script, extra)
+        rc = run(script, extra, include_model)
         if rc != 0:
             print(f"Error: {script} failed (exit {rc}).", file=sys.stderr)
             return rc

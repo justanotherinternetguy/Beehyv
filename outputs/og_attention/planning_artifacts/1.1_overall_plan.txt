@@ -1,0 +1,174 @@
+# Comprehensive Plan to Reproduce "Neural Machine Translation by Jointly Learning to Align and Translate"
+This plan strictly follows the methodology, experimental setup, and evaluation metrics described in the paper (Bahdanau et al., 2014). It is divided into four core sections: (1) Pre-Implementation Preparation (including explicit ambiguities), (2) Methodology Reproduction, (3) Experiment Reproduction, and (4) Validation & Sanity Checks.
+
+---
+## 1. Pre-Implementation Preparation
+### 1.1 Core Reference Information
+- **Paper ID**: `og_attention` (original attention mechanism for NMT)
+- **Task**: English-to-French translation
+- **Models to Reproduce**:
+  1. Baseline: RNN Encoder-Decoder (RNNencdec, Cho et al. 2014a) with two variants: RNNencdec-30 (trained on ≤30-word sentences) and RNNencdec-50 (≤50-word sentences)
+  2. Proposed: RNNsearch (bidirectional encoder + attention) with two variants: RNNsearch-30 and RNNsearch-50
+- **Framework Note**: The paper uses Theano, but this plan is framework-agnostic (targeting PyTorch/TensorFlow for modern reproducibility).
+
+### 1.2 Explicit Ambiguities (Unclear from Paper)
+These must be resolved or noted before implementation:
+1. **Beam search width**: The paper mentions beam search for decoding but does not specify the beam width. Suggested default: `10` (standard for 2014-era NMT).
+2. **Sentence length filtering**: For RNNencdec-30/RNNsearch-30 (≤30 words), the paper does not specify if length refers to source, target, or both. Resolution: Filter training sentences where *both* source and target lengths are ≤30/≤50.
+3. **RNNencdec initial decoder state**: The paper does not state how the baseline decoder initializes its first hidden state. Resolution: Follow Cho et al. (2014a): `s₀ = tanh(W_s * c)` where `c` is the encoder’s fixed context vector, `W_s ∈ Rⁿˣⁿ` initialized per general weight rules.
+4. **Data selection details**: The Axelrod et al. (2011) method to reduce 850M words to 348M is not parameterized. Resolution: Use Fairseq’s Axelrod selection implementation, targeting 348M total tokens (source + target) from the combined WMT corpus.
+5. **RNNencdec context vector size**: The baseline uses a 1000-dim fixed context vector, while RNNsearch uses 2000-dim per-step context. Output layer weights must be adjusted per model to match context dimensions.
+6. **Special tokens**: The paper uses `<end>` and `[UNK]` but does not clarify if these are included in the 30k vocabulary shortlist. Resolution: Include `<start>`, `<end>`, `[UNK]` as 3 special tokens, then add 29,997 most frequent words to reach 30k total per language.
+
+---
+## 2. Methodology Reproduction
+All components use the **gated hidden unit** (Cho et al. 2014a, a precursor to modern GRUs) for all RNNs, not LSTM, unless explicitly noted. Exact architectural constants from the paper:
+- Hidden layer size (`n`): 1000
+- Word embedding dimensionality (`m`): 620
+- Maxout output layer size (`l`): 500 (2`l` = 1000 input dimensions for maxout)
+- Vocabulary size (`K`): 30,000 per language
+- Alignment model size: `n` = 1000
+
+### 2.1 Gated RNN Cell (Shared for All RNNs)
+Used for encoders (forward/backward) and decoders. Equations from Appendix A.1.1:
+For a step with previous state `s_prev`, input embedding `x_emb`, and optional context `c` (only for decoders):
+1. Reset gate: `r = σ(W_r * x_emb + U_r * s_prev + C_r * c)` (omit `C_r * c` for encoders)
+2. Update gate: `z = σ(W_z * x_emb + U_z * s_prev + C_z * c)` (omit `C_z * c` for encoders)
+3. Candidate state: `ã = tanh(W * x_emb + U * (r ⊙ s_prev) + C * c)` (omit `C * c` for encoders)
+4. New state: `s_new = (1 - z) ⊙ s_prev + z ⊙ ã`
+
+Where `σ` is the logistic sigmoid, `⊙` is element-wise multiplication, and `W`, `U`, `W_z`, `U_z`, `W_r`, `U_r`, `C`, `C_z`, `C_r` are weight matrices of shape `1000x1000` (recurrent) or `1000x620` (input embeddings) or `1000x2000` (context for RNNsearch).
+
+### 2.2 Baseline RNNencdec Implementation
+#### 2.2.1 Encoder (Forward-Only RNN)
+- Single forward RNN with 1000 gated hidden units.
+- Input: Source sentence `x = (x₁, ..., x_Tx)` (token indices), embedded to 620-dim vectors via source embedding matrix `E_x`.
+- Output: Compute forward hidden states `(→h₁, ..., →h_Tx)`, then fixed context vector `c = →h_Tx` (last hidden state, per Sutskever/Cho 2014a).
+
+#### 2.2.2 Decoder (Same Architecture as RNNsearch, No Per-Step Context)
+- RNN with 1000 gated hidden units.
+- Initial state: `s₀ = tanh(W_s * c)` (see ambiguity resolution above).
+- For each step `i`:
+  1. Fixed context vector `c_i = c` (same for all steps, unlike RNNsearch)
+  2. Compute `s_i` via gated cell, using previous target word embedding `y_{i-1}` and context `c_i`
+  3. Compute output probability via shared maxout output layer (Section 2.4)
+
+### 2.3 Proposed RNNsearch Implementation
+#### 2.3.1 Encoder (Bidirectional RNN, Appendix A.2.1)
+- Two independent 1000-dim gated RNNs:
+  1. Forward RNN: Reads `x₁ → x_Tx`, outputs `(→h₁, ..., →h_Tx)`
+  2. Backward RNN: Reads `x_Tx → x₁`, outputs `(←h₁, ..., ←h_Tx)` (←hⱼ corresponds to source word `xⱼ`)
+- Annotation for each source word: `hⱼ = [→hⱼ; ←hⱼ]` (concatenation, 2000 dim total)
+
+#### 2.3.2 Decoder (Attention-Based)
+- RNN with 1000 gated hidden units.
+- Initial state: `s₀ = tanh(W_s * ←h₁)` (←h₁ summarizes the full source sentence via backward pass, per Appendix A.2.2).
+- For each step `i`:
+  1. Compute alignment scores `e_ij = a(s_{i-1}, hⱼ)` for all `j=1..Tx` (alignment model below)
+  2. Normalize scores to get alignment weights: `α_ij = softmax(e_i)_j = exp(e_ij) / sum_{k=1}^{Tx} exp(e_ik)`
+  3. Compute per-step context: `c_i = sum_{j=1}^{Tx} α_ij * hⱼ`
+  4. Compute `s_i` via gated cell, using `y_{i-1}` and `c_i`
+  5. Compute output probability via shared maxout output layer
+
+#### 2.3.3 Alignment Model (Appendix A.1.2)
+Computes match between decoder previous state `s_{i-1}` and source annotation `hⱼ`:
+`a(s_{i-1}, hⱼ) = v_aᵀ * tanh(W_a * s_{i-1} + U_a * hⱼ)`
+- `v_a ∈ R¹⁰⁰⁰`, `W_a ∈ R¹⁰⁰⁰ˣ¹⁰⁰⁰`, `U_a ∈ R¹⁰⁰⁰ˣ²⁰⁰⁰` (since `hⱼ` is 2000 dim)
+- **Optimization**: Precompute `U_a * hⱼ` once per source sentence (does not depend on `i`) to reduce computation.
+
+### 2.4 Shared Maxout Output Layer (Appendix Model Section)
+Computes target word probability for all models:
+1. Compute combined feature vector: `t_i = U_o * s_{i-1} + V_o * E_y * y_{i-1} + C_o * c_i`
+   - `U_o ∈ R¹⁰⁰⁰ˣ¹⁰⁰⁰`, `V_o ∈ R¹⁰⁰⁰ˣ⁶²⁰`, `C_o ∈ R¹⁰⁰⁰ˣ²⁰⁰⁰` (RNNsearch) or `R¹⁰⁰⁰ˣ¹⁰⁰⁰` (RNNencdec, since its `c_i` is 1000 dim)
+2. Apply maxout: Split `t_i` (1000 dim) into 500 pairs, take the max of each pair to get `t_i'` (500 dim)
+3. Compute logits: `z_i = W_o * t_i'` where `W_o ∈ R³⁰⁰⁰⁰ˣ⁵⁰⁰`
+4. Softmax: `p(y_i) = softmax(z_i)` (probability over 30k target words)
+
+---
+## 3. Experiment Reproduction
+### 3.1 Dataset Acquisition & Preprocessing (Section 4.1)
+#### 3.1.1 Corpus Download
+- Download WMT 2014 English-French parallel corpora (total 850M words):
+  Europarl (61M), news commentary (5.5M), UN (421M), crawled corpora (90M + 272.5M)
+- Source: http://www.statmt.org/wmt14/translation-task.html
+
+#### 3.1.2 Preprocessing
+1. **Data Selection**: Apply Axelrod et al. (2011) to reduce the combined corpus to 348M words (per paper).
+2. **Tokenization**: Use Moses tokenizer (no lowercasing, no stemming, no truecasing per paper).
+3. **Vocabulary**: Select 30k most frequent words per language, map OOV to `[UNK]`, add `<start>`, `<end>` tokens (see ambiguity resolution).
+4. **Splits**:
+   - Training: Filter into two subsets:
+     - RNNencdec-30/RNNsearch-30: Sentence pairs where source ≤30 words AND target ≤30 words
+     - RNNencdec-50/RNNsearch-50: Sentence pairs where source ≤50 words AND target ≤50 words
+   - Development: Concatenation of WMT 2014 news-test-2012 + news-test-2013
+   - Test: WMT 2014 news-test-2014 (3003 sentences, no filtering for length)
+
+#### 3.1.3 Data Loading
+- Shuffle training data once before training (per Appendix A.2).
+- Minibatch optimization: Every 20 updates (20 * 80 = 1600 sentences), retrieve the next 1600 sentence pairs, sort by max(source length, target length), split into 20 minibatches of 80. This minimizes padding waste.
+- Pad sequences in a minibatch to the longest source/target length, use masks to ignore padding in loss.
+
+### 3.2 Hyperparameters & Initialization (Appendix B)
+#### 3.2.1 Exact Hyperparameters
+| Parameter | Value |
+|-----------|-------|
+| Minibatch size | 80 sentences |
+| Optimizer | SGD with Adadelta (ε=1e-6, ρ=0.95) |
+| Gradient clipping | L2 norm threshold = 1.0 |
+| Training duration | ~5 days for all models; RNNsearch-50 trained until validation BLEU stops improving (early stopping) |
+
+#### 3.2.2 Initialization Rules (Appendix B.1)
+- Recurrent weights (`U`, `U_z`, `U_r` for all RNNs): Random orthogonal matrices (1000x1000)
+- Alignment weights (`W_a`, `U_a`): Gaussian N(0, 0.001²)
+- Alignment output vector (`v_a`), all bias vectors: Initialize to 0
+- All other weights (embeddings, `W`, `W_z`, `W_r`, `C`, `C_z`, `C_r`, output layer weights): Gaussian N(0, 0.01²)
+
+### 3.3 Training Procedure (Section 4.2)
+1. **Loss**: Negative log-likelihood (NLL) of the target sentence: `L = -sum_{i=1}^{Ty} log p(y_i | y_{<i}, x)`
+2. **Teacher Forcing**: Use ground-truth previous words as decoder input during training (standard NMT practice, implied by the paper).
+3. **Joint Training**: Backpropagate gradients through the entire model (encoder, decoder, alignment model) for every minibatch.
+4. **Validation**: Compute BLEU on the development set every 1000 updates. Save the model with the highest validation BLEU.
+5. **Epoch Definition**: One full pass through the shuffled training set.
+
+### 3.4 Decoding & Evaluation (Section 5.1)
+#### 3.4.1 Beam Search
+- Generate translations for all test set sentences using beam search (default width=10, per ambiguity resolution).
+- For "No UNK" evaluation: Set `p(UNK) = -inf` during decoding to disallow unknown tokens.
+- Stop decoding when `<end>` is generated for all beam candidates, or max length (2x source length) is reached.
+
+#### 3.4.2 BLEU Calculation
+Use SacreBLEU (standardized, case-sensitive, matching WMT 2014 settings) to report two scores per model:
+1. **All**: BLEU on the full 3003-sentence test set (including sentences with UNK)
+2. **No UNK**: BLEU on filtered test set (no UNK in source or reference), model disallowed from generating UNK
+
+Target BLEU scores (from paper Table 1):
+| Model | All | No UNK |
+|-------|-----|--------|
+| RNNencdec-30 | 13.93 | 24.19 |
+| RNNsearch-30 | 21.50 | 31.44 |
+| RNNencdec-50 | 17.82 | 26.71 |
+| RNNsearch-50 (5-day) | 26.75 | 34.16 |
+| RNNsearch-50 (long-trained) | 28.45 | 36.15 |
+| Moses (phrase-based baseline) | 33.30 | 35.63 |
+
+#### 3.4.3 Qualitative Analysis (Section 5.2.1)
+- Extract alignment weights `α_ij` for sample sentences (10-20 words, no UNK) from the test set.
+- Plot heatmaps: x-axis = source words (English), y-axis = target words (French), color = `α_ij` (grayscale: 0=black, 1=white).
+- Match sample alignments from Figure 3 (e.g., "The agreement on the European Economic Area..." → "L'accord sur la zone économique européenne...").
+
+---
+## 4. Validation & Sanity Checks
+Test components individually before full training:
+1. **Data Pipeline**: Verify tokenization, vocabulary size, minibatch sorting, and padding masks.
+2. **RNN Cell**: Test forward pass with random inputs to confirm output shapes (1000-dim states, 620-dim embeddings).
+3. **Encoder**: Confirm RNNencdec outputs 1000-dim context, RNNsearch outputs 2000-dim annotations.
+4. **Alignment Model**: Verify `α_ij` sums to 1 for each target step, precomputed `U_a * hⱼ` reduces computation.
+5. **Output Layer**: Confirm maxout produces 500-dim output, softmax sums to 1 over 30k words.
+6. **Training Loop**: Run a single update on a small batch to confirm loss decreases and gradients are clipped to norm ≤1.
+7. **Decoding**: Test beam search on short sentences to confirm `<end>` is generated and UNK is blocked when required.
+8. **Sample Translation**: Verify RNNsearch-50 generates the correct translation for the long sentence: "An admitting privilege is the right of a doctor to admit a patient..." → "Un privilège d'admission est le droit d'un médecin d'admettre un patient à un hôpital ou un centre médical pour effectuer un diagnostic ou une procédure, selon son statut de travailleur des soins de santé à l'hôpital." (matches paper Appendix C).
+
+---
+## 5. Final Notes
+- The paper’s implementation is available at https://github.com/lisa-groundhog/GroundHog (Theano-based) for reference, but we are building a modern reimplementation.
+- All choices must strictly follow the paper: no LSTM (use gated hidden units), no monolingual data, no lowercasing, identical hyperparameters for RNNencdec and RNNsearch.

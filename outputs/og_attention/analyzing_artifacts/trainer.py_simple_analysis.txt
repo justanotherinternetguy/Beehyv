@@ -1,0 +1,192 @@
+# Logic Analysis: `trainer.py`
+This analysis strictly aligns with the paper *"Neural Machine Translation by Jointly Learning to Align and Translate"*, the approved design (including `Trainer` class structure), task specifications, and `config.yaml` parameters. No public methods or attributes outside the approved design are added.
+
+---
+## 1. Overview
+`trainer.py` implements the `Trainer` class, which handles all training, validation, and model checkpointing per the paper’s experimental setup (Section 4.2, Appendix A.2, Appendix B). It supports both baseline `RNNEncDec` and proposed `RNNsearch` models, enforces the paper’s hyperparameter and training procedure rules, and evaluates on the development set using BLEU via SacreBLEU.
+
+---
+## 2. Dependencies
+Explicitly required per task specification:
+- `torch`, `torch.nn`, `torch.optim`: Core PyTorch modules for model training, optimization, and gradient clipping.
+- `tqdm`: Progress bar for training epochs/updates.
+- `numpy`: Numerical operations for batch sorting.
+- `model.py`: Imports `RNNEncDec`, `RNNsearch`, and all component classes (`GatedRNNCell`, `AlignmentModel`, `MaxoutOutputLayer`) to handle model-specific forward/decoding logic.
+- `dataset_loader.py`: Imports `DatasetLoader` outputs (train/dev `DataLoader` instances, `collate_batch` function) for data access.
+- Implicit dependency (required for validation BLEU): `sacrebleu` (not listed in per-file dependencies, but required for `validate()` as noted in the task).
+
+---
+## 3. Class Attributes (Strictly Follows Approved Design)
+All public attributes match the design’s `Trainer` class diagram; private attributes are added only to support internal logic:
+### Public (Private per Design)
+- `_model: object`: Instance of `RNNEncDec` or `RNNsearch` (from `model.py`).
+- `_train_loader: DataLoader`: PyTorch DataLoader yielding training batches (from `dataset_loader.py`).
+- `_dev_loader: DataLoader`: PyTorch DataLoader yielding development set batches (from `dataset_loader.py`).
+- `_optimizer: torch.optim.Adadelta`: Adadelta optimizer configured per `config.yaml`.
+- `_clip_norm: float`: L2 gradient clipping threshold (1.0, from `config.yaml`).
+
+### Private (Internal Use Only)
+- `_config: dict`: Full configuration dictionary loaded from `config.yaml`.
+- `_update_counter: int`: Tracks total number of parameter updates (batches processed).
+- `_best_val_bleu: float`: Tracks highest validation BLEU score for checkpointing.
+- `_best_model_state: dict`: Stores state dict of the best-performing model.
+- `_beam_width: int`: Beam search width (10, from Shared Knowledge; `config.yaml` lists this as unspecified).
+- For RNNsearch-50 early stopping:
+  - `_patience: int`: Counts consecutive validations with no BLEU improvement.
+  - `_patience_limit: int`: Maximum allowed patience (set to 3, as paper does not specify; aligns with "until validation BLEU stops improving").
+
+---
+## 4. Method Logic
+### 4.1 `Trainer.__init__(model: object, train_loader: DataLoader, dev_loader: DataLoader, config: dict)`
+Initializes all training components per `config.yaml` and paper specifications:
+1. Assign input parameters to private attributes:
+   - `self._model = model`
+   - `self._train_loader = train_loader`
+   - `self._dev_loader = dev_loader`
+   - `self._config = config`
+2. Extract training hyperparameters from `config.yaml`:
+   - Optimizer parameters: `adadelta_eps = 1e-6`, `adadelta_rho = 0.95` (from `config['training']`).
+   - Gradient clipping: `clip_norm = 1.0` (from `config['training']['gradient_clip_norm']`, matches Shared Knowledge).
+   - Minibatch sorting: `update_frequency = 20`, `sentences_per_retrieval = 1600`, `minibatches_per_retrieval = 20` (from `config['training']['minibatch_sorting']`).
+3. Initialize optimizer:
+   - `self._optimizer = torch.optim.Adadelta(self._model.parameters(), eps=self._config['training']['adadelta_eps'], rho=self._config['training']['adadelta_rho'])`
+   - Verify optimizer is Adadelta only, as specified in the paper and config.
+4. Initialize internal state variables:
+   - `self._update_counter = 0`
+   - `self._best_val_bleu = 0.0`
+   - `self._best_model_state = None`
+   - Set `self._beam_width = 10` (from Shared Knowledge; `config.yaml` marks beam width as unspecified).
+   - For RNNsearch-50 early stopping: Initialize `self._patience = 0`, `self._patience_limit = 3`.
+5. Validate consistency:
+   - Confirm `train_loader.batch_size == 80` (matches `config['training']['batch_size']`).
+   - Confirm model type is either `RNNEncDec` or `RNNsearch` to support conditional logic for encoding/decoding.
+
+---
+### 4.2 `Trainer.train() -> None`
+Runs the full training loop per the paper’s procedure (Appendix A.2):
+1. Pre-training setup:
+   - Set model to training mode: `self._model.train()`
+   - Confirm training data is shuffled once before training (handled by `dataset_loader.py` per Appendix A.2).
+   - Define termination conditions:
+     - For RNNencdec-30, RNNencdec-50, RNNsearch-30: Train for ~5 days (hardware-dependent; `config.yaml` does not specify total epochs/updates, only duration. Note: Paper Table 2 lists epoch counts, but these are not in `config.yaml` and are not used per instructions to only reference config).
+     - For RNNsearch-50: Train until validation BLEU stops improving (early stopping).
+2. Epoch loop (per `config['training']['epoch_definition']`: one full pass through shuffled training data):
+   - For each epoch:
+     - Initialize a buffer to hold 1600 sentence pairs retrieved every 20 updates.
+     - Batch loop (iterates over updates/batches):
+       - **Minibatch sorting logic (every 20 updates)**:
+         - If `self._update_counter % 20 == 0`:
+           1. Retrieve next 1600 sequential sentence pairs from the shuffled training set (via `self._train_loader` or raw dataset access, per `dataset_loader.py` implementation).
+           2. For each pair, compute `max_len = max(source_length, target_length)`.
+           3. Sort all 1600 pairs in descending order of `max_len` to minimize padding waste (per Appendix A.2).
+           4. Split sorted pairs into 20 minibatches of 80 pairs each (matches `sentences_per_retrieval=1600`, `minibatches_per_retrieval=20` from config).
+           5. Reset batch index to 0 for the new set of minibatches.
+       - Fetch current batch (80 pairs) from the sorted minibatches, increment batch index.
+       - **Batch processing**:
+         1. Collate batch using `dataset_loader.collate_batch` to get padded tensors: `padded_src`, `src_lengths`, `padded_tgt`, `tgt_lengths`. Move tensors to the active device (CPU/GPU; device not specified in config, default to CPU).
+         2. **Forward pass (teacher forcing)**:
+            - Call `logits = self._model.forward(padded_src, padded_tgt, src_lengths)` (returns logits of shape `[batch_size, tgt_len-1, vocab_size]` as per `model.py` spec).
+            - Teacher forcing uses ground-truth previous tokens: target for loss is `padded_tgt[:, 1:]` (shifted by 1 to exclude `<start>`), logits correspond to each step in the shifted target.
+         3. **Loss computation**:
+            - Compute log probabilities: `log_probs = torch.log_softmax(logits, dim=-1)`
+            - Create a mask to ignore padding: `mask = (torch.arange(tgt_len-1) < (tgt_lengths - 1).unsqueeze(1)).float()` (excludes padding and `<end>` token from loss).
+            - Compute NLL loss: `loss = -(log_probs * mask.unsqueeze(2) * F.one_hot(target_tgt, num_classes=vocab_size)).sum() / mask.sum()` (matches paper’s NLL objective: negative log-likelihood of target sequence).
+         4. **Backward pass**:
+            - `self._optimizer.zero_grad()`
+            - `loss.backward()`
+         5. **Gradient clipping**:
+            - `torch.nn.utils.clip_grad_norm_(self._model.parameters(), max_norm=self._clip_norm)` (enforces L2 norm ≤ 1.0 per Appendix A.2 and config).
+         6. **Optimizer step**:
+            - `self._optimizer.step()`
+         7. Increment update counter: `self._update_counter += 1`
+       - **Validation (every 1000 updates)**:
+         - If `self._update_counter % 1000 == 0`:
+           1. Compute current validation BLEU: `val_bleu = self.validate()`
+           2. If `val_bleu > self._best_val_bleu`:
+              - Update `self._best_val_bleu = val_bleu`
+              - Save `self._best_model_state = copy.deepcopy(self._model.state_dict())`
+              - For RNNsearch-50: Reset `self._patience = 0`
+           3. Else:
+              - For RNNsearch-50: Increment `self._patience`; if `self._patience >= self._patience_limit`, trigger early stopping and break loop.
+       - **Termination checks**:
+         - For non-RNNsearch-50 models: Break loop if elapsed training time ~5 days (hardware-dependent, no config parameter).
+         - For RNNsearch-50: Break loop if early stopping triggered.
+     - End epoch loop.
+3. Post-training:
+   - Load best model state: `self._model.load_state_dict(self._best_model_state)`
+   - Save best model to disk (path from config if specified, else default).
+
+---
+### 4.3 `Trainer.validate() -> float`
+Runs beam search decoding on the full development set and returns BLEU score per Section 5.1:
+1. Pre-validation setup:
+   - Set model to evaluation mode: `self._model.eval()`
+   - Disable gradient computation: `torch.no_grad()`
+2. Initialize storage for hypotheses and references:
+   - `hypotheses = []` (generated translations as strings)
+   - `references = []` (ground-truth reference translations as strings)
+3. Iterate over `self._dev_loader` (development set: concatenated news-test-2012 and news-test-2013 per Section 4.1):
+   - For each batch of source sentences:
+     1. Extract source tensor `padded_src` and `src_lengths` from the batch.
+     2. For each source sentence in the batch:
+        - Perform beam search decoding via private helper `_beam_search` to get generated token IDs (see Section 4.4).
+        - Convert token IDs to string using the target vocabulary (accessed via `self._dev_loader.dataset.tgt_vocab`), map IDs to words, join tokens, and handle `[UNK]` (ID 2) as-is. Append to `hypotheses`.
+        - Extract reference target sentence from the batch, convert to string, append to `references`.
+4. Compute BLEU score:
+   - Use `sacrebleu.corpus_bleu(hypotheses, [references])` (standardized, case-sensitive, matches WMT 2014 settings per Section 5.1).
+   - Return BLEU score as float.
+5. Post-validation:
+   - Set model back to training mode: `self._model.train()`
+
+---
+### 4.4 Private Helper: `_beam_search(src: Tensor, src_lengths: Tensor) -> List[int]`
+Implements beam search decoding for validation (per Section 4.2, beam width=10 from Shared Knowledge):
+1. Encode source sentence:
+   - If `self._model` is `RNNEncDec`: Compute fixed context `c = self._model.encode(src, src_lengths)` (last encoder hidden state per Section 2.1).
+   - If `self._model` is `RNNsearch`: Compute annotations list `h_j = self._model.encode(src, src_lengths)` (concatenated forward/backward hidden states per Section 3.2).
+2. Initialize decoder initial state:
+   - For `RNNEncDec`: `s0 = tanh(W_s * c)` (per ambiguity resolution, Cho et al. 2014a; `W_s` is a model attribute per Appendix A.2.2).
+   - For `RNNsearch`: `s0 = tanh(W_s * h_1[1000:])` (backward hidden state component of first annotation, per Appendix A.2.2).
+3. Initialize beam with start token:
+   - Beam entry: `(score=0.0, decoded_tokens=[0], decoder_state=s0, context=c (for RNNEncDec) or annotations (for RNNsearch))`
+4. Decode loop (max length = 2 * source length per plan):
+   - For each step up to max length:
+     1. Expand all current beam candidates to `beam_width` next tokens.
+     2. For each candidate:
+        - Get last token `y_prev = decoded_tokens[-1]`, previous state `s_prev`, previous context.
+        - For `RNNEncDec`: Compute `logits, s_new = self._model.decode(s_prev, y_prev, c)`
+        - For `RNNsearch`: Compute alignment weights `alpha`, context `c_i`, then `logits, s_new, _ = self._model.decode(s_prev, y_prev, annotations)`
+        - Compute log probabilities: `log_probs = torch.log_softmax(logits, dim=-1)`
+        - Update candidate score: `score += log_probs[next_token]`
+     3. Select top `beam_width` candidates with highest scores.
+     4. If all candidates have generated `<end>` token (ID 1), break loop.
+5. Return decoded token IDs of the best candidate (exclude `<start>` (ID 0) and `<end>` (ID 1)).
+
+---
+## 5. Config.yaml Alignment
+All logic explicitly references `config.yaml` parameters:
+- Optimizer: Adadelta with `eps=1e-6`, `rho=0.95` (from `config['training']`).
+- Gradient clipping: `clip_norm=1.0` (from `config['training']['gradient_clip_norm']`).
+- Minibatch size: 80 (from `config['training']['batch_size']`).
+- Minibatch sorting: `update_frequency=20`, `sentences_per_retrieval=1600`, `minibatches_per_retrieval=20` (from `config['training']['minibatch_sorting']`).
+- Model hyperparameters (hidden dim, embedding dim, etc.) are inherited from the model instance, which is initialized per `config['model']`.
+- Beam width: 10 (from Shared Knowledge; `config.yaml` marks this as unspecified, so Shared Knowledge default is used as approved).
+
+---
+## 6. Ambiguity Handling
+Addresses ambiguities listed in the task and plan:
+1. **Beam search width**: Uses default 10 per Shared Knowledge (paper does not specify).
+2. **RNNencdec initial decoder state**: Implements `s0 = tanh(W_s * c)` per Cho et al. 2014a (paper does not specify, resolved in plan).
+3. **Sentence length filtering**: Handled by `dataset_loader.py`; trainer uses pre-filtered batches for 30/50 word variants.
+4. **Special tokens**: Uses `<start>=0`, `<end>=1`, `[UNK]=2` (from Shared Knowledge) to handle beam search termination and UNK blocking.
+5. **Early stopping patience**: Sets patience limit to 3 (paper only specifies "until validation BLEU stops improving", no value provided).
+6. **Padding index**: Notes that padding must use a separate index from `<start>=0` (Shared Knowledge uses 0 for `<start>`), handled by `dataset_loader.py`.
+
+---
+## 7. Sanity Checks
+Built-in validation to ensure fidelity to the paper:
+- Verify `self._update_counter % 20 == 0` triggers retrieval of 1600 sorted sentences, split into 20 batches of 80.
+- Verify gradient norm is clipped to ≤1.0 after every `loss.backward()` call.
+- Verify validation runs every 1000 updates, best model is saved only when BLEU improves.
+- Verify beam search generates `<end>` tokens and stops at max length 2*source length.
+- Verify BLEU computation uses SacreBLEU with Moses-tokenized inputs matching the preprocessing pipeline.
