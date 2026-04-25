@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # generalresearch
 
 A unified research-paper pipeline: **ingest PDFs → discuss papers with an AI agent swarm → generate runnable code repos**.
@@ -212,7 +211,3 @@ A four-stage LLM pipeline:
 | `OPENROUTER_API_KEY` | discuss, codegen | OpenRouter API key |
 | `OPENAI_API_KEY` | codegen (OpenAI path) | OpenAI API key |
 | `GROBID_DIR` | ingest | Grobid install path (default: `~/grobid-0.7.3`) |
-=======
-# Beehyv
-LAHacks 2026, Qianheng (Hendry) Xu, Yuvraj Chaudhary, Eric Zheng
->>>>>>> 781d8231a85b51f9afbf71d81f7b6f38e0721bb0
