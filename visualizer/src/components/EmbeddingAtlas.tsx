@@ -410,6 +410,14 @@ export const EmbeddingAtlas: React.FC = () => {
     }
   }, [selectedVoidId, voids]);
 
+  const researchDoneVoidIds = useMemo<Set<number>>(() => {
+    const s = new Set<number>();
+    for (const [, job] of researchJobs) {
+      if (job.status === 'done') s.add(job.voidId);
+    }
+    return s;
+  }, [researchJobs]);
+
   const stats = useMemo(
     () => ({
       total: papers.length,
@@ -430,7 +438,7 @@ export const EmbeddingAtlas: React.FC = () => {
       ? "0 4px 16px rgba(0,0,0,0.4)"
       : "0 4px 16px rgba(0,0,0,0.07)",
     titleColor: dm ? "#e2e8f0" : "#1e293b",
-    subColor: dm ? "#6366f1" : "#94a3b8",
+    subColor: dm ? "#f59e0b" : "#94a3b8",
     btnBg: dm ? "rgba(20,22,30,0.9)" : "rgba(255,255,255,0.9)",
     btnBorder: dm ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)",
     btnColor: dm ? "#94a3b8" : "#475569",
@@ -576,6 +584,7 @@ export const EmbeddingAtlas: React.FC = () => {
                 onVoidClick={(id) =>
                   handleVoidSelect(id === selectedVoidId ? null : id)
                 }
+                researchDoneVoidIds={researchDoneVoidIds}
               />
             )}
           </div>
@@ -823,7 +832,7 @@ export const EmbeddingAtlas: React.FC = () => {
                 onClick={handleInvestigate}
                 style={{
                   background:
-                    "linear-gradient(135deg, #6366f1 0%, #4F6EF7 100%)",
+                    "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
                   color: "white",
                   border: "none",
                   borderRadius: 10,
@@ -833,7 +842,7 @@ export const EmbeddingAtlas: React.FC = () => {
                   fontWeight: 700,
                   cursor: "pointer",
                   boxShadow:
-                    "0 4px 24px rgba(99,102,241,0.55), 0 2px 8px rgba(0,0,0,0.35)",
+                    "0 4px 24px rgba(245,158,11,0.55), 0 2px 8px rgba(0,0,0,0.35)",
                   letterSpacing: "0.08em",
                   display: "flex",
                   alignItems: "center",
@@ -865,8 +874,8 @@ export const EmbeddingAtlas: React.FC = () => {
                   style={{
                     width: 44,
                     height: 44,
-                    border: `3px solid ${dm ? "rgba(99,102,241,0.15)" : "rgba(79,110,247,0.15)"}`,
-                    borderTop: `3px solid ${dm ? "#6366f1" : "#4F6EF7"}`,
+                    border: `3px solid ${dm ? "rgba(245,158,11,0.15)" : "rgba(217,119,6,0.15)"}`,
+                    borderTop: `3px solid ${dm ? "#f59e0b" : "#d97706"}`,
                     borderRadius: "50%",
                     animation: "spin 0.8s linear infinite",
                   }}
@@ -984,7 +993,7 @@ export const EmbeddingAtlas: React.FC = () => {
                 <button
                   onClick={reload}
                   style={{
-                    background: dm ? "#6366f1" : "#4F6EF7",
+                    background: dm ? "#f59e0b" : "#d97706",
                     color: "white",
                     border: "none",
                     borderRadius: 7,
@@ -1017,11 +1026,11 @@ export const EmbeddingAtlas: React.FC = () => {
             });
 
           return (
-            <div className="absolute z-200 h-screen flex w-[30vw] right-0 top-0">
-              <button className="absolute bottom-0 right-0 z-300 cursor-pointer text-white w-6 h-6 m-4 border-slate-700 bg-slate-900 border rounded-full flex items-center justify-center"
-              onClick={ () =>
-                setActiveTab("viz")
-              }>
+            <div className="absolute z-200 h-full flex w-[50vw] right-0 top-0">
+              <button
+                className="absolute bottom-0 right-0 z-300 cursor-pointer text-white w-6 h-6 m-4 border-slate-700 bg-slate-900 border rounded-full flex items-center justify-center"
+                onClick={() => setActiveTab("viz")}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 20 20"

@@ -56,7 +56,7 @@ const PaperBox: React.FC<PaperBoxProps> = ({ paper, index, codegenStatus = 'idle
   const color = codegenStatus === 'done'    ? '#4ade80'
               : codegenStatus === 'running'  ? '#22d3ee'
               : codegenStatus === 'error'    ? '#f87171'
-              : '#6366f1';
+              : '#f59e0b';
 
   return (
     <div style={{
@@ -103,7 +103,7 @@ const PaperBox: React.FC<PaperBoxProps> = ({ paper, index, codegenStatus = 'idle
           href={`https://arxiv.org/abs/${paper.doi}`}
           target="_blank"
           rel="noopener noreferrer"
-          style={{ fontFamily: mono, fontSize: 8, color: '#6366f1', textDecoration: 'none' }}
+          style={{ fontFamily: mono, fontSize: 8, color: '#f59e0b', textDecoration: 'none' }}
         >
           {paper.doi}
         </a>
@@ -116,7 +116,7 @@ const PaperBox: React.FC<PaperBoxProps> = ({ paper, index, codegenStatus = 'idle
         style={{
           background:   codegenStatus === 'done' ? 'rgba(74,222,128,0.12)'
                       : codegenStatus === 'error' ? 'rgba(248,113,113,0.12)'
-                      : 'rgba(99,102,241,0.15)',
+                      : 'rgba(245,158,11,0.15)',
           border:       `1px solid ${color}40`,
           borderRadius: 5,
           color,
@@ -160,7 +160,7 @@ const OrchestratorPanel: React.FC<{
     borderRight:   `1px solid ${DIM}`,
     overflowY:     'auto',
   }}>
-    <div style={{ fontFamily: mono, fontSize: 9, color: '#6366f1', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+    <div style={{ fontFamily: mono, fontSize: 9, color: '#f59e0b', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
       Orchestrator
     </div>
 
@@ -283,6 +283,83 @@ function parseAgentMessages(logs: string[]): AgentMessage[] {
   return messages;
 }
 
+// ── Agent output card (real-time streaming) ───────────────────────────────────
+
+const AgentOutputCard: React.FC<{
+  agentId:  string;
+  msg:      AgentMessage | undefined;
+  ideaText: string | undefined;
+}> = ({ agentId, msg, ideaText }) => {
+  const outputRef = useRef<HTMLDivElement>(null);
+  const isActive = !!msg && !msg.isDone;
+  const lines = msg?.lines ?? [];
+
+  useEffect(() => {
+    const el = outputRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [lines.length, lines[lines.length - 1]]);
+
+  return (
+    <div style={{
+      flex: '0 0 190px',
+      background: isActive ? 'rgba(245,158,11,0.06)' : 'rgba(22,24,32,0.7)',
+      border: `1px solid ${isActive ? 'rgba(245,158,11,0.3)' : 'rgba(255,255,255,0.06)'}`,
+      borderLeft: `2px solid ${isActive ? '#22d3ee' : '#f59e0b'}`,
+      borderRadius: 7,
+      padding: '8px 10px',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 5,
+      overflow: 'hidden',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
+        {isActive && (
+          <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#22d3ee', flexShrink: 0, animation: 'drPulse 1s ease-in-out infinite' }} />
+        )}
+        <span style={{ fontFamily: mono, fontSize: 9, color: isActive ? '#fcd34d' : '#d97706', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {shortId(agentId)}
+        </span>
+        {msg?.isDone && (
+          <span style={{ fontFamily: mono, fontSize: 8, color: '#374151', marginLeft: 'auto' }}>✓</span>
+        )}
+      </div>
+
+      <div ref={outputRef} style={{
+        flex: 1,
+        overflowY: 'auto',
+        fontFamily: mono,
+        fontSize: 9,
+        color: '#9ca3af',
+        lineHeight: 1.55,
+        whiteSpace: 'pre-wrap',
+        wordBreak: 'break-word',
+        minHeight: 0,
+      }}>
+        {lines.join('\n')}
+        {isActive && <span style={{ animation: 'drBlink 0.8s step-end infinite', color: '#22d3ee' }}>▎</span>}
+      </div>
+
+      {ideaText && (
+        <div style={{
+          fontFamily: serif,
+          fontSize: 10,
+          color: '#6b7280',
+          lineHeight: 1.4,
+          flexShrink: 0,
+          borderTop: '1px solid rgba(255,255,255,0.05)',
+          paddingTop: 4,
+          overflow: 'hidden',
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical',
+        } as React.CSSProperties}>
+          {truncate(ideaText, 140)}
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ── Middle panel — agent messages + cross-pollination ─────────────────────────
 
 interface AgentBubblePos { id: string; x: number; y: number; }
@@ -333,57 +410,29 @@ const AgentPanel: React.FC<{
         Agent Activity
       </div>
 
-      {/* ── Agent bubble arc + cross-pollination arrows ── */}
-      <div ref={containerRef} style={{ height: 155, flexShrink: 0, position: 'relative' }}>
-        {crossPairs.length > 0 && bubbles.length > 0 && (
-          <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 2 }}>
-            <defs>
-              <marker id="drArrow" markerWidth={8} markerHeight={6} refX={6} refY={3} orient="auto">
-                <polygon points="0 0, 8 3, 0 6" fill="#a78bfa" opacity={0.7} />
-              </marker>
-            </defs>
-            {crossPairs.map((pair, i) => {
-              const from = bubbleMap.get(pair.fromId);
-              const to   = bubbleMap.get(pair.toId);
-              if (!from || !to) return null;
-              const mx = (from.x + to.x) / 2;
-              const my = (from.y + to.y) / 2 - 28;
-              return (
-                <path key={i}
-                  d={`M${from.x},${from.y} Q${mx},${my} ${to.x},${to.y}`}
-                  fill="none" stroke="#a78bfa" strokeWidth={1.5}
-                  strokeDasharray="6 3" markerEnd="url(#drArrow)"
-                  opacity={0.65}
-                  style={{ animation: 'drDash 1.2s linear infinite' }}
-                  strokeDashoffset={12 * (i % 3)}
-                />
-              );
-            })}
-          </svg>
-        )}
-        {bubbles.map(b => {
-          const isActive = agentMessages.some(m => m.agentId === b.id && !m.isDone);
-          return (
-            <div key={b.id} style={{
-              position: 'absolute', left: b.x - 44, top: b.y - 18, width: 88, zIndex: 3,
-              background: isActive ? 'rgba(99,102,241,0.22)' : 'rgba(99,102,241,0.1)',
-              border: `1px solid ${isActive ? 'rgba(99,102,241,0.7)' : 'rgba(99,102,241,0.25)'}`,
-              borderRadius: 8, padding: '4px 8px', textAlign: 'center',
-              boxShadow: isActive ? '0 0 12px rgba(99,102,241,0.4)' : 'none',
-              transition: 'all 0.3s',
-            }}>
-              {isActive && <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22d3ee', margin: '0 auto 3px', animation: 'drPulse 1s ease-in-out infinite' }} />}
-              <div style={{ fontFamily: mono, fontSize: 9, color: isActive ? '#a5b4fc' : '#818cf8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {truncate(b.id, 14)}
-              </div>
+      {/* ── Agent output cards ── */}
+      <div ref={containerRef} style={{ height: 155, flexShrink: 0, display: 'flex', gap: 8, padding: '8px 12px', overflowX: 'auto', overflowY: 'hidden', alignItems: 'stretch' }}>
+        {(() => {
+          const liveIds = [...new Set([...activeAgents, ...agentMessages.map(m => m.agentId)])];
+          if (liveIds.length === 0) return (
+            <div style={{ fontFamily: mono, fontSize: 10, color: '#374151', paddingTop: 32, textAlign: 'center', width: '100%' }}>
+              Waiting for agents…
             </div>
           );
-        })}
-        {activeAgents.length === 0 && (
-          <div style={{ fontFamily: mono, fontSize: 10, color: '#374151', padding: '32px 0 0', textAlign: 'center' }}>
-            Waiting for agents…
-          </div>
-        )}
+          return liveIds.map(agentId => {
+            const msg = [...agentMessages].reverse().find(m => m.agentId === agentId);
+            const seedIdea = seedIdeas.find(s => s.agent_id === agentId);
+            const crossIdea = crossIdeas.find(c => c.agent_id === agentId);
+            return (
+              <AgentOutputCard
+                key={agentId}
+                agentId={agentId}
+                msg={msg}
+                ideaText={crossIdea?.text || seedIdea?.text}
+              />
+            );
+          });
+        })()}
       </div>
 
       <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', flexShrink: 0 }} />
@@ -393,7 +442,7 @@ const AgentPanel: React.FC<{
 
         {/* Ideas from events.jsonl */}
         {crossIdeas.map((ci, i) => (
-          <IdeaCard key={`cross-${i}`} tag="Cross-pollination" tagColor="#a78bfa"
+          <IdeaCard key={`cross-${i}`} tag="Cross-pollination" tagColor="#fbbf24"
             from={`${shortId(ci.agent_id)} × ${shortId(ci.seed_agent_id)}`}
             text={ci.text} connection={ci.connection} />
         ))}
@@ -405,14 +454,14 @@ const AgentPanel: React.FC<{
         {/* Live agent messages parsed from log stream */}
         {agentMessages.map((msg, i) => (
           <div key={i} style={{
-            background: msg.isDone ? 'rgba(22,24,32,0.7)' : 'rgba(99,102,241,0.07)',
-            border: `1px solid ${msg.isDone ? 'rgba(255,255,255,0.06)' : 'rgba(99,102,241,0.3)'}`,
-            borderLeft: `2px solid ${msg.isDone ? '#6366f1' : '#22d3ee'}`,
+            background: msg.isDone ? 'rgba(22,24,32,0.7)' : 'rgba(245,158,11,0.07)',
+            border: `1px solid ${msg.isDone ? 'rgba(255,255,255,0.06)' : 'rgba(245,158,11,0.3)'}`,
+            borderLeft: `2px solid ${msg.isDone ? '#f59e0b' : '#22d3ee'}`,
             borderRadius: 6, padding: '7px 10px', flexShrink: 0,
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
               {!msg.isDone && <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22d3ee', animation: 'drPulse 1s ease-in-out infinite', flexShrink: 0 }} />}
-              <span style={{ fontFamily: mono, fontSize: 9, color: msg.isDone ? '#6366f1' : '#22d3ee', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              <span style={{ fontFamily: mono, fontSize: 9, color: msg.isDone ? '#f59e0b' : '#22d3ee', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                 {msg.stage}
               </span>
               <span style={{ fontFamily: mono, fontSize: 9, color: '#4b5563' }}>{msg.agentId}</span>
@@ -451,7 +500,7 @@ const AgentPanel: React.FC<{
           lineHeight: 1.7,
         }}>
           {currentEvents.slice(-20).map((l, i) => (
-            <div key={i} style={{ color: l.includes('[ERR]') ? '#78350f' : l.includes('◆') ? '#6366f1' : '#374151' }}>
+            <div key={i} style={{ color: l.includes('[ERR]') ? '#78350f' : l.includes('◆') ? '#f59e0b' : '#374151' }}>
               {l.replace(/\x1b\[[0-9;]*m/g, '')}
             </div>
           ))}
@@ -531,7 +580,7 @@ const IdeasPanel: React.FC<{
             padding:      '7px 9px',
           }}>
             <div style={{ fontFamily: mono, fontSize: 8, color: '#4b5563', marginBottom: 4, display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: 'paper_title' in idea ? '#a78bfa' : '#22d3ee' }}>
+              <span style={{ color: 'paper_title' in idea ? '#fbbf24' : '#22d3ee' }}>
                 {'seed_paper_title' in idea ? 'cross-pollinate' : 'seed'}
               </span>
               <span>{truncate(shortId(idea.agent_id), 16)}</span>
@@ -540,7 +589,7 @@ const IdeasPanel: React.FC<{
               {truncate(idea.text, 160)}
             </p>
             {('expected_effect' in idea) && idea.expected_effect && (
-              <p style={{ fontFamily: mono, fontSize: 9, color: '#6366f1', margin: '4px 0 0', lineHeight: 1.4 }}>
+              <p style={{ fontFamily: mono, fontSize: 9, color: '#f59e0b', margin: '4px 0 0', lineHeight: 1.4 }}>
                 ↝ {truncate((idea as SeedIdea).expected_effect, 120)}
               </p>
             )}
@@ -549,8 +598,8 @@ const IdeasPanel: React.FC<{
 
         {/* Current plan */}
         {plan && (
-          <div style={{ background: 'rgba(99,102,241,0.07)', border: '1px solid rgba(99,102,241,0.15)', borderRadius: 6, padding: '7px 9px' }}>
-            <div style={{ fontFamily: mono, fontSize: 8, color: '#6366f1', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 5 }}>
+          <div style={{ background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.15)', borderRadius: 6, padding: '7px 9px' }}>
+            <div style={{ fontFamily: mono, fontSize: 8, color: '#f59e0b', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 5 }}>
               Current Plan
             </div>
             <p style={{ fontFamily: mono, fontSize: 10, color: '#94a3b8', lineHeight: 1.6, margin: 0 }}>
@@ -911,7 +960,7 @@ export const DeepResearchTab: React.FC<Props> = ({
             onClick={handleStartResearch}
             disabled={launching}
             style={{
-              background:    'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+              background:    'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
               color:         'white',
               border:        'none',
               borderRadius:  12,
@@ -920,7 +969,7 @@ export const DeepResearchTab: React.FC<Props> = ({
               fontFamily:    mono,
               fontWeight:    700,
               cursor:        launching ? 'wait' : 'pointer',
-              boxShadow:     '0 4px 28px rgba(124,58,237,0.55), 0 2px 8px rgba(0,0,0,0.4)',
+              boxShadow:     '0 4px 28px rgba(180,83,9,0.55), 0 2px 8px rgba(0,0,0,0.4)',
               letterSpacing: '0.08em',
               textTransform: 'uppercase',
               display:       'flex',
@@ -938,18 +987,18 @@ export const DeepResearchTab: React.FC<Props> = ({
 
         {jobStage === 'researching' && (
           <div style={{
-            background:   'rgba(124,58,237,0.12)',
-            border:       '1px solid rgba(124,58,237,0.35)',
+            background:   'rgba(180,83,9,0.12)',
+            border:       '1px solid rgba(180,83,9,0.35)',
             borderRadius: 10,
             padding:      '9px 22px',
             fontFamily:   mono,
             fontSize:     12,
-            color:        '#a78bfa',
+            color:        '#fbbf24',
             display:      'flex',
             alignItems:   'center',
             gap:          8,
           }}>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#a78bfa', display: 'inline-block', animation: 'drPulse 1.5s ease-in-out infinite' }} />
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#fbbf24', display: 'inline-block', animation: 'drPulse 1.5s ease-in-out infinite' }} />
             Agent swarm running…
           </div>
         )}
@@ -991,6 +1040,7 @@ export const DeepResearchTab: React.FC<Props> = ({
       <style>{`
         @keyframes drPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
         @keyframes drDash   { to { stroke-dashoffset: -18; } }
+        @keyframes drBlink  { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
       `}</style>
     </div>
   );

@@ -7,13 +7,14 @@ import type { ViewTransform } from '../types';
 import type { Void } from '../hooks/useVoidData';
 
 interface VoidOverlayProps {
-  voids:          Void[];
-  selectedVoidId: number | null;
-  showVoidLabels: boolean;
-  transform:      ViewTransform;
-  width:          number;
-  height:         number;
-  onVoidClick:    (id: number) => void;
+  voids:                Void[];
+  selectedVoidId:       number | null;
+  showVoidLabels:       boolean;
+  transform:            ViewTransform;
+  width:                number;
+  height:               number;
+  onVoidClick:          (id: number) => void;
+  researchDoneVoidIds?: Set<number>;
 }
 
 // ── Geometry helpers ──────────────────────────────────────────────────────────
@@ -140,6 +141,7 @@ export const VoidOverlay: React.FC<VoidOverlayProps> = ({
   width,
   height,
   onVoidClick,
+  researchDoneVoidIds,
 }) => {
   const colorAssignment = useMemo(() => assignColors(voids), [voids]);
 
@@ -308,8 +310,8 @@ export const VoidOverlay: React.FC<VoidOverlayProps> = ({
             </g>
           )}
 
-          {/* Model name badge for the MNIST void */}
-          {v.name === 'Transformer-Augmented Vision Adaptation Gap' && (() => {
+          {/* Model name badge for the MNIST void — only after research completes */}
+          {v.name === 'Transformer-Augmented Vision Adaptation Gap' && researchDoneVoidIds?.has(v.void_id) && (() => {
             const b = hullNormBounds(nvertices);
             const [mx, my] = normToScreen(
               b.minX + (b.maxX - b.minX) * 0.37,
@@ -371,7 +373,7 @@ export const VoidOverlay: React.FC<VoidOverlayProps> = ({
         </g>
       );
     }).filter(Boolean);
-  }, [voids, selectedVoidId, showVoidLabels, transform, width, height, onVoidClick, colorAssignment]);
+  }, [voids, selectedVoidId, showVoidLabels, transform, width, height, onVoidClick, colorAssignment, researchDoneVoidIds]);
 
   return (
     <svg
