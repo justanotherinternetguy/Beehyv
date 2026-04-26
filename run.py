@@ -15,6 +15,7 @@ Run `python run.py <subcommand> --help` for options.
 from __future__ import annotations
 
 import argparse
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -26,6 +27,7 @@ except ImportError:
     pass
 
 ROOT = Path(__file__).resolve().parent
+DEFAULT_OPENROUTER_MODEL = os.environ.get("OPENROUTER_MODEL", "nvidia/nemotron-3-super-120b-a12b:free")
 DEFAULT_RESEARCH_PAPERS = [
     str(ROOT / "data" / "cleaned_json" / "attention_is_all_you_need_cleaned.json"),
     str(ROOT / "data" / "cleaned_json" / "og_attention_cleaned.json"),
@@ -122,10 +124,16 @@ def cmd_research(args: argparse.Namespace) -> int:
         args.model,
         "--coding-model",
         args.coding_model,
+        "--debugging-model",
+        args.debugging_model,
         "--planner-max-tokens",
         str(args.planner_max_tokens),
         "--coding-max-tokens",
         str(args.coding_max_tokens),
+        "--debugging-max-tokens",
+        str(args.debugging_max_tokens),
+        "--max-debug-attempts",
+        str(args.max_debug_attempts),
     ]
     if args.goal is not None:
         argv += ["--goal", str(args.goal)]
@@ -289,10 +297,13 @@ def main() -> int:
     p_research.add_argument("--keep-regressions", action="store_true")
     p_research.add_argument("--dry-run", action="store_true")
     p_research.add_argument("--session-dir", default=None)
-    p_research.add_argument("--model", default="nvidia/nemotron-3-super-120b-a12b:free")
-    p_research.add_argument("--coding-model", default="nvidia/nemotron-3-super-120b-a12b:free")
+    p_research.add_argument("--model", default=DEFAULT_OPENROUTER_MODEL)
+    p_research.add_argument("--coding-model", default=DEFAULT_OPENROUTER_MODEL)
+    p_research.add_argument("--debugging-model", default=DEFAULT_OPENROUTER_MODEL)
     p_research.add_argument("--planner-max-tokens", type=int, default=1600)
     p_research.add_argument("--coding-max-tokens", type=int, default=6000)
+    p_research.add_argument("--debugging-max-tokens", type=int, default=6000)
+    p_research.add_argument("--max-debug-attempts", type=int, default=2)
     p_research.add_argument("--log-file", default=None)
     p_research.add_argument("--no-stream", action="store_true")
 

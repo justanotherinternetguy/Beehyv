@@ -3,8 +3,6 @@ import json
 import sys
 import argparse
 
-from openai import OpenAI
-
 try:
     from huggingface_hub import HfApi
 except ImportError:
@@ -32,14 +30,10 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+from utils import get_llm_client_and_model
+
 args = parse_args()
-_local_url = os.environ.get("LOCAL_LLM_URL")
-if _local_url:
-    args.gpt_version = os.environ.get("LOCAL_LLM_MODEL", "gemma4:31b")
-client = OpenAI(
-    base_url=f"{_local_url.rstrip('/')}/v1" if _local_url else "https://openrouter.ai/api/v1",
-    api_key="ollama" if _local_url else os.environ["OPENROUTER_API_KEY"],
-)
+client, args.gpt_version = get_llm_client_and_model(args.gpt_version)
 
 planning_config_path = os.path.join(
     args.output_dir, f"planning_config.yaml"
@@ -90,6 +84,7 @@ Detect the model name and dataset names in the configuration file so that they c
     },
 ]
 
+print(f"[LLM] backend={os.environ.get('LLM_BACKEND', 'openrouter').lower()} model={args.gpt_version}", flush=True)
 response = client.chat.completions.create(
     model=args.gpt_version,
     messages=messages,

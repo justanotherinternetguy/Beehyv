@@ -1,18 +1,15 @@
-from openai import OpenAI
 import json
 import os
 import sys
 import argparse
 from utils import read_python_files, extract_planning, content_to_json, \
-        num_tokens_from_messages, read_all_files, extract_json_from_string, get_now_str, print_log_cost
+        num_tokens_from_messages, read_all_files, extract_json_from_string, get_now_str, print_log_cost, \
+        get_llm_client_and_model
 
-_local_url = os.environ.get("LOCAL_LLM_URL")
-client = OpenAI(
-    base_url=f"{_local_url.rstrip('/')}/v1" if _local_url else "https://openrouter.ai/api/v1",
-    api_key="ollama" if _local_url else os.environ["OPENROUTER_API_KEY"],
-)
+client, _ = get_llm_client_and_model()
 
 def api_call(request_json):
+    print(f"[LLM] backend={os.environ.get('LLM_BACKEND', 'openrouter').lower()} model={request_json.get('model', '?')}", flush=True)
     completion = client.chat.completions.create(**request_json)
     return completion
 
@@ -23,9 +20,7 @@ def main(args):
     output_dir = args.output_dir  
     target_repo_dir = args.target_repo_dir
     eval_result_dir = args.eval_result_dir
-    gpt_version = args.gpt_version
-    if _local_url:
-        gpt_version = os.environ.get("LOCAL_LLM_MODEL", "gemma4:31b")
+    _, gpt_version = get_llm_client_and_model(args.gpt_version)
     generated_n = args.generated_n
     data_dir = args.data_dir
     eval_type = args.eval_type

@@ -92,10 +92,10 @@ class PaperExpertAgent:
                 "role": "system",
                 "content": (
                     f"You are the research expert for the paper '{self.paper.title}'. "
-                    "Your job is to propose future research directions that are specifically "
-                    "enabled or motivated by this paper's contributions. "
-                    "Do not propose generic ideas — every direction must be grounded in a "
-                    "specific method, finding, or limitation from the paper."
+                    "The overarching goal of this research swarm is to improve the accuracy of the research model in focus. "
+                    "Use this paper as a starting point, but supplement freely with broader ML/DL knowledge — "
+                    "there is always room to improve and you must find it. "
+                    "Be bold and specific: propose concrete, actionable directions that will move the metric."
                 ),
             },
             {
@@ -105,8 +105,11 @@ class PaperExpertAgent:
                     "Evidence from your paper (most relevant sections):",
                     _format_evidence(evidence),
                     (
-                        "Propose exactly 2-3 concrete future research directions. "
-                        "Each must extend or apply something specific from this paper.\n\n"
+                        "Propose exactly 2-3 concrete, ambitious research directions. "
+                        "Use this paper as inspiration but also draw on general ML knowledge — "
+                        "batch norm, residual connections, learning rate schedules, data augmentation, "
+                        "attention, dropout tuning, optimizer choice, etc. "
+                        "There is always room to improve — commit to directions that will actually move the metric.\n\n"
                         "For each direction use EXACTLY this format:\n"
                         "---IDEA---\n"
                         "TEXT: [one sentence — the research direction]\n"
@@ -138,6 +141,7 @@ class PaperExpertAgent:
                 "role": "system",
                 "content": (
                     f"You are the research expert for '{self.paper.title}'. "
+                    "The overarching goal of this research swarm is to improve the accuracy of the research model in focus."
                     "You are participating in a cross-paper brainstorming session. "
                     "Your task is to generate ONE novel research direction that COMBINES "
                     "insights from your paper with insights from another paper. "
@@ -202,8 +206,10 @@ class PaperExpertAgent:
             )
 
         instruction = (
-            "Answer as the expert for this paper. Use only the retrieved evidence. "
-            "Be direct, cite section labels in brackets, and say when the evidence is limited."
+            "Answer as the expert for this paper. Lead with the retrieved evidence, "
+            "then supplement with your broader ML knowledge where relevant. "
+            "Be direct, cite section labels in brackets, and when evidence is thin say so briefly "
+            "before drawing on general expertise."
         )
         if code_snippets:
             instruction += (
@@ -244,7 +250,8 @@ class PaperExpertAgent:
 
         instruction = (
             "Respond as this paper's expert. State whether your paper supports, "
-            "qualifies, or cannot assess the claim. Use only the evidence above."
+            "qualifies, or cannot assess the claim. Lead with the retrieved evidence, "
+            "then supplement with broader ML knowledge where it strengthens or clarifies your position."
         )
         if code_snippets:
             instruction += (
@@ -279,8 +286,11 @@ class PaperExpertAgent:
     def _system_prompt(self) -> str:
         return (
             f"You are the expert agent for the paper '{self.paper.title}' "
-            f"({self.paper.paper_id}). Your job is to answer only from this paper. "
-            "Do not use outside knowledge. If the provided excerpts are insufficient, say so."
+            f"({self.paper.paper_id}). "
+            "The overarching goal of this research swarm is to improve the accuracy of the research model in focus. "
+            "Use this paper as your primary lens, but draw freely on your broad ML/DL knowledge — "
+            "architectures, optimizers, regularization, augmentation, scheduling, and anything else relevant. "
+            "Never refuse to engage: if paper evidence is thin, lean on general expertise and say so briefly."
         )
 
 

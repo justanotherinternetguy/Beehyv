@@ -169,6 +169,11 @@ def cmd_research(args: argparse.Namespace) -> int:
         max_tokens=args.coding_max_tokens,
         temperature=args.coding_temperature,
     )
+    debugging_llm = OpenRouterLLM(
+        model=args.debugging_model,
+        max_tokens=args.debugging_max_tokens,
+        temperature=args.coding_temperature,
+    )
     agents = _build_agents(
         papers,
         retriever,
@@ -194,11 +199,13 @@ def cmd_research(args: argparse.Namespace) -> int:
         editable_files=args.editable,
         planner_llm=planner_llm,
         coding_llm=coding_llm,
+        debugging_llm=debugging_llm,
         problem_statement=args.problem,
         metric_name=args.metric,
         max_iterations=args.iterations,
         max_agents=args.max_agents,
         max_cross_ideas=args.max_cross_ideas,
+        max_debug_attempts=args.max_debug_attempts,
         goal=args.goal,
         min_delta=args.min_delta,
         revert_on_regression=not args.keep_regressions,
@@ -219,7 +226,12 @@ def cmd_research(args: argparse.Namespace) -> int:
         decision = item.judge.decision if item.judge else "not judged"
         value = item.result.metric_value(args.metric) if item.result else None
         changed = ", ".join(item.coding.changed_files) if item.coding else "(none)"
-        print(f"- iteration {item.iteration}: decision={decision}, {args.metric}={value}, changed={changed}")
+        debug_count = len(item.debugging)
+        debug_note = f", debug_attempts={debug_count}" if debug_count else ""
+        print(
+            f"- iteration {item.iteration}: decision={decision}, "
+            f"{args.metric}={value}, changed={changed}{debug_note}"
+        )
     return 0
 
 
@@ -304,8 +316,13 @@ def main() -> int:
                             help="Planner/judge/paper-agent OpenRouter model.")
     p_research.add_argument("--coding-model", default=OPENROUTER_MODEL,
                             help="Coding-agent OpenRouter model.")
+    p_research.add_argument("--debugging-model", default=OPENROUTER_MODEL,
+                            help="Debugging-agent OpenRouter model.")
     p_research.add_argument("--planner-max-tokens", type=int, default=1600)
     p_research.add_argument("--coding-max-tokens", type=int, default=6000)
+    p_research.add_argument("--debugging-max-tokens", type=int, default=6000)
+    p_research.add_argument("--max-debug-attempts", type=int, default=2,
+                            help="Stop the loop if debugging cannot produce metrics in this many attempts.")
     p_research.add_argument("--temperature", type=float, default=0.2)
     p_research.add_argument("--coding-temperature", type=float, default=0.1)
     p_research.add_argument("--log-file", default=None)

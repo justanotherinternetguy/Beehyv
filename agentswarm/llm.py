@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from typing import Callable, Protocol
 
 
-OPENROUTER_MODEL = "nvidia/nemotron-3-super-120b-a12b:free"
+OPENROUTER_MODEL = os.environ.get("OPENROUTER_MODEL", "nvidia/nemotron-3-super-120b-a12b:free")
 RETRYABLE_HTTP_STATUSES = {408, 409, 425, 429, 500, 502, 503, 504}
 
 
@@ -24,11 +24,14 @@ class PaperExpertLLM(Protocol):
 
 @dataclass
 class OpenRouterLLM:
-    """Chat-completions client supporting OpenRouter or a local Ollama endpoint.
+    """Chat-completions client with switchable backends.
 
-    Set LOCAL_LLM_URL (e.g. http://100.123.34.54:11434) to route all inference
-    to a local Ollama instance instead of OpenRouter.  Optionally set
-    LOCAL_LLM_MODEL to override the model name (defaults to gemma4:31b).
+    Set LLM_BACKEND=openrouter (default) to use OpenRouter cloud inference, or
+    LLM_BACKEND=gx10 to route all inference to the ASUS GX10 local server.
+
+    GX10 requires LOCAL_LLM_URL (e.g. http://100.123.34.54:11434).
+    Optionally set LOCAL_LLM_MODEL to override the model name (defaults to gemma4:31b)
+    and LOCAL_LLM_MAX_TOKENS / LOCAL_LLM_TIMEOUT for capacity tuning.
     """
 
     model: str = OPENROUTER_MODEL
@@ -63,23 +66,24 @@ class OpenRouterLLM:
     # ── internals ─────────────────────────────────────────────────────────────
 
     def _build_request(self, messages: list[dict[str, str]], stream: bool) -> urllib.request.Request:
-        local_url = os.environ.get("LOCAL_LLM_URL")
-        if local_url:
-            url = f"{local_url.rstrip('/')}/v1/chat/completions"
+        backend = os.environ.get("LLM_BACKEND", "openrouter").lower()
+        if backend == "gx10":
+            gx10_url = os.environ.get("LOCAL_LLM_URL")
+            if not gx10_url:
+                raise RuntimeError("LOCAL_LLM_URL must be set when LLM_BACKEND=gx10")
+            url = f"{gx10_url.rstrip('/')}/v1/chat/completions"
             api_key = "ollama"
             model = os.environ.get("LOCAL_LLM_MODEL", self.model)
+            max_tokens = int(os.environ.get("LOCAL_LLM_MAX_TOKENS", "2048"))
         else:
             url = self.base_url
             api_key = os.environ.get(self.api_key_env)
             if not api_key:
-                raise RuntimeError(f"{self.api_key_env} is required to call OpenRouter.")
+                raise RuntimeError(f"{self.api_key_env} is required when LLM_BACKEND=openrouter.")
             model = self.model
+            max_tokens = self.max_tokens
 
-        max_tokens = (
-            int(os.environ.get("LOCAL_LLM_MAX_TOKENS", "2048"))
-            if local_url
-            else self.max_tokens
-        )
+        print(f"[LLM] backend={backend} model={model}", flush=True)
         payload = {
             "model": model,
             "messages": messages,
@@ -106,8 +110,8 @@ class OpenRouterLLM:
         stream: bool,
         on_token: Callable[[str], None] | None = None,
     ) -> str:
-        local_url = os.environ.get("LOCAL_LLM_URL")
-        timeout = float(os.environ.get("LOCAL_LLM_TIMEOUT", "300")) if local_url else self.timeout
+        backend = os.environ.get("LLM_BACKEND", "openrouter").lower()
+        timeout = float(os.environ.get("LOCAL_LLM_TIMEOUT", "300")) if backend == "gx10" else self.timeout
         attempts = max(1, self.max_retries + 1)
         last_error: RuntimeError | None = None
 

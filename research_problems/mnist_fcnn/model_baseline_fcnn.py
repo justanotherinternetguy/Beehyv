@@ -1,4 +1,4 @@
-"""Deliberately weak MNIST fully connected baseline for research-swarm tests."""
+"""Weak MNIST fully connected starting baseline for research-swarm tests."""
 
 from __future__ import annotations
 
@@ -24,8 +24,8 @@ TRAINING_CONFIG = {
 }
 
 
-class BadFullyConnectedMNIST(nn.Module):
-    """A tiny, high-dropout MLP expected to perform poorly on MNIST."""
+class BaselineFullyConnectedMNIST(nn.Module):
+    """A tiny, high-dropout MLP as a weak starting point for MNIST."""
 
     def __init__(self, config: dict | None = None) -> None:
         super().__init__()
@@ -57,4 +57,4 @@ class BadFullyConnectedMNIST(nn.Module):
 
 
 def build_model() -> nn.Module:
-    return BadFullyConnectedMNIST()
+    return BaselineFullyConnectedMNIST()

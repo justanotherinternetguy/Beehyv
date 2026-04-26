@@ -4,8 +4,7 @@ import argparse
 import re
 import sys
 
-from openai import OpenAI
-from utils import read_python_files, content_to_json, extract_planning
+from utils import read_python_files, content_to_json, extract_planning, get_llm_client_and_model
 
 
 def parse_and_apply_changes(responses, debug_dir, save_num=1):
@@ -123,13 +122,7 @@ def parse_args() -> argparse.Namespace:
 
 
 args = parse_args()
-_local_url = os.environ.get("LOCAL_LLM_URL")
-if _local_url:
-    args.model = os.environ.get("LOCAL_LLM_MODEL", "gemma4:31b")
-client = OpenAI(
-    base_url=f"{_local_url.rstrip('/')}/v1" if _local_url else "https://openrouter.ai/api/v1",
-    api_key="ollama" if _local_url else os.environ["OPENROUTER_API_KEY"],
-)
+client, args.model = get_llm_client_and_model(args.model)
 
 if not os.path.exists(args.error_file_name):
     raise FileNotFoundError(f"Error file not found: {args.error_file_name}")
@@ -251,6 +244,7 @@ result = model(input_data)
 """,
     },
 ]
+print(f"[LLM] backend={os.environ.get('LLM_BACKEND', 'openrouter').lower()} model={args.model}", flush=True)
 response = client.chat.completions.create(
     model=args.model,
     messages=msg,

@@ -94,10 +94,34 @@ class ResearchPlan:
 
 
 @dataclass(frozen=True)
+class OrchestrationDiagnosis:
+    """Orchestrator inspection of the current solution and problem setup."""
+
+    iteration: int
+    summary: str
+    issues: list[str]
+    suggestions: list[str]
+    dataset_context: list[str]
+    raw: str
+
+
+@dataclass(frozen=True)
 class CodingResult:
     """Files changed by the coding agent for one iteration."""
 
     iteration: int
+    applied: bool
+    changed_files: list[str]
+    raw_response_path: str
+    notes: str
+
+
+@dataclass(frozen=True)
+class DebuggingResult:
+    """Files changed by the debugging agent after a failed evaluation."""
+
+    iteration: int
+    attempt: int
     applied: bool
     changed_files: list[str]
     raw_response_path: str
@@ -125,8 +149,10 @@ class ResearchIteration:
     iteration: int
     seed_ideas: list[ModelImprovementIdea] = field(default_factory=list)
     cross_pollinated_ideas: list[CrossPollinatedModelIdea] = field(default_factory=list)
+    diagnosis: OrchestrationDiagnosis | None = None
     plan: ResearchPlan | None = None
     coding: CodingResult | None = None
+    debugging: list[DebuggingResult] = field(default_factory=list)
     result: ExperimentResult | None = None
     judge: JudgeFeedback | None = None
 
@@ -261,6 +287,90 @@ class FileSnapshot:
             path.write_text(content, encoding="utf-8")
 
 
+class OrchestrationDiagnosticAgent:
+    """Inspects the current solution against the dataset and run setup."""
+
+    def __init__(
+        self,
+        *,
+        llm: PaperExpertLLM,
+        editable_files: Sequence[str],
+        model_name: str = OPENROUTER_MODEL,
+        logger=None,
+        max_file_chars: int = 9000,
+        max_context_chars: int = 12000,
+    ) -> None:
+        self.llm = llm
+        self.editable_files = [_normalize_relpath(path) for path in editable_files]
+        self.model_name = model_name
+        self.logger = logger
+        self.max_file_chars = max_file_chars
+        self.max_context_chars = max_context_chars
+
+    def diagnose(
+        self,
+        *,
+        problem_dir: Path,
+        event_log: ResearchEventLog,
+        iteration: int,
+        command: Sequence[str],
+        metrics_path: str,
+        current_result: ExperimentResult,
+        problem_statement: str,
+        feedback_history: list[JudgeFeedback],
+    ) -> OrchestrationDiagnosis:
+        messages = [
+            {
+                "role": "system",
+                "content": (
+                    f"You are the orchestration agent for an autonomous research loop. "
+                    f"You are running as model {self.model_name}. "
+                    "Before paper experts propose ideas, inspect the current solution code, "
+                    "training/evaluation command, metrics, logs, and dataset setup. "
+                    "Your job is to spot glaring bugs, shape mismatches, impossible assumptions, "
+                    "or setup issues that would make otherwise good paper-inspired changes fail. "
+                    "Be concrete and focus on implementation blockers, not broad research ideas."
+                ),
+            },
+            {
+                "role": "user",
+                "content": "\n\n".join(
+                    [
+                        f"Problem: {problem_statement}",
+                        f"Run command: {' '.join(command)}",
+                        f"Metrics file: {metrics_path}",
+                        f"Current metrics: {_format_metrics(current_result.metrics)}",
+                        "Recent judge feedback:",
+                        _format_feedback(feedback_history),
+                        "Current editable solution files:",
+                        _format_editable_files(problem_dir, self.editable_files, self.max_file_chars),
+                        "Problem setup files and dataset-loading code:",
+                        _format_problem_context(problem_dir, self.max_context_chars),
+                        "Most recent evaluation logs:",
+                        _format_result_logs(current_result, 6000),
+                        (
+                            "Return exactly this format:\n"
+                            "---ORCHESTRATION_DIAGNOSIS---\n"
+                            "SUMMARY: one paragraph\n"
+                            "DATASET_CONTEXT:\n"
+                            "- observed dataset shape/setup fact\n"
+                            "ISSUES:\n"
+                            "- concrete bug, mismatch, or likely blocker\n"
+                            "SUGGESTIONS:\n"
+                            "- direct instruction the paper/planning agents should account for\n"
+                            "---END---"
+                        ),
+                    ]
+                ),
+            },
+        ]
+        raw = _complete(self.llm, messages, self.logger, "orchestration-agent", "diagnosing")
+        event_log.artifact(f"iteration_{iteration:02d}/orchestration_diagnosis.txt", raw)
+        diagnosis = _parse_diagnosis(raw, iteration=iteration)
+        event_log.event("orchestration_diagnosis_done", {"iteration": iteration, "diagnosis": diagnosis})
+        return diagnosis
+
+
 class ResearchCodingAgent:
     """Coding agent that applies full-file replacements from an LLM response."""
 
@@ -292,21 +402,29 @@ class ResearchCodingAgent:
         problem_statement: str,
     ) -> CodingResult:
         file_context = _format_editable_files(problem_dir, self.editable_files, self.max_file_chars)
+        editable_list = ", ".join(self.editable_files)
+        example_path = self.editable_files[0]
         messages = [
             {
                 "role": "system",
                 "content": (
                     f"You are the coding agent for an autonomous research loop. "
                     f"You are running as model {self.model_name}. "
+                    "Your ultimate goal is to improve the accuracy of the research model in focus. "
                     "Apply the planning agent's requested changes by replacing complete files. "
-                    "Only modify files explicitly listed as editable. "
+                    f"Only modify files explicitly listed as editable. Valid editable paths: {editable_list}. "
+                    "STRICT OUTPUT CONTRACT: your response is parsed by a program. "
+                    "The first non-whitespace characters of every replacement block must be exactly "
+                    "---FILE: followed by the editable relative path and then ---. "
+                    "Do not write markdown headings, explanations, diffs, JSON, bullets, or labels like "
+                    "'--- model.py ---'. Any text outside valid file blocks is ignored. "
                     "Return one or more blocks exactly formatted as:\n"
-                    "---FILE: relative/path.py---\n"
+                    f"---FILE: {example_path}---\n"
                     "```python\n"
                     "# complete file contents\n"
                     "```\n"
                     "---END FILE---\n"
-                    "Do not include prose outside file blocks unless no safe change is possible."
+                    "If no safe change is possible, return exactly: NO_SAFE_CHANGE"
                 ),
             },
             {
@@ -325,7 +443,7 @@ class ResearchCodingAgent:
         ]
         raw = _complete(self.llm, messages, self.logger, "coding-agent", "implementing plan")
         raw_path = event_log.artifact(f"iteration_{iteration:02d}/coding_response.txt", raw)
-        replacements = _extract_file_replacements(raw)
+        replacements = _extract_file_replacements(raw, fallback_files=self.editable_files)
 
         changed_files: list[str] = []
         skipped: list[str] = []
@@ -357,6 +475,136 @@ class ResearchCodingAgent:
         return result
 
 
+class ResearchDebuggingAgent:
+    """Applies targeted fixes when the evaluation command fails or omits metrics."""
+
+    def __init__(
+        self,
+        *,
+        llm: PaperExpertLLM,
+        editable_files: Sequence[str],
+        model_name: str = OPENROUTER_MODEL,
+        logger=None,
+        max_file_chars: int = 16000,
+    ) -> None:
+        if not editable_files:
+            raise ValueError("ResearchDebuggingAgent needs at least one editable file")
+        self.llm = llm
+        self.editable_files = [_normalize_relpath(path) for path in editable_files]
+        self.model_name = model_name
+        self.logger = logger
+        self.max_file_chars = max_file_chars
+
+    def apply_fix(
+        self,
+        *,
+        problem_dir: Path,
+        event_log: ResearchEventLog,
+        iteration: int,
+        attempt: int,
+        plan: ResearchPlan,
+        coding: CodingResult,
+        failed_result: ExperimentResult,
+        judge: JudgeFeedback,
+        diagnosis: OrchestrationDiagnosis | None,
+        problem_statement: str,
+        metric_name: str,
+    ) -> DebuggingResult:
+        editable_list = ", ".join(self.editable_files)
+        example_path = self.editable_files[0]
+        messages = [
+            {
+                "role": "system",
+                "content": (
+                    f"You are the debugging agent for an autonomous research loop. "
+                    f"You are running as model {self.model_name}. "
+                    "The newly proposed model failed during retraining/retesting or did not "
+                    "produce the required metric. Fix only the bug that prevents a clean "
+                    "evaluation with metrics; preserve the research intent where possible. "
+                    f"Only modify files explicitly listed as editable. Valid editable paths: {editable_list}. "
+                    "STRICT OUTPUT CONTRACT: your response is parsed by a program. "
+                    "Return complete replacement files using this exact format:\n"
+                    f"---FILE: {example_path}---\n"
+                    "```python\n"
+                    "# complete file contents\n"
+                    "```\n"
+                    "---END FILE---\n"
+                    "If no safe debug fix is possible, return exactly: NO_SAFE_CHANGE"
+                ),
+            },
+            {
+                "role": "user",
+                "content": "\n\n".join(
+                    [
+                        f"Problem: {problem_statement}",
+                        f"Required metric: {metric_name}",
+                        f"Failed return code: {failed_result.returncode}",
+                        f"Failed metrics: {_format_metrics(failed_result.metrics)}",
+                        "Failed evaluation logs:",
+                        _format_result_logs(failed_result, 10000),
+                        "Judge feedback after the failed run:",
+                        judge.raw,
+                        "Orchestration diagnosis:",
+                        _format_diagnosis(diagnosis),
+                        "Planning agent output:",
+                        plan.raw,
+                        f"Coding agent changed files: {', '.join(coding.changed_files)}",
+                        f"Coding agent notes: {coding.notes}",
+                        "Current editable files after the failed change:",
+                        _format_editable_files(problem_dir, self.editable_files, self.max_file_chars),
+                        (
+                            "Patch the runtime, import, tensor-shape, loss/label, device, or metrics-output "
+                            "bug so the same evaluation command can finish and write the required metric. "
+                            "Do not redesign the experiment unless that is necessary to restore a valid run."
+                        ),
+                    ]
+                ),
+            },
+        ]
+        raw = _complete(
+            self.llm,
+            messages,
+            self.logger,
+            "debugging-agent",
+            f"debugging attempt {attempt}",
+        )
+        raw_path = event_log.artifact(
+            f"iteration_{iteration:02d}/debugging_attempt_{attempt}.txt",
+            raw,
+        )
+        replacements = _extract_file_replacements(raw, fallback_files=self.editable_files)
+
+        changed_files: list[str] = []
+        skipped: list[str] = []
+        editable = set(self.editable_files)
+        for rel, content in replacements.items():
+            normalized = _normalize_relpath(rel)
+            if normalized not in editable:
+                skipped.append(normalized)
+                continue
+            path = _safe_join(problem_dir, normalized)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(_ensure_trailing_newline(content), encoding="utf-8")
+            changed_files.append(normalized)
+
+        notes = f"debugging attempt {attempt} applied full-file replacements"
+        if skipped:
+            notes += f"; skipped non-editable files: {', '.join(skipped)}"
+        if not changed_files:
+            notes = f"debugging attempt {attempt} did not provide an editable file replacement"
+
+        result = DebuggingResult(
+            iteration=iteration,
+            attempt=attempt,
+            applied=bool(changed_files),
+            changed_files=changed_files,
+            raw_response_path=raw_path,
+            notes=notes,
+        )
+        event_log.event("debugging_done", asdict(result))
+        return result
+
+
 class ResearchSwarmOrchestrator:
     """Runs baseline, paper ideation, planning, coding, judging, and iteration."""
 
@@ -371,10 +619,12 @@ class ResearchSwarmOrchestrator:
         planner_llm: PaperExpertLLM,
         coding_llm: PaperExpertLLM,
         problem_statement: str,
+        debugging_llm: PaperExpertLLM | None = None,
         metric_name: str = "test_accuracy",
         max_iterations: int = 2,
         max_agents: int = 3,
         max_cross_ideas: int = 6,
+        max_debug_attempts: int = 2,
         goal: float | None = None,
         min_delta: float = 0.001,
         revert_on_regression: bool = True,
@@ -393,6 +643,7 @@ class ResearchSwarmOrchestrator:
         self.max_iterations = max_iterations
         self.max_agents = max_agents
         self.max_cross_ideas = max_cross_ideas
+        self.max_debug_attempts = max_debug_attempts
         self.goal = goal
         self.min_delta = min_delta
         self.revert_on_regression = revert_on_regression
@@ -406,10 +657,24 @@ class ResearchSwarmOrchestrator:
             metrics_path=metrics_path,
             event_log=self.event_log,
         )
+        diagnostic_llm = planner_llm
+        self.diagnostic_agent = OrchestrationDiagnosticAgent(
+            llm=diagnostic_llm,
+            editable_files=self.editable_files,
+            model_name=str(getattr(diagnostic_llm, "model", OPENROUTER_MODEL)),
+            logger=logger,
+        )
         self.coding_agent = ResearchCodingAgent(
             llm=coding_llm,
             editable_files=self.editable_files,
             model_name=str(getattr(coding_llm, "model", OPENROUTER_MODEL)),
+            logger=logger,
+        )
+        debug_llm = debugging_llm or coding_llm
+        self.debugging_agent = ResearchDebuggingAgent(
+            llm=debug_llm,
+            editable_files=self.editable_files,
+            model_name=str(getattr(debug_llm, "model", OPENROUTER_MODEL)),
             logger=logger,
         )
         self._idea_counter = 1
@@ -453,7 +718,21 @@ class ResearchSwarmOrchestrator:
             if log:
                 log.phase(f"Research iteration {iteration}")
 
-            selected = self._select_agents(current_result)
+            diagnosis = self.diagnostic_agent.diagnose(
+                problem_dir=self.problem_dir,
+                event_log=self.event_log,
+                iteration=iteration,
+                command=self.command,
+                metrics_path=self.metrics_path,
+                current_result=current_result,
+                problem_statement=self.problem_statement,
+                feedback_history=feedback_history,
+            )
+            if log:
+                issue_count = len(diagnosis.issues)
+                log.info(f"Orchestration diagnosis found {issue_count} issue(s) or caveat(s)")
+
+            selected = self._select_agents(current_result, diagnosis)
             self.event_log.event(
                 "agents_selected",
                 {"iteration": iteration, "agents": [a.agent_id for a in selected]},
@@ -466,6 +745,7 @@ class ResearchSwarmOrchestrator:
                 agents=selected,
                 current_result=current_result,
                 feedback_history=feedback_history,
+                diagnosis=diagnosis,
             )
             cross_ideas = self._cross_pollinate_ideas(
                 iteration=iteration,
@@ -473,6 +753,7 @@ class ResearchSwarmOrchestrator:
                 seeds=seed_ideas,
                 current_result=current_result,
                 feedback_history=feedback_history,
+                diagnosis=diagnosis,
             )
             plan = self._plan_iteration(
                 iteration=iteration,
@@ -480,12 +761,14 @@ class ResearchSwarmOrchestrator:
                 cross_ideas=cross_ideas,
                 current_result=current_result,
                 feedback_history=feedback_history,
+                diagnosis=diagnosis,
             )
 
             research_iteration = ResearchIteration(
                 iteration=iteration,
                 seed_ideas=seed_ideas,
                 cross_pollinated_ideas=cross_ideas,
+                diagnosis=diagnosis,
                 plan=plan,
             )
             iterations.append(research_iteration)
@@ -497,14 +780,23 @@ class ResearchSwarmOrchestrator:
                 break
 
             snapshot = FileSnapshot(self.problem_dir, self.editable_files)
-            coding = self.coding_agent.apply_plan(
-                problem_dir=self.problem_dir,
-                event_log=self.event_log,
-                iteration=iteration,
-                plan=plan,
-                current_result=current_result,
-                problem_statement=self.problem_statement,
-            )
+            coding = None
+            for _coding_attempt in range(2):
+                coding = self.coding_agent.apply_plan(
+                    problem_dir=self.problem_dir,
+                    event_log=self.event_log,
+                    iteration=iteration,
+                    plan=plan,
+                    current_result=current_result,
+                    problem_statement=self.problem_statement,
+                )
+                if coding.applied:
+                    break
+                self.event_log.event(
+                    "coding_retry",
+                    {"iteration": iteration, "attempt": _coding_attempt + 1, "notes": coding.notes},
+                )
+
             research_iteration.coding = coding
             if not coding.applied:
                 judge = JudgeFeedback(
@@ -519,7 +811,7 @@ class ResearchSwarmOrchestrator:
                 )
                 research_iteration.judge = judge
                 feedback_history.append(judge)
-                break
+                continue
 
             result = self.runner.run(iteration=iteration, label="judge")
             research_iteration.result = result
@@ -531,6 +823,42 @@ class ResearchSwarmOrchestrator:
                 coding=coding,
             )
             research_iteration.judge = judge
+
+            if self._needs_debugging(result):
+                result, judge, debugging_resolved = self._debug_until_metrics(
+                    iteration_state=research_iteration,
+                    previous=current_result,
+                    failed_result=result,
+                    initial_judge=judge,
+                    plan=plan,
+                    coding=coding,
+                    diagnosis=diagnosis,
+                )
+                research_iteration.result = result
+                research_iteration.judge = judge
+                if not debugging_resolved:
+                    feedback_history.append(judge)
+                    if self.revert_on_regression:
+                        snapshot.restore()
+                        self.event_log.event(
+                            "files_restored",
+                            {"iteration": iteration, "reason": "debugging did not restore a valid metric run"},
+                        )
+                    self.event_log.event(
+                        "debugging_unresolved_stop",
+                        {
+                            "iteration": iteration,
+                            "returncode": result.returncode,
+                            "metrics": result.metrics,
+                            "metric_name": self.metric_name,
+                        },
+                    )
+                    if log:
+                        log.phase_done(
+                            f"Iteration {iteration} stopped: debugging did not produce {self.metric_name}"
+                        )
+                    break
+
             feedback_history.append(judge)
 
             if judge.decision == "revert" and self.revert_on_regression:
@@ -568,8 +896,12 @@ class ResearchSwarmOrchestrator:
         stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
         return problem_dir / "logs" / "research_swarm" / stamp
 
-    def _select_agents(self, result: ExperimentResult) -> list:
-        query = self._context_query(result)
+    def _select_agents(
+        self,
+        result: ExperimentResult,
+        diagnosis: OrchestrationDiagnosis | None = None,
+    ) -> list:
+        query = self._context_query(result, diagnosis)
         ranked = sorted(self.agents, key=lambda agent: agent.relevance(query), reverse=True)
         return ranked[: self.max_agents]
 
@@ -580,11 +912,12 @@ class ResearchSwarmOrchestrator:
         agents: list,
         current_result: ExperimentResult,
         feedback_history: list[JudgeFeedback],
+        diagnosis: OrchestrationDiagnosis | None,
     ) -> list[ModelImprovementIdea]:
         ideas: list[ModelImprovementIdea] = []
         for agent in agents:
             evidence = agent.retriever.search_evidence(
-                self._context_query(current_result),
+                self._context_query(current_result, diagnosis),
                 top_k=getattr(agent, "top_k", 4),
                 paper_id=agent.paper.paper_id,
             )
@@ -593,8 +926,12 @@ class ResearchSwarmOrchestrator:
                     "role": "system",
                     "content": (
                         f"You are the expert for '{agent.paper.title}'. "
-                        "Suggest architecture or training changes for the current model problem. "
-                        "Ground every suggestion in the supplied paper excerpts."
+                        "Your ultimate goal is to improve the accuracy of the research model in focus. "
+                        "There is ALWAYS room for improvement — assume the current model has fixable flaws "
+                        "and commit to finding them. Use your paper as a lens but draw freely on your "
+                        "broad ML/DL knowledge: architecture choices, optimizers, regularization, "
+                        "normalization, augmentation, learning rate schedules, and so on. "
+                        "Be specific and decisive — vague suggestions waste iterations."
                     ),
                 },
                 {
@@ -605,15 +942,19 @@ class ResearchSwarmOrchestrator:
                             f"Current metrics: {_format_metrics(current_result.metrics)}",
                             "Recent judge feedback:",
                             _format_feedback(feedback_history),
+                            "Orchestration diagnosis to account for:",
+                            _format_diagnosis(diagnosis),
                             "Current editable source:",
                             _format_editable_files(self.problem_dir, self.editable_files, 6000),
                             "Evidence from your paper:",
                             _format_evidence(evidence),
                             (
-                                "Propose exactly 1-2 concrete modifications. Use this exact format:\n"
+                                "Propose exactly 1-2 concrete, high-impact modifications. "
+                                "Do not hedge — pick changes you believe will move the metric and commit to them. "
+                                "Use this exact format:\n"
                                 "---MODEL_IDEA---\n"
                                 "TEXT: one sentence summary\n"
-                                "RATIONALE: paper-grounded reason\n"
+                                "RATIONALE: paper-grounded or ML-knowledge-grounded reason\n"
                                 "EXPECTED_EFFECT: expected metric effect\n"
                                 "CHANGES: implementation-level changes\n"
                                 "---END---"
@@ -637,6 +978,7 @@ class ResearchSwarmOrchestrator:
         seeds: list[ModelImprovementIdea],
         current_result: ExperimentResult,
         feedback_history: list[JudgeFeedback],
+        diagnosis: OrchestrationDiagnosis | None,
     ) -> list[CrossPollinatedModelIdea]:
         cross_ideas: list[CrossPollinatedModelIdea] = []
         if len(agents) < 2:
@@ -653,7 +995,7 @@ class ResearchSwarmOrchestrator:
                     )
                     return cross_ideas
                 evidence = agent.retriever.search_evidence(
-                    f"{self.problem_statement} {seed.text} {seed.changes}",
+                    f"{self.problem_statement} {seed.text} {seed.changes} {_format_diagnosis(diagnosis)}",
                     top_k=3,
                     paper_id=agent.paper.paper_id,
                 )
@@ -662,7 +1004,10 @@ class ResearchSwarmOrchestrator:
                         "role": "system",
                         "content": (
                             f"You are the expert for '{agent.paper.title}'. "
-                            "Combine your paper's methods with another paper expert's model-improvement idea."
+                            "Your ultimate goal is to improve the accuracy of the research model in focus. "
+                            "Combine your paper's methods with the other expert's idea to produce something "
+                            "more powerful than either alone. Draw on your full ML/DL knowledge — "
+                            "the combined idea should be bold and concrete, not a watered-down compromise."
                         ),
                     },
                     {
@@ -673,6 +1018,8 @@ class ResearchSwarmOrchestrator:
                                 f"Current metrics: {_format_metrics(current_result.metrics)}",
                                 "Recent judge feedback:",
                                 _format_feedback(feedback_history),
+                                "Orchestration diagnosis to account for:",
+                                _format_diagnosis(diagnosis),
                                 f"Seed idea from {seed.seed_label}: {seed.text}",
                                 f"Seed rationale: {seed.rationale}",
                                 f"Seed changes: {seed.changes}",
@@ -709,14 +1056,18 @@ class ResearchSwarmOrchestrator:
         cross_ideas: list[CrossPollinatedModelIdea],
         current_result: ExperimentResult,
         feedback_history: list[JudgeFeedback],
+        diagnosis: OrchestrationDiagnosis | None,
     ) -> ResearchPlan:
         messages = [
             {
                 "role": "system",
                 "content": (
                     "You are the planning agent in an autonomous research swarm. "
-                    "Choose a small, testable set of changes for the coding agent. "
-                    "Prefer plans likely to improve the measured metric while staying easy to evaluate."
+                    "Your ultimate goal is to improve the accuracy of the research model in focus. "
+                    "There is ALWAYS room to improve — never accept the current model as good enough. "
+                    "Pick the most impactful set of changes from the ideas presented: be decisive and specific. "
+                    "Prefer high-leverage interventions (fix the worst bottleneck first) over safe micro-tweaks. "
+                    "The coding agent can handle real changes — do not water down the plan."
                 ),
             },
             {
@@ -729,6 +1080,8 @@ class ResearchSwarmOrchestrator:
                         f"Editable files: {', '.join(self.editable_files)}",
                         "Recent judge feedback:",
                         _format_feedback(feedback_history),
+                        "Orchestration diagnosis to account for:",
+                        _format_diagnosis(diagnosis),
                         "Seed ideas:",
                         _format_seed_ideas(seed_ideas),
                         "Cross-pollinated ideas:",
@@ -764,6 +1117,7 @@ class ResearchSwarmOrchestrator:
         current: ExperimentResult,
         plan: ResearchPlan,
         coding: CodingResult,
+        label: str = "judge",
     ) -> JudgeFeedback:
         previous_value = previous.metric_value(self.metric_name)
         new_value = current.metric_value(self.metric_name)
@@ -783,7 +1137,11 @@ class ResearchSwarmOrchestrator:
                 "role": "system",
                 "content": (
                     "You are the judge agent for an autonomous research loop. "
-                    "Evaluate whether the implementation should be kept, revised, or reverted."
+                    "Your ultimate goal is to improve the accuracy of the research model in focus. "
+                    "There is ALWAYS more headroom — your job is to give the next round a clear, "
+                    "actionable direction regardless of whether this iteration improved or regressed. "
+                    "A revert is not a failure — it is information. Extract the lesson and prescribe "
+                    "the next concrete change with confidence."
                 ),
             },
             {
@@ -799,8 +1157,10 @@ class ResearchSwarmOrchestrator:
                         "Plan:",
                         plan.raw,
                         (
-                            "Write concise feedback for the orchestrator and next paper-agent round. "
-                            "Explain likely causes and concrete next directions."
+                            "Write concise, actionable feedback for the next paper-agent round. "
+                            "Diagnose what worked or why it regressed, then prescribe 2-3 specific "
+                            "changes to try next. Be direct — name exact hyperparameters, layer types, "
+                            "or training tricks. Do not hedge or say 'it depends'."
                         ),
                     ]
                 ),
@@ -820,9 +1180,75 @@ class ResearchSwarmOrchestrator:
             feedback=_shorten(raw, 1200),
             raw=raw,
         )
-        self.event_log.artifact(f"iteration_{iteration:02d}/judge_feedback.txt", raw)
+        artifact_name = "judge_feedback.txt" if label == "judge" else f"judge_feedback_{label}.txt"
+        self.event_log.artifact(f"iteration_{iteration:02d}/{artifact_name}", raw)
         self.event_log.event("judge_done", {"iteration": iteration, "judge": feedback})
         return feedback
+
+    def _debug_until_metrics(
+        self,
+        *,
+        iteration_state: ResearchIteration,
+        previous: ExperimentResult,
+        failed_result: ExperimentResult,
+        initial_judge: JudgeFeedback,
+        plan: ResearchPlan,
+        coding: CodingResult,
+        diagnosis: OrchestrationDiagnosis | None,
+    ) -> tuple[ExperimentResult, JudgeFeedback, bool]:
+        current_failed = failed_result
+        current_judge = initial_judge
+
+        for attempt in range(1, self.max_debug_attempts + 1):
+            debug = self.debugging_agent.apply_fix(
+                problem_dir=self.problem_dir,
+                event_log=self.event_log,
+                iteration=iteration_state.iteration,
+                attempt=attempt,
+                plan=plan,
+                coding=coding,
+                failed_result=current_failed,
+                judge=current_judge,
+                diagnosis=diagnosis,
+                problem_statement=self.problem_statement,
+                metric_name=self.metric_name,
+            )
+            iteration_state.debugging.append(debug)
+            if not debug.applied:
+                continue
+
+            rerun = self.runner.run(
+                iteration=iteration_state.iteration,
+                label=f"debug_{attempt}",
+            )
+            effective_coding = CodingResult(
+                iteration=coding.iteration,
+                applied=True,
+                changed_files=sorted(set(coding.changed_files) | set(debug.changed_files)),
+                raw_response_path=debug.raw_response_path,
+                notes=f"{coding.notes}; {debug.notes}",
+            )
+            current_judge = self._judge_iteration(
+                iteration=iteration_state.iteration,
+                previous=previous,
+                current=rerun,
+                plan=plan,
+                coding=effective_coding,
+                label=f"debug_{attempt}",
+            )
+            if not self._needs_debugging(rerun):
+                self.event_log.event(
+                    "debugging_resolved",
+                    {
+                        "iteration": iteration_state.iteration,
+                        "attempt": attempt,
+                        "metrics": rerun.metrics,
+                    },
+                )
+                return rerun, current_judge, True
+            current_failed = rerun
+
+        return current_failed, current_judge, False
 
     def _parse_seed_ideas(self, raw: str, agent, evidence: list[Evidence]) -> list[ModelImprovementIdea]:
         blocks = _extract_blocks(raw, "MODEL_IDEA")
@@ -868,13 +1294,18 @@ class ResearchSwarmOrchestrator:
             evidence=evidence,
         )
 
-    def _context_query(self, result: ExperimentResult) -> str:
+    def _context_query(
+        self,
+        result: ExperimentResult,
+        diagnosis: OrchestrationDiagnosis | None = None,
+    ) -> str:
         return " ".join(
             [
                 self.problem_statement,
                 self.metric_name,
                 _format_metrics(result.metrics),
-                "MNIST image classification neural network architecture training accuracy",
+                _format_diagnosis(diagnosis),
+                "image classification neural network architecture training accuracy improvement",
             ]
         )
 
@@ -903,6 +1334,9 @@ class ResearchSwarmOrchestrator:
         value = result.metric_value(self.metric_name)
         return value is not None and value >= self.goal
 
+    def _needs_debugging(self, result: ExperimentResult) -> bool:
+        return (not result.succeeded) or result.metric_value(self.metric_name) is None
+
 
 def _complete(
     llm: PaperExpertLLM,
@@ -924,8 +1358,14 @@ def _complete(
 
 def _read_metrics(metrics_path: Path | None, stdout: str) -> dict[str, Any]:
     if metrics_path and metrics_path.exists():
-        with metrics_path.open("r", encoding="utf-8") as f:
-            return json.load(f)
+        data: Any = None
+        try:
+            with metrics_path.open("r", encoding="utf-8") as f:
+                data = json.load(f)
+        except (OSError, json.JSONDecodeError):
+            data = None
+        if isinstance(data, dict):
+            return data
 
     for line in reversed(stdout.splitlines()):
         line = line.strip()
@@ -992,7 +1432,22 @@ def _parse_plan(raw: str, *, iteration: int, editable_files: Sequence[str]) -> R
     )
 
 
-def _extract_file_replacements(raw: str) -> dict[str, str]:
+def _parse_diagnosis(raw: str, *, iteration: int) -> OrchestrationDiagnosis:
+    block = (_extract_blocks(raw, "ORCHESTRATION_DIAGNOSIS") or [raw])[0]
+    issues = _bullets(_field(block, "ISSUES"))
+    suggestions = _bullets(_field(block, "SUGGESTIONS"))
+    dataset_context = _bullets(_field(block, "DATASET_CONTEXT"))
+    return OrchestrationDiagnosis(
+        iteration=iteration,
+        summary=_field(block, "SUMMARY") or _first_sentence(block),
+        issues=issues,
+        suggestions=suggestions,
+        dataset_context=dataset_context,
+        raw=raw,
+    )
+
+
+def _extract_file_replacements(raw: str, fallback_files: Sequence[str] | None = None) -> dict[str, str]:
     pattern = re.compile(
         r"---FILE:\s*(?P<path>.+?)---\s*(?P<body>.*?)---END FILE---",
         re.IGNORECASE | re.DOTALL,
@@ -1002,6 +1457,25 @@ def _extract_file_replacements(raw: str) -> dict[str, str]:
         rel = match.group("path").strip()
         body = _strip_code_fence(match.group("body").strip())
         replacements[rel] = body
+    if replacements:
+        return replacements
+
+    loose_pattern = re.compile(
+        r"^---\s*(?P<path>[A-Za-z0-9_./-]+\.[A-Za-z0-9_+-]+)\s*---\s*(?P<body>.*?)---END FILE---",
+        re.IGNORECASE | re.DOTALL | re.MULTILINE,
+    )
+    for match in loose_pattern.finditer(raw):
+        rel = match.group("path").strip()
+        body = _strip_code_fence(match.group("body").strip())
+        replacements[rel] = body
+    if replacements:
+        return replacements
+
+    fallback = [_normalize_relpath(path) for path in fallback_files or []]
+    if len(fallback) == 1:
+        fenced = _extract_first_code_fence(raw)
+        if fenced:
+            replacements[fallback[0]] = fenced
     return replacements
 
 
@@ -1012,6 +1486,13 @@ def _strip_code_fence(text: str) -> str:
     if lines and lines[-1].strip().startswith("```"):
         lines = lines[:-1]
     return "\n".join(lines).strip("\n")
+
+
+def _extract_first_code_fence(text: str) -> str | None:
+    match = re.search(r"```(?:[A-Za-z0-9_+-]+)?\s*\n(?P<body>.*?)```", text, re.DOTALL)
+    if not match:
+        return None
+    return match.group("body").strip("\n")
 
 
 def _extract_blocks(text: str, name: str) -> list[str]:
@@ -1076,6 +1557,19 @@ def _format_feedback(feedback_history: list[JudgeFeedback]) -> str:
     )
 
 
+def _format_diagnosis(diagnosis: OrchestrationDiagnosis | None) -> str:
+    if diagnosis is None:
+        return "(no orchestration diagnosis yet)"
+    parts = [f"Summary: {diagnosis.summary}"]
+    if diagnosis.dataset_context:
+        parts.append("Dataset/context:\n" + "\n".join(f"- {item}" for item in diagnosis.dataset_context))
+    if diagnosis.issues:
+        parts.append("Issues:\n" + "\n".join(f"- {item}" for item in diagnosis.issues))
+    if diagnosis.suggestions:
+        parts.append("Suggestions:\n" + "\n".join(f"- {item}" for item in diagnosis.suggestions))
+    return "\n".join(parts)
+
+
 def _format_seed_ideas(ideas: list[ModelImprovementIdea]) -> str:
     if not ideas:
         return "(none)"
@@ -1127,6 +1621,57 @@ def _format_editable_files(problem_dir: Path, editable_files: Sequence[str], max
         text = path.read_text(encoding="utf-8")
         parts.append(f"--- {rel} ---\n{_shorten(text, max_chars)}")
     return "\n\n".join(parts)
+
+
+def _format_problem_context(problem_dir: Path, max_chars: int) -> str:
+    context_files = [
+        "train.py",
+        "README.md",
+        "data/README.md",
+        "run_baseline.sh",
+        "run_research_swarm.sh",
+        "run_research_swarm_asus.sh",
+    ]
+    parts = []
+    budget = max_chars
+    for rel in context_files:
+        if budget <= 0:
+            break
+        path = _safe_join(problem_dir, rel)
+        if not path.exists() or not path.is_file():
+            continue
+        text = path.read_text(encoding="utf-8", errors="replace")
+        clipped = _shorten(text, min(budget, 5000))
+        parts.append(f"--- {rel} ---\n{clipped}")
+        budget -= len(clipped)
+    return "\n\n".join(parts) if parts else "(no setup files found)"
+
+
+def _format_result_logs(result: ExperimentResult, max_chars: int) -> str:
+    stdout = _read_text_if_exists(Path(result.stdout_path))
+    stderr = _read_text_if_exists(Path(result.stderr_path))
+    metrics = _format_metrics(result.metrics)
+    text = "\n\n".join(
+        [
+            f"returncode={result.returncode}",
+            f"metrics={metrics}",
+            "--- stdout tail ---\n" + _tail(stdout, max_chars // 2),
+            "--- stderr tail ---\n" + _tail(stderr, max_chars // 2),
+        ]
+    )
+    return _tail(text, max_chars)
+
+
+def _read_text_if_exists(path: Path) -> str:
+    if not path.exists():
+        return "(missing)"
+    return path.read_text(encoding="utf-8", errors="replace")
+
+
+def _tail(text: str, limit: int) -> str:
+    if len(text) <= limit:
+        return text
+    return text[-limit:]
 
 
 def _shorten(text: str, limit: int) -> str:

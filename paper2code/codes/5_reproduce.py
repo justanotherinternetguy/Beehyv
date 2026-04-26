@@ -7,7 +7,6 @@ Reads planning artifacts to understand datasets and evaluation, then:
 4. Executes it and compares results against paper's reported numbers
 """
 
-from openai import OpenAI
 import json
 import os
 import sys
@@ -27,6 +26,7 @@ from utils import (
     load_accumulated_cost,
     save_accumulated_cost,
     get_now_str,
+    get_llm_client_and_model,
 )
 
 _THIS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -86,16 +86,9 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
-_local_url = os.environ.get("LOCAL_LLM_URL")
-client = OpenAI(
-    base_url=f"{_local_url.rstrip('/')}/v1" if _local_url else "https://openrouter.ai/api/v1",
-    api_key="ollama" if _local_url else os.environ.get("OPENROUTER_API_KEY", ""),
-)
+client, gpt_version = get_llm_client_and_model(args.gpt_version)
 
 paper_name = args.paper_name
-gpt_version = args.gpt_version
-if _local_url:
-    gpt_version = os.environ.get("LOCAL_LLM_MODEL", "gemma4:31b")
 output_dir = os.path.abspath(args.output_dir)
 output_repo_dir = os.path.abspath(args.output_repo_dir)
 _default_reproduce = os.path.join(os.path.dirname(output_dir), f"{paper_name}_reproduce")
@@ -226,6 +219,7 @@ Return ONLY the JSON object, no markdown fences.
 _FALLBACK_INFO = None  # filled below if needed
 
 try:
+    print(f"[LLM] backend={os.environ.get('LLM_BACKEND', 'openrouter').lower()} model={gpt_version}", flush=True)
     extract_response = client.chat.completions.create(
         model=gpt_version,
         messages=extract_msg,
@@ -377,6 +371,7 @@ Write ONLY the Python code, wrapped in ```python ... ``` fences.
 
 reproduce_code = ""
 try:
+    print(f"[LLM] backend={os.environ.get('LLM_BACKEND', 'openrouter').lower()} model={gpt_version}", flush=True)
     reproduce_response = client.chat.completions.create(
         model=gpt_version,
         messages=reproduce_msg,

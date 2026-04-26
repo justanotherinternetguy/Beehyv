@@ -1,10 +1,9 @@
-from openai import OpenAI
 import json
 from tqdm import tqdm
 import argparse
 import os
 import sys
-from utils import print_response, print_log_cost, load_accumulated_cost, save_accumulated_cost
+from utils import print_response, print_log_cost, load_accumulated_cost, save_accumulated_cost, get_llm_client_and_model
 
 parser = argparse.ArgumentParser()
 
@@ -17,16 +16,9 @@ parser.add_argument('--output_dir',type=str, default="")
 
 args    = parser.parse_args()
 
-_local_url = os.environ.get("LOCAL_LLM_URL")
-client = OpenAI(
-    base_url=f"{_local_url.rstrip('/')}/v1" if _local_url else "https://openrouter.ai/api/v1",
-    api_key="ollama" if _local_url else os.environ["OPENROUTER_API_KEY"],
-)
+client, gpt_version = get_llm_client_and_model(args.gpt_version)
 
 paper_name = args.paper_name
-gpt_version = args.gpt_version
-if _local_url:
-    gpt_version = os.environ.get("LOCAL_LLM_MODEL", "gemma4:31b")
 paper_format = args.paper_format
 pdf_json_path = args.pdf_json_path
 pdf_latex_path = args.pdf_latex_path
@@ -220,6 +212,7 @@ training:
     }]
 
 def api_call(msg, gpt_version):
+    print(f"[LLM] backend={os.environ.get('LLM_BACKEND', 'openrouter').lower()} model={gpt_version}", flush=True)
     completion = client.chat.completions.create(
         model=gpt_version,
         messages=msg

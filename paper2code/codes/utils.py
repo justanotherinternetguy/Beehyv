@@ -443,3 +443,33 @@ def get_now_str():
     now = now.split(".")[0]
     now = now.replace("-","").replace(" ","_").replace(":","")
     return now # now - "20250427_205124"
+
+
+def get_llm_client_and_model(cli_model: str = None) -> tuple:
+    """Return (client, model) based on LLM_BACKEND env var.
+
+    LLM_BACKEND=openrouter (default): OpenRouter with nvidia/nemotron-3-super-120b-a12b:free
+    LLM_BACKEND=gx10: ASUS GX10 local server via LOCAL_LLM_URL / LOCAL_LLM_MODEL
+    """
+    from openai import OpenAI
+    backend = os.environ.get("LLM_BACKEND", "openrouter").lower()
+    if backend == "gx10":
+        gx10_url = os.environ.get("LOCAL_LLM_URL")
+        if not gx10_url:
+            raise RuntimeError("LOCAL_LLM_URL must be set when LLM_BACKEND=gx10")
+        client = OpenAI(base_url=f"{gx10_url.rstrip('/')}/v1", api_key="ollama")
+        model = os.environ.get("LOCAL_LLM_MODEL", "gemma4:31b")
+    else:
+        client = OpenAI(
+            base_url="https://openrouter.ai/api/v1",
+            api_key=os.environ["OPENROUTER_API_KEY"],
+        )
+        model = cli_model or "nvidia/nemotron-3-super-120b-a12b:free"
+    return client, model
+
+
+def llm_chat_create(client, model: str, messages: list, **kwargs):
+    """Log the active LLM backend and model, then call client.chat.completions.create."""
+    backend = os.environ.get("LLM_BACKEND", "openrouter").lower()
+    print(f"[LLM] backend={backend} model={model}", flush=True)
+    return client.chat.completions.create(model=model, messages=messages, **kwargs)

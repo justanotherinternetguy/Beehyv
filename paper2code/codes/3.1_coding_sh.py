@@ -1,10 +1,9 @@
-from openai import OpenAI
 import json
 import os
 from tqdm import tqdm
 import sys
 import copy
-from utils import extract_planning, content_to_json, extract_code_from_content, print_response, print_log_cost, load_accumulated_cost, save_accumulated_cost, read_python_files
+from utils import extract_planning, content_to_json, extract_code_from_content, print_response, print_log_cost, load_accumulated_cost, save_accumulated_cost, read_python_files, get_llm_client_and_model
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -18,16 +17,9 @@ parser.add_argument('--output_dir',type=str, default="")
 parser.add_argument('--output_repo_dir',type=str, default="")
 
 args    = parser.parse_args()
-_local_url = os.environ.get("LOCAL_LLM_URL")
-client = OpenAI(
-    base_url=f"{_local_url.rstrip('/')}/v1" if _local_url else "https://openrouter.ai/api/v1",
-    api_key="ollama" if _local_url else os.environ["OPENROUTER_API_KEY"],
-)
+client, gpt_version = get_llm_client_and_model(args.gpt_version)
 
 paper_name = args.paper_name
-gpt_version = args.gpt_version
-if _local_url:
-    gpt_version = os.environ.get("LOCAL_LLM_MODEL", "gemma4:31b")
 paper_format = args.paper_format
 pdf_json_path = args.pdf_json_path
 pdf_latex_path = args.pdf_latex_path
@@ -108,12 +100,13 @@ Next, you must write only the "{todo_file_name}".
 
 
 def api_call(msg):
+    print(f"[LLM] backend={os.environ.get('LLM_BACKEND', 'openrouter').lower()} model={gpt_version}", flush=True)
     completion = client.chat.completions.create(
         model=gpt_version,
         messages=msg
     )
     return completion
-    
+
 
 artifact_output_dir=f'{output_dir}/coding_artifacts'
 os.makedirs(artifact_output_dir, exist_ok=True)

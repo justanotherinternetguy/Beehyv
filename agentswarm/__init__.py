@@ -16,9 +16,11 @@ from .paper_loader import Paper, PaperChunk, load_paper, load_papers
 from .retriever import KeywordRetriever
 from .research import (
     CodingResult,
+    DebuggingResult,
     ExperimentResult,
     JudgeFeedback,
     ModelImprovementIdea,
+    OrchestrationDiagnosis,
     ResearchIteration,
     ResearchPlan,
     ResearchSession,
@@ -35,6 +37,7 @@ __all__ = [
     "CodingResult",
     "CrossPollinatedIdea",
     "Critique",
+    "DebuggingResult",
     "Evidence",
     "ExperimentResult",
     "JudgeFeedback",
@@ -42,6 +45,7 @@ __all__ = [
     "ModelImprovementIdea",
     "OPENROUTER_MODEL",
     "OpenRouterLLM",
+    "OrchestrationDiagnosis",
     "Paper",
     "PaperChunk",
     "PaperExpertAgent",
