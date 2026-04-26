@@ -308,6 +308,45 @@ export const VoidOverlay: React.FC<VoidOverlayProps> = ({
             </g>
           )}
 
+          {/* Model name badge for the MNIST void */}
+          {v.name === 'Transformer-Augmented Vision Adaptation Gap' && (() => {
+            const b = hullNormBounds(nvertices);
+            const [mx, my] = normToScreen(
+              b.minX + (b.maxX - b.minX) * 0.37,
+              b.minY + (b.maxY - b.minY) * 0.58,
+              transform,
+            );
+            const modelColor = 'oklch(0.78 0.22 285)'; // vivid violet
+            const modelGlow  = 'oklch(0.78 0.22 285 / 0.28)';
+            const dotR = 5;
+            return (
+              <g style={{ pointerEvents: 'none' }}>
+                {/* outer glow ring */}
+                <circle cx={mx} cy={my} r={dotR + 5} fill={modelGlow} />
+                {/* filled dot */}
+                <circle cx={mx} cy={my} r={dotR} fill={modelColor} />
+                {/* white centre pip */}
+                <circle cx={mx} cy={my} r={1.8} fill="rgba(255,255,255,0.9)" />
+                {/* label */}
+                <text
+                  x={mx + dotR + 6} y={my}
+                  textAnchor="start" dominantBaseline="central"
+                  fontFamily="'JetBrains Mono', monospace"
+                  fontSize={11}
+                  fontWeight={700}
+                  fill={modelColor}
+                  stroke="rgba(0,0,0,0.55)"
+                  strokeWidth={2.5}
+                  strokeLinejoin="round"
+                  paintOrder="stroke"
+                  style={{ userSelect: 'none' }}
+                >
+                  AbsAttenNet
+                </text>
+              </g>
+            );
+          })()}
+
           {/* Label */}
           {showLabel && (
             <text

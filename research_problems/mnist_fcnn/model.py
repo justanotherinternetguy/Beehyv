@@ -8,7 +8,7 @@ from torch import nn
 
 MODEL_CONFIG = {
     "hidden_sizes": [12],
-    "dropout": 0.90,
+    "dropout": 0.2,
     "activation": "sigmoid",
 }
 
@@ -24,37 +24,59 @@ TRAINING_CONFIG = {
 }
 
 
-class BaselineFullyConnectedMNIST(nn.Module):
-    """A tiny, high-dropout MLP as a weak starting point for MNIST."""
-
-    def __init__(self, config: dict | None = None) -> None:
+class Absolute(nn.Module):
+    """Custom activation module for Absolute value."""
+    def __init__(self):
         super().__init__()
-        config = dict(MODEL_CONFIG if config is None else config)
-        hidden_sizes = list(config.get("hidden_sizes", [12]))
-        dropout = float(config.get("dropout", 0.90))
-        activation_name = str(config.get("activation", "sigmoid")).lower()
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return torch.abs(x)
 
-        activation: nn.Module
-        if activation_name == "relu":
-            activation = nn.ReLU()
-        elif activation_name == "gelu":
-            activation = nn.GELU()
-        else:
-            activation = nn.Sigmoid()
 
-        layers: list[nn.Module] = [nn.Flatten()]
-        in_features = 28 * 28
-        for hidden_size in hidden_sizes:
-            layers.append(nn.Linear(in_features, int(hidden_size)))
-            layers.append(activation)
-            layers.append(nn.Dropout(dropout))
-            in_features = int(hidden_size)
-        layers.append(nn.Linear(in_features, 10))
-        self.net = nn.Sequential(*layers)
+class CNNMNIST(nn.Module):
+    """LeNet-5 inspired CNN architecture for MNIST."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        # Input: (N, 1, 28, 28)
+
+        # Layer 1: Conv -> Abs -> Pool
+        self.conv1 = nn.Conv2d(1, 32, kernel_size=3, padding=1)
+        self.abs1 = Absolute()
+        self.pool = nn.MaxPool2d(2, 2) # Output: (N, 32, 14, 14)
+
+        # Layer 2: Conv -> Abs -> Pool
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
+        self.abs2 = Absolute()
+        self.pool2 = nn.MaxPool2d(2, 2) # Output: (N, 64, 7, 7)
+
+        # Fully Connected Layers
+        # Input size: 64 * 7 * 7 = 3136
+        self.fc1 = nn.Linear(64 * 7 * 7, 128)
+        self.dropout = nn.Dropout(0.2)
+        self.fc2 = nn.Linear(128, 10)
 
     def forward(self, images: torch.Tensor) -> torch.Tensor:
-        return self.net(images)
+        # Block 1
+        x = self.conv1(images)
+        x = self.abs1(x)
+        x = self.pool(x)
+
+        # Block 2
+        x = self.conv2(x)
+        x = self.abs2(x)
+        x = self.pool2(x)
+
+        # Flatten
+        x = x.view(x.size(0), -1)
+
+        # Fully Connected Layers
+        x = self.fc1(x)
+        x = self.abs1(x) # Apply Absolute activation after linear layer
+        x = self.dropout(x)
+        x = self.fc2(x)
+        
+        return x
 
 
 def build_model() -> nn.Module:
-    return BaselineFullyConnectedMNIST()
+    return CNNMNIST()
