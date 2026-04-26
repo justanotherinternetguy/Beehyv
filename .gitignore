@@ -5,3 +5,6 @@ __pycache__/
 
 research_problems/*/logs/
 research_problems/*/data/MNIST/
+
+__pycache__/
+*.py[cod]
