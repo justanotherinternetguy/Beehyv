@@ -367,9 +367,10 @@ export const EmbeddingAtlas: React.FC = () => {
     const existingJobId = voidJobMap.current.get(v.void_id);
     if (existingJobId) {
       const isImagenet = v.name === IMAGENET_GAP;
-      setActiveTab(
-        isImagenet ? `${existingJobId}:deep` : `${existingJobId}:logs`,
-      );
+      // setActiveTab(
+      //   isImagenet ? `${existingJobId}:deep` : `${existingJobId}:logs`,
+      // );
+      setActiveTab(`${existingJobId}:deep`); // For now always open logs on click; users can switch to deep research tab from there if it's an imagenet gap job
       return;
     }
 
