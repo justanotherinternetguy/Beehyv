@@ -820,20 +820,18 @@ export const DeepResearchTab: React.FC<Props> = ({
 
   return (
     <div style={{
-      flex:          1,
-      display:       'flex',
-      flexDirection: 'column',
       background:    '#0a0c10',
       overflow:      'hidden',
       position:      'relative',
-    }}>
+    }}
+    className='grid grid-rows-[20rem_auto]'
+    >
       {/* ── Top: paper boxes ─────────────────────────────────────────── */}
       <div style={{
         display:      'flex',
         gap:          10,
         padding:      '12px 16px',
         borderBottom: `1px solid ${DIM}`,
-        flexShrink:   0,
         overflowX:    'auto',
         background:   '#0d0f14',
       }}>
@@ -849,7 +847,7 @@ export const DeepResearchTab: React.FC<Props> = ({
       </div>
 
       {/* ── Main 3-column area ────────────────────────────────────────── */}
-      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+      <div style={{ display: 'flex', overflow: 'hidden' }}>
 
         {/* Left: orchestrator */}
         <OrchestratorPanel
