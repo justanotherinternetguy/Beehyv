@@ -23,7 +23,7 @@ import { TabBar } from "./TabBar";
 import { ResearchTab } from "./ResearchTab";
 import { DeepResearchTab } from "./DeepResearchTab";
 import { JobsDropdown } from "./JobsDropdown";
-import type { ResearchJobInfo } from "../types";
+import type { ResearchJobInfo, CrossPollinationAnim, CrossAnimPhase, PairLink } from "../types";
 
 const MIN_SCALE = 100;
 const MAX_SCALE = 80000;
@@ -97,6 +97,15 @@ export const EmbeddingAtlas: React.FC = () => {
   >(new Map());
   const voidJobMap = useRef<Map<number, string>>(new Map());
 
+  // ── Cross-pollination animation state ──────────────────────────────────────
+  const [crossAnim, setCrossAnim] = useState<CrossPollinationAnim>({
+    phase: 'idle',
+    voidId: null,
+    selectedDois: [],
+    pairLinks: [],
+  });
+  const glowTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const [transform, setTransform] = useState<ViewTransform>({
     scale: 600,
     offsetX: 50,
@@ -162,6 +171,11 @@ export const EmbeddingAtlas: React.FC = () => {
     });
   }, [size.width, size.height, papers.length > 0]);
 
+  const crossPollinationActive = crossAnim.phase !== 'idle' && crossAnim.phase !== 'done';
+  const goldDois = crossPollinationActive
+    ? new Set<string | number>(crossAnim.selectedDois)
+    : undefined;
+
   useWebGLRenderer(canvasRef, {
     papers,
     width: size.width,
@@ -171,6 +185,8 @@ export const EmbeddingAtlas: React.FC = () => {
     selectedClusterId: activeSelectedClusterId,
     searchResultIds: activeSearchResultIds,
     darkMode,
+    crossPollinationActive,
+    goldDois,
   });
 
   // ── Pointer events ────────────────────────────────────────────────────────
@@ -382,6 +398,15 @@ export const EmbeddingAtlas: React.FC = () => {
       abstract: p.abstract,
     }));
 
+    // Kick off graph animation immediately
+    const selectedDois = v.selected_papers.map((p) => p.DOI);
+    setCrossAnim({
+      phase: 'orchestrating',
+      voidId: v.void_id,
+      selectedDois,
+      pairLinks: [],
+    });
+
     try {
       const resp = await fetch("/api/investigate", {
         method: "POST",
@@ -409,6 +434,26 @@ export const EmbeddingAtlas: React.FC = () => {
       console.error("[Investigate] Failed to start investigation:", e);
     }
   }, [selectedVoidId, voids]);
+
+  const handleCrossPhaseChange = useCallback((
+    phase: CrossAnimPhase,
+    pairLinks: PairLink[],
+  ) => {
+    setCrossAnim(prev => {
+      if (prev.phase === 'done') return prev;
+      if (prev.phase === 'glowing' && phase !== 'done') return prev;
+      return { ...prev, phase, pairLinks };
+    });
+
+    if (phase === 'glowing') {
+      if (glowTimerRef.current) clearTimeout(glowTimerRef.current);
+      glowTimerRef.current = setTimeout(() => {
+        setCrossAnim(prev =>
+          prev.phase === 'glowing' ? { ...prev, phase: 'done' } : prev,
+        );
+      }, 1300);
+    }
+  }, []);
 
   const researchDoneVoidIds = useMemo<Set<number>>(() => {
     const s = new Set<number>();
@@ -585,6 +630,7 @@ export const EmbeddingAtlas: React.FC = () => {
                   handleVoidSelect(id === selectedVoidId ? null : id)
                 }
                 researchDoneVoidIds={researchDoneVoidIds}
+                crossAnim={crossAnim}
               />
             )}
           </div>
@@ -1048,6 +1094,7 @@ export const EmbeddingAtlas: React.FC = () => {
                   papers={job.papers}
                   darkMode={dm}
                   onStatusChange={onStatusChange}
+                  onCrossPhaseChange={handleCrossPhaseChange}
                 />
               ) : (
                 <ResearchTab
@@ -1056,6 +1103,7 @@ export const EmbeddingAtlas: React.FC = () => {
                   darkMode={dm}
                   onStatusChange={onStatusChange}
                 />
+
               )}
             </div>
           );

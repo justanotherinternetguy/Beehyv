@@ -11,6 +11,8 @@ interface RendererOptions {
   selectedClusterId: number | null;
   searchResultIds: Set<string | number> | null;
   darkMode: boolean;
+  crossPollinationActive?: boolean;
+  goldDois?: Set<string | number>;
 }
 
 interface GLState {
@@ -142,6 +144,8 @@ export function useWebGLRenderer(
       selectedClusterId,
       searchResultIds,
       darkMode,
+      crossPollinationActive,
+      goldDois,
     } = options;
 
     const baseSize = Math.max(1.5, Math.min(8, transform.scale * 0.004));
@@ -158,6 +162,36 @@ export function useWebGLRenderer(
       pointSize: baseSize,
       dimFactor: 1.0,
     };
+
+    // Cross-pollination mode: dim all non-gold papers, render gold papers in gold
+    if (crossPollinationActive && goldDois && goldDois.size > 0) {
+      const n = options.papers.length;
+      const newColors = new Float32Array(n * 4);
+      for (let i = 0; i < n; i++) {
+        const p = options.papers[i];
+        if (goldDois.has(p.id)) {
+          newColors[i * 4]     = 1.0;   // gold #FFD700
+          newColors[i * 4 + 1] = 0.84;
+          newColors[i * 4 + 2] = 0.0;
+          newColors[i * 4 + 3] = 0.95;
+        } else {
+          newColors[i * 4]     = 0.22;  // desaturated grey
+          newColors[i * 4 + 1] = 0.22;
+          newColors[i * 4 + 2] = 0.24;
+          newColors[i * 4 + 3] = 0.11;
+        }
+      }
+      const tempBuf = regl.buffer(newColors);
+      drawPoints({
+        ...uniformBase,
+        attributes: {
+          position: { buffer: gl.positions, divisor: 0 },
+          color: { buffer: tempBuf, divisor: 0 },
+        },
+      } as any);
+      tempBuf.destroy();
+      return;
+    }
 
     if (selectedClusterId !== null || searchResultIds !== null) {
       const n = options.papers.length;

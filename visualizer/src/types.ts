@@ -65,3 +65,24 @@ export interface MetricPoint {
   value: number;
   label: string;
 }
+
+export type CrossAnimPhase =
+  | 'idle'
+  | 'orchestrating'
+  | 'cross_pollinating'
+  | 'proposals_complete'
+  | 'building'
+  | 'glowing'
+  | 'done';
+
+export interface PairLink {
+  fromDoi: string;
+  toDoi: string;
+}
+
+export interface CrossPollinationAnim {
+  phase: CrossAnimPhase;
+  voidId: number | null;
+  selectedDois: string[];
+  pairLinks: PairLink[];
+}
