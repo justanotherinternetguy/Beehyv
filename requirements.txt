@@ -16,5 +16,9 @@ boto3
 
 # agentswarm — no extra dependencies (uses only Python stdlib)
 
+# research_problems/mnist_fcnn demo
+torch
+torchvision
+
 # Optional: local vLLM backend for paper2code
 # vllm>=0.6.4.post1

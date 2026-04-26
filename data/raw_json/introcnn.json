@@ -1,0 +1,1412 @@
+{
+    "paper_id": "introcnn",
+    "header": {
+        "generated_with": "S2ORC 1.0.0",
+        "date_generated": "2026-04-25T16:28:29.599152Z"
+    },
+    "title": "An Introduction to Convolutional Neural Networks",
+    "authors": [
+        {
+            "first": "Keiron",
+            "middle": [],
+            "last": "O'shea",
+            "suffix": "",
+            "affiliation": {
+                "laboratory": "",
+                "institution": "Aberystwyth University",
+                "location": {
+                    "postCode": "SY23 3DB",
+                    "settlement": "Ceredigion"
+                }
+            },
+            "email": ""
+        },
+        {
+            "first": "Ryan",
+            "middle": [],
+            "last": "Nash",
+            "suffix": "",
+            "affiliation": {
+                "laboratory": "",
+                "institution": "Lancaster University",
+                "location": {
+                    "postCode": "LA1 4YW",
+                    "settlement": "Lancashire"
+                }
+            },
+            "email": "nashrd@live.lancs.ac.uk"
+        }
+    ],
+    "year": "",
+    "venue": null,
+    "identifiers": {},
+    "abstract": "The field of machine learning has taken a dramatic twist in recent times, with the rise of the Artificial Neural Network (ANN). These biologically inspired computational models are able to far exceed the performance of previous forms of artificial intelligence in common machine learning tasks. One of the most impressive forms of ANN architecture is that of the Convolutional Neural Network (CNN). CNNs are primarily used to solve difficult image-driven pattern recognition tasks and with their precise yet simple architecture, offers a simplified method of getting started with ANNs.\nThis document provides a brief introduction to CNNs, discussing recently published papers and newly formed techniques in developing these brilliantly fantastic image recognition models. This introduction assumes you are familiar with the fundamentals of ANNs and machine learning.",
+    "pdf_parse": {
+        "paper_id": "introcnn",
+        "_pdf_hash": "",
+        "abstract": [
+            {
+                "text": "The field of machine learning has taken a dramatic twist in recent times, with the rise of the Artificial Neural Network (ANN). These biologically inspired computational models are able to far exceed the performance of previous forms of artificial intelligence in common machine learning tasks. One of the most impressive forms of ANN architecture is that of the Convolutional Neural Network (CNN). CNNs are primarily used to solve difficult image-driven pattern recognition tasks and with their precise yet simple architecture, offers a simplified method of getting started with ANNs.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Abstract",
+                "sec_num": null
+            },
+            {
+                "text": "This document provides a brief introduction to CNNs, discussing recently published papers and newly formed techniques in developing these brilliantly fantastic image recognition models. This introduction assumes you are familiar with the fundamentals of ANNs and machine learning.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Abstract",
+                "sec_num": null
+            }
+        ],
+        "body_text": [
+            {
+                "text": "Artificial Neural Networks (ANNs) are computational processing systems of which are heavily inspired by way biological nervous systems (such as the human brain) operate. ANNs are mainly comprised of a high number of interconnected computational nodes (referred to as neurons), of which work entwine in a distributed fashion to collectively learn from the input in order to optimise its final output.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Introduction",
+                "sec_num": "1"
+            },
+            {
+                "text": "The basic structure of a ANN can be modelled as shown in Figure 1 . We would load the input, usually in the form of a multidimensional vector to the input layer of which will distribute it to the hidden layers. The hidden layers will then make decisions from the previous layer and weigh up how a stochastic change within itself detriments or improves the final output, and this is referred to as the process of learning. Having multiple hidden layers stacked upon each-other is commonly called deep learning. The two key learning paradigms in image processing tasks are supervised and unsupervised learning. Supervised learning is learning through pre-labelled inputs, which act as targets. For each training example there will be a set of input values (vectors) and one or more associated designated output values. The goal of this form of training is to reduce the models overall classification error, through correct calculation of the output value of training example by training.",
+                "cite_spans": [],
+                "ref_spans": [
+                    {
+                        "start": 64,
+                        "end": 65,
+                        "text": "1",
+                        "ref_id": "FIGREF0"
+                    }
+                ],
+                "eq_spans": [],
+                "section": "Introduction",
+                "sec_num": "1"
+            },
+            {
+                "text": "Unsupervised learning differs in that the training set does not include any labels. Success is usually determined by whether the network is able to reduce or increase an associated cost function. However, it is important to note that most image-focused pattern-recognition tasks usually depend on classification using supervised learning.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Introduction",
+                "sec_num": "1"
+            },
+            {
+                "text": "Convolutional Neural Networks (CNNs) are analogous to traditional ANNs in that they are comprised of neurons that self-optimise through learning. Each neuron will still receive an input and perform a operation (such as a scalar product followed by a non-linear function) -the basis of countless ANNs. From the input raw image vectors to the final output of the class score, the entire of the network will still express a single perceptive score function (the weight).",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Introduction",
+                "sec_num": "1"
+            },
+            {
+                "text": "The last layer will contain loss functions associated with the classes, and all of the regular tips and tricks developed for traditional ANNs still apply.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Introduction",
+                "sec_num": "1"
+            },
+            {
+                "text": "The only notable difference between CNNs and traditional ANNs is that CNNs are primarily used in the field of pattern recognition within images. This allows us to encode image-specific features into the architecture, making the network more suited for image-focused tasks -whilst further reducing the parameters required to set up the model.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Introduction",
+                "sec_num": "1"
+            },
+            {
+                "text": "One of the largest limitations of traditional forms of ANN is that they tend to struggle with the computational complexity required to compute image data. Common machine learning benchmarking datasets such as the MNIST database of handwritten digits are suitable for most forms of ANN, due to its relatively small image dimensionality of just 28 \u00d7 28. With this dataset a single neuron in the first hidden layer will contain 784 weights (28 \u00d7 28 \u00d7 1 where 1 bare in mind that MNIST is normalised to just black and white values), which is manageable for most forms of ANN.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Introduction",
+                "sec_num": "1"
+            },
+            {
+                "text": "If you consider a more substantial coloured image input of 64 \u00d7 64, the number of weights on just a single neuron of the first layer increases substantially to 12, 288. Also take into account that to deal with this scale of input, the network will also need to be a lot larger than one used to classify colour-normalised MNIST digits, then you will understand the drawbacks of using such models.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Introduction",
+                "sec_num": "1"
+            },
+            {
+                "text": "But why does it matter? Surely we could just increase the number of hidden layers in our network, and perhaps increase the number of neurons within them?",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Overfitting",
+                "sec_num": "1.1"
+            },
+            {
+                "text": "The simple answer to this question is no. This is down to two reasons, one being the simple problem of not having unlimited computational power and time to train these huge ANNs.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Overfitting",
+                "sec_num": "1.1"
+            },
+            {
+                "text": "The second reason is stopping or reducing the effects of overfitting. Overfitting is basically when a network is unable to learn effectively due to a number of reasons. It is an important concept of most, if not all machine learning algorithms and it is important that every precaution is taken as to reduce its effects. If our models were to exhibit signs of overfitting then we may see a reduced ability to pinpoint generalised features for not only our training dataset, but also our test and prediction sets. This is the main reason behind reducing the complexity of our ANNs. The less parameters required to train, the less likely the network will overfit -and of course, improve the predictive performance of the model.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Overfitting",
+                "sec_num": "1.1"
+            },
+            {
+                "text": "As noted earlier, CNNs primarily focus on the basis that the input will be comprised of images. This focuses the architecture to be set up in way to best suit the need for dealing with the specific type of data.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "CNN architecture",
+                "sec_num": "2"
+            },
+            {
+                "text": "One of the key differences is that the neurons that the layers within the CNN are comprised of neurons organised into three dimensions, the spatial dimensionality of the input (height and the width) and the depth. The depth does not refer to the total number of layers within the ANN, but the third dimension of a activation volume. Unlike standard ANNS, the neurons within any given layer will only connect to a small region of the layer preceding it.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "CNN architecture",
+                "sec_num": "2"
+            },
+            {
+                "text": "In practice this would mean that for the example given earlier, the input 'volume' will have a dimensionality of 64 \u00d7 64 \u00d7 3 (height, width and depth), leading to a final output layer comprised of a dimensionality of 1 \u00d7 1 \u00d7 n (where n represents the possible number of classes) as we would have condensed the full input dimensionality into a smaller volume of class scores filed across the depth dimension.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "CNN architecture",
+                "sec_num": "2"
+            },
+            {
+                "text": "CNNs are comprised of three types of layers. These are convolutional layers, pooling layers and fully-connected layers. When these layers are stacked, a CNN architecture has been formed. A simplified CNN architecture for MNIST classification is illustrated in Figure 2 .",
+                "cite_spans": [],
+                "ref_spans": [
+                    {
+                        "start": 267,
+                        "end": 268,
+                        "text": "2",
+                        "ref_id": "FIGREF1"
+                    }
+                ],
+                "eq_spans": [],
+                "section": "Overall architecture",
+                "sec_num": "2.1"
+            },
+            {
+                "text": "input 0 9 convolution w/ReLu pooling output fully-connected w/ ReLu fully-connected ... The basic functionality of the example CNN above can be broken down into four key areas.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Overall architecture",
+                "sec_num": "2.1"
+            },
+            {
+                "text": "1. As found in other forms of ANN, the input layer will hold the pixel values of the image.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Overall architecture",
+                "sec_num": "2.1"
+            },
+            {
+                "text": "2. The convolutional layer will determine the output of neurons of which are connected to local regions of the input through the calculation of the scalar product between their weights and the region connected to the input volume. The rectified linear unit (commonly shortened to ReLu) aims to apply an 'elementwise' activation function such as sigmoid to the output of the activation produced by the previous layer.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Overall architecture",
+                "sec_num": "2.1"
+            },
+            {
+                "text": "3. The pooling layer will then simply perform downsampling along the spatial dimensionality of the given input, further reducing the number of parameters within that activation.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Overall architecture",
+                "sec_num": "2.1"
+            },
+            {
+                "text": "4. The fully-connected layers will then perform the same duties found in standard ANNs and attempt to produce class scores from the activations, to be used for classification. It is also suggested that ReLu may be used between these layers, as to improve performance.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Overall architecture",
+                "sec_num": "2.1"
+            },
+            {
+                "text": "Through this simple method of transformation, CNNs are able to transform the original input layer by layer using convolutional and downsampling techniques to produce class scores for classification and regression purposes. However, it is important to note that simply understanding the overall architecture of a CNN architecture will not suffice. The creation and optimisation of these models can take quite some time, and can be quite confusing. We will now explore in detail the individual layers, detailing their hyperparameters and connectivities.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Overall architecture",
+                "sec_num": "2.1"
+            },
+            {
+                "text": "As the name implies, the convolutional layer plays a vital role in how CNNs operate. The layers parameters focus around the use of learnable kernels.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Convolutional layer",
+                "sec_num": "2.2"
+            },
+            {
+                "text": "These kernels are usually small in spatial dimensionality, but spreads along the entirety of the depth of the input. When the data hits a convolutional layer, the layer convolves each filter across the spatial dimensionality of the input to produce a 2D activation map. These activation maps can be visualised, as seen in Figure 3 .",
+                "cite_spans": [],
+                "ref_spans": [
+                    {
+                        "start": 329,
+                        "end": 330,
+                        "text": "3",
+                        "ref_id": "FIGREF2"
+                    }
+                ],
+                "eq_spans": [],
+                "section": "Convolutional layer",
+                "sec_num": "2.2"
+            },
+            {
+                "text": "As we glide through the input, the scalar product is calculated for each value in that kernel. (Figure 4 ) From this the network will learn kernels that 'fire' when they see a specific feature at a given spatial position of the input. These are commonly known as activations.",
+                "cite_spans": [],
+                "ref_spans": [
+                    {
+                        "start": 103,
+                        "end": 104,
+                        "text": "4",
+                        "ref_id": null
+                    }
+                ],
+                "eq_spans": [],
+                "section": "Convolutional layer",
+                "sec_num": "2.2"
+            },
+            {
+                "text": "0 0 0 1 0 2 0 1 1 4 0 0 0 0 0 0 0 -4 -8 Pooled Vector Kernel Destination Pixel 0 0 0 1 0 2 0 1 1 0 0 1 1 0 2 1 1 1 1 0 0 0 0 1 0 1 1 0 0 1 1 0 0 1 1 1",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Convolutional layer",
+                "sec_num": "2.2"
+            },
+            {
+                "text": "Input Vector",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Convolutional layer",
+                "sec_num": "2.2"
+            },
+            {
+                "text": "Fig. 4 : A visual representation of a convolutional layer. The centre element of the kernel is placed over the input vector, of which is then calculated and replaced with a weighted sum of itself and any nearby pixels.",
+                "cite_spans": [],
+                "ref_spans": [
+                    {
+                        "start": 5,
+                        "end": 6,
+                        "text": "4",
+                        "ref_id": null
+                    }
+                ],
+                "eq_spans": [],
+                "section": "Convolutional layer",
+                "sec_num": "2.2"
+            },
+            {
+                "text": "Every kernel will have a corresponding activation map, of which will be stacked along the depth dimension to form the full output volume from the convolutional layer.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Convolutional layer",
+                "sec_num": "2.2"
+            },
+            {
+                "text": "As we alluded to earlier, training ANNs on inputs such as images results in models of which are too big to train effectively. This comes down to the fullyconnected manner of standard ANN neurons, so to mitigate against this every neuron in a convolutional layer is only connected to small region of the input volume. The dimensionality of this region is commonly referred to as the receptive field size of the neuron. The magnitude of the connectivity through the depth is nearly always equal to the depth of the input.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Convolutional layer",
+                "sec_num": "2.2"
+            },
+            {
+                "text": "For example, if the input to the network is an image of size 64 \u00d7 64 \u00d7 3 (a RGBcoloured image with a dimensionality of 64 \u00d7 64) and we set the receptive field size as 6 \u00d7 6, we would have a total of 108 weights on each neuron within the convolutional layer. (6 \u00d7 6 \u00d7 3 where 3 is the magnitude of connectivity across the depth of the volume) To put this into perspective, a standard neuron seen in other forms of ANN would contain 12, 288 weights each.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Convolutional layer",
+                "sec_num": "2.2"
+            },
+            {
+                "text": "Convolutional layers are also able to significantly reduce the complexity of the model through the optimisation of its output. These are optimised through three hyperparameters, the depth, the stride and setting zero-padding.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Convolutional layer",
+                "sec_num": "2.2"
+            },
+            {
+                "text": "The depth of the output volume produced by the convolutional layers can be manually set through the number of neurons within the layer to a the same region of the input. This can be seen with other forms of ANNs, where the all of the neurons in the hidden layer are directly connected to every single neuron beforehand. Reducing this hyperparameter can significantly minimise the total number of neurons of the network, but it can also significantly reduce the pattern recognition capabilities of the model.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Convolutional layer",
+                "sec_num": "2.2"
+            },
+            {
+                "text": "We are also able to define the stride in which we set the depth around the spatial dimensionality of the input in order to place the receptive field. For example if we were to set a stride as 1, then we would have a heavily overlapped receptive field producing extremely large activations. Alternatively, setting the stride to a greater number will reduce the amount of overlapping and produce an output of lower spatial dimensions.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Convolutional layer",
+                "sec_num": "2.2"
+            },
+            {
+                "text": "Zero-padding is the simple process of padding the border of the input, and is an effective method to give further control as to the dimensionality of the output volumes.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Convolutional layer",
+                "sec_num": "2.2"
+            },
+            {
+                "text": "It is important to understand that through using these techniques, we will alter the spatial dimensionality of the convolutional layers output. To calculate this, you can make use of the following formula:",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Convolutional layer",
+                "sec_num": "2.2"
+            },
+            {
+                "text": "(V -R) + 2Z S + 1",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Convolutional layer",
+                "sec_num": "2.2"
+            },
+            {
+                "text": "Where V represents the input volume size (height\u00d7width\u00d7depth), R represents the receptive field size, Z is the amount of zero padding set and S referring to the stride. If the calculated result from this equation is not equal to a whole integer then the stride has been incorrectly set, as the neurons will be unable to fit neatly across the given input.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Convolutional layer",
+                "sec_num": "2.2"
+            },
+            {
+                "text": "Despite our best efforts so far we will still find that our models are still enormous if we use an image input of any real dimensionality. However, methods have been developed as to greatly curtail the overall number of parameters within the convolutional layer.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Convolutional layer",
+                "sec_num": "2.2"
+            },
+            {
+                "text": "Parameter sharing works on the assumption that if one region feature is useful to compute at a set spatial region, then it is likely to be useful in another region. If we constrain each individual activation map within the output volume to the same weights and bias, then we will see a massive reduction in the number of parameters being produced by the convolutional layer.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Convolutional layer",
+                "sec_num": "2.2"
+            },
+            {
+                "text": "As a result of this as the backpropagation stage occurs, each neuron in the output will represent the overall gradient of which can be totalled across the depth -thus only updating a single set of weights, as opposed to every single one.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Convolutional layer",
+                "sec_num": "2.2"
+            },
+            {
+                "text": "Pooling layers aim to gradually reduce the dimensionality of the representation, and thus further reduce the number of parameters and the computational complexity of the model.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Pooling layer",
+                "sec_num": "2.3"
+            },
+            {
+                "text": "The pooling layer operates over each activation map in the input, and scales its dimensionality using the \"MAX\" function. In most CNNs, these come in the form of max-pooling layers with kernels of a dimensionality of 2 \u00d7 2 applied with a stride of 2 along the spatial dimensions of the input. This scales the activation map down to 25% of the original size -whilst maintaining the depth volume to its standard size.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Pooling layer",
+                "sec_num": "2.3"
+            },
+            {
+                "text": "Due to the destructive nature of the pooling layer, there are only two generally observed methods of max-pooling. Usually, the stride and filters of the pooling layers are both set to 2 \u00d7 2, which will allow the layer to extend through the entirety of the spatial dimensionality of the input. Furthermore overlapping pooling may be utilised, where the stride is set to 2 with a kernel size set to 3. Due to the destructive nature of pooling, having a kernel size above 3 will usually greatly decrease the performance of the model.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Pooling layer",
+                "sec_num": "2.3"
+            },
+            {
+                "text": "It is also important to understand that beyond max-pooling, CNN architectures may contain general-pooling. General pooling layers are comprised of pooling neurons that are able to perform a multitude of common operations including L1/L2-normalisation, and average pooling. However, this tutorial will primarily focus on the use of max-pooling.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Pooling layer",
+                "sec_num": "2.3"
+            },
+            {
+                "text": "The fully-connected layer contains neurons of which are directly connected to the neurons in the two adjacent layers, without being connected to any layers within them. This is analogous to way that neurons are arranged in traditional forms of ANN. (Figure 1 )",
+                "cite_spans": [],
+                "ref_spans": [
+                    {
+                        "start": 257,
+                        "end": 258,
+                        "text": "1",
+                        "ref_id": "FIGREF0"
+                    }
+                ],
+                "eq_spans": [],
+                "section": "Fully-connected layer",
+                "sec_num": "2.4"
+            },
+            {
+                "text": "Despite the relatively small number of layers required to form a CNN, there is no set way of formulating a CNN architecture. That being said, it would be idiotic to simply throw a few of layers together and expect it to work. Through reading of related literature it is obvious that much like other forms of ANNs, CNNs tend to follow a common architecture. This common architecture is illustrated in Figure 2 , where convolutional layers are stacked, followed by pooling layers in a repeated manner before feeding forward to fully-connected layers.",
+                "cite_spans": [],
+                "ref_spans": [
+                    {
+                        "start": 407,
+                        "end": 408,
+                        "text": "2",
+                        "ref_id": "FIGREF1"
+                    }
+                ],
+                "eq_spans": [],
+                "section": "Recipes",
+                "sec_num": "3"
+            },
+            {
+                "text": "Another common CNN architecture is to stack two convolutional layers before each pooling layer, as illustrated in Figure 5 . This is strongly recommended as stacking multiple convolutional layers allows for more complex features of the input vector to be selected.",
+                "cite_spans": [],
+                "ref_spans": [
+                    {
+                        "start": 121,
+                        "end": 122,
+                        "text": "5",
+                        "ref_id": "FIGREF3"
+                    }
+                ],
+                "eq_spans": [],
+                "section": "Recipes",
+                "sec_num": "3"
+            },
+            {
+                "text": "input convolution w/ ReLu pooling convolution w/ ReLu pooling fully-connected w/ ReLu fully-connected convolution w/ ReLu pooling 0 9 output ... It is also advised to split large convolutional layers up into many smaller sized convolutional layers. This is to reduce the amount of computational complexity within a given convolutional layer. For example, if you were to stack three convolutional layers on top of each other with a receptive field of 3\u00d73. Each neuron of the first convolutional layer will have a 3 \u00d7 3 view of the input vector. A neuron on the second convolutional layer will then have a 5 \u00d7 5 view of the input vector. A neuron on the third convolutional layer will then have a 7 \u00d7 7 view of the input vector. As these stacks feature non-linearities which in turn allows us to express stronger features of the input with fewer parameters. However, it is important to understand that this does come with a distinct memory allocation problem -especially when making use of the backpropagation algorithm.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Recipes",
+                "sec_num": "3"
+            },
+            {
+                "text": "The input layer should be recursively divisible by two. Common numbers include 32 \u00d7 32, 64 \u00d7 64, 96 \u00d7 96, 128 \u00d7 128 and 224 \u00d7 224.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Recipes",
+                "sec_num": "3"
+            },
+            {
+                "text": "Whilst using small filters, set stride to one and make use of zero-padding as to ensure that the convolutional layers do not reconfigure any of the dimensionality of the input. The amount of zero-padding to be used should be calculated by taking one away from the receptive field size and dividing by two.activation CNNs are extremely powerful machine learning algorithms, however they can be horrendously resource-heavy. An example of this problem could be in filtering a large image (anything over 128 \u00d7 128 could be considered large), so if the input is 227 \u00d7 227 (as seen with ImageNet) and we're filtering with 64 kernels each with a zero padding of then the result will be three activation vectors of size 227 \u00d7 227 \u00d7 64 -which calculates to roughly 10 million activations -or an enormous 70 megabytes of memory per image. In this case you have two options. Firstly, you can reduce the spatial dimensionality of the input images by resizing the raw images to something a little less heavy. Alternatively, you can go against everything we stated earlier in this document and opt for larger filter sizes with a larger stride (2, as opposed to 1).",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Recipes",
+                "sec_num": "3"
+            },
+            {
+                "text": "In addition to the few rules-of-thumb outlined above, it is also important to acknowledge a few 'tricks' about generalised ANN training techniques. The authors suggest a read of Geoffrey Hinton's excellent \"Practical Guide to Training Restricted Boltzmann Machines\".",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Recipes",
+                "sec_num": "3"
+            },
+            {
+                "text": "Convolutional Neural Networks differ to other forms of Artifical Neural Network in that instead of focusing on the entirety of the problem domain, knowledge about the specific type of input is exploited. This in turn allows for a much simpler network architecture to be set up.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Conclusion",
+                "sec_num": "4"
+            },
+            {
+                "text": "This paper has outlined the basic concepts of Convolutional Neural Networks, explaining the layers required to build one and detailing how best to structure the network in most image analysis tasks.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Conclusion",
+                "sec_num": "4"
+            },
+            {
+                "text": "Research in the field of image analysis using neural networks has somewhat slowed in recent times. This is partly due to the incorrect belief surrounding the level of complexity and knowledge required to begin modelling these superbly powerful machine learning algorithms. The authors hope that this paper has in some way reduced this confusion, and made the field more accessible to beginners.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Conclusion",
+                "sec_num": "4"
+            }
+        ],
+        "back_matter": [
+            {
+                "text": "The authors would like to thank Dr. Chuan Lu and Nicholas Dimonaco for useful discussion and suggestions.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Acknowledgements",
+                "sec_num": null
+            }
+        ],
+        "bib_entries": {
+            "BIBREF0": {
+                "ref_id": "b0",
+                "title": "Multi-column deep neural networks for image classification",
+                "authors": [
+                    {
+                        "first": "D",
+                        "middle": [],
+                        "last": "Ciresan",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "U",
+                        "middle": [],
+                        "last": "Meier",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "J",
+                        "middle": [],
+                        "last": "Schmidhuber",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2012,
+                "venue": "Computer Vision and Pattern Recognition (CVPR), 2012 IEEE Conference on",
+                "volume": "",
+                "issue": "",
+                "pages": "3642--3649",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "Ciresan, D., Meier, U., Schmidhuber, J.: Multi-column deep neural networks for im- age classification. In: Computer Vision and Pattern Recognition (CVPR), 2012 IEEE Conference on. pp. 3642-3649. IEEE (2012)",
+                "links": null
+            },
+            "BIBREF1": {
+                "ref_id": "b1",
+                "title": "Mitosis detection in breast cancer histology images with deep neural networks",
+                "authors": [
+                    {
+                        "first": "D",
+                        "middle": [
+                            "C"
+                        ],
+                        "last": "Cires \u00b8an",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "A",
+                        "middle": [],
+                        "last": "Giusti",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "L",
+                        "middle": [
+                            "M"
+                        ],
+                        "last": "Gambardella",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "J",
+                        "middle": [],
+                        "last": "Schmidhuber",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2013,
+                "venue": "Medical Image Computing and Computer-Assisted Intervention-MICCAI 2013",
+                "volume": "",
+                "issue": "",
+                "pages": "411--418",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "Cires \u00b8an, D.C., Giusti, A., Gambardella, L.M., Schmidhuber, J.: Mitosis detection in breast cancer histology images with deep neural networks. In: Medical Image Com- puting and Computer-Assisted Intervention-MICCAI 2013, pp. 411-418. Springer (2013)",
+                "links": null
+            },
+            "BIBREF2": {
+                "ref_id": "b2",
+                "title": "Flexible, high performance convolutional neural networks for image classification",
+                "authors": [
+                    {
+                        "first": "D",
+                        "middle": [
+                            "C"
+                        ],
+                        "last": "Ciresan",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "U",
+                        "middle": [],
+                        "last": "Meier",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "J",
+                        "middle": [],
+                        "last": "Masci",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "L",
+                        "middle": [],
+                        "last": "Maria Gambardella",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "J",
+                        "middle": [],
+                        "last": "Schmidhuber",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2011,
+                "venue": "IJCAI Proceedings-International Joint Conference on Artificial Intelligence",
+                "volume": "22",
+                "issue": "",
+                "pages": "",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "Ciresan, D.C., Meier, U., Masci, J., Maria Gambardella, L., Schmidhuber, J.: Flexible, high performance convolutional neural networks for image classification. In: IJCAI Proceedings-International Joint Conference on Artificial Intelligence. vol. 22, p. 1237 (2011)",
+                "links": null
+            },
+            "BIBREF3": {
+                "ref_id": "b3",
+                "title": "Convolutional neural network committees for handwritten character classification",
+                "authors": [
+                    {
+                        "first": "D",
+                        "middle": [
+                            "C"
+                        ],
+                        "last": "Cires \u00b8an",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "U",
+                        "middle": [],
+                        "last": "Meier",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "L",
+                        "middle": [
+                            "M"
+                        ],
+                        "last": "Gambardella",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "J",
+                        "middle": [],
+                        "last": "Schmidhuber",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2011,
+                "venue": "Document Analysis and Recognition (ICDAR), 2011 International Conference on",
+                "volume": "",
+                "issue": "",
+                "pages": "1135--1139",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "Cires \u00b8an, D.C., Meier, U., Gambardella, L.M., Schmidhuber, J.: Convolutional neural network committees for handwritten character classification. In: Document Analysis and Recognition (ICDAR), 2011 International Conference on. pp. 1135-1139. IEEE (2011)",
+                "links": null
+            },
+            "BIBREF4": {
+                "ref_id": "b4",
+                "title": "Image processing with neural networksa review",
+                "authors": [
+                    {
+                        "first": "M",
+                        "middle": [],
+                        "last": "Egmont-Petersen",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "D",
+                        "middle": [],
+                        "last": "De Ridder",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "H",
+                        "middle": [],
+                        "last": "Handels",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2002,
+                "venue": "Pattern recognition",
+                "volume": "35",
+                "issue": "10",
+                "pages": "2279--2301",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "Egmont-Petersen, M., de Ridder, D., Handels, H.: Image processing with neural net- worksa review. Pattern recognition 35(10), 2279-2301 (2002)",
+                "links": null
+            },
+            "BIBREF5": {
+                "ref_id": "b5",
+                "title": "Hardware accelerated convolutional neural networks for synthetic vision systems",
+                "authors": [
+                    {
+                        "first": "C",
+                        "middle": [],
+                        "last": "Farabet",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "B",
+                        "middle": [],
+                        "last": "Martini",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "P",
+                        "middle": [],
+                        "last": "Akselrod",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "S",
+                        "middle": [],
+                        "last": "Talay",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "Y",
+                        "middle": [],
+                        "last": "Lecun",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "E",
+                        "middle": [],
+                        "last": "Culurciello",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2010,
+                "venue": "Circuits and Systems (ISCAS), Proceedings of 2010 IEEE International Symposium on",
+                "volume": "",
+                "issue": "",
+                "pages": "257--260",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "Farabet, C., Martini, B., Akselrod, P., Talay, S., LeCun, Y., Culurciello, E.: Hardware accelerated convolutional neural networks for synthetic vision systems. In: Circuits and Systems (ISCAS), Proceedings of 2010 IEEE International Symposium on. pp. 257-260. IEEE (2010)",
+                "links": null
+            },
+            "BIBREF6": {
+                "ref_id": "b6",
+                "title": "A practical guide to training restricted boltzmann machines",
+                "authors": [
+                    {
+                        "first": "G",
+                        "middle": [],
+                        "last": "Hinton",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2010,
+                "venue": "Momentum",
+                "volume": "9",
+                "issue": "1",
+                "pages": "",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "Hinton, G.: A practical guide to training restricted boltzmann machines. Momentum 9(1), 926 (2010)",
+                "links": null
+            },
+            "BIBREF7": {
+                "ref_id": "b7",
+                "title": "Improving neural networks by preventing co-adaptation of feature detectors",
+                "authors": [
+                    {
+                        "first": "G",
+                        "middle": [
+                            "E"
+                        ],
+                        "last": "Hinton",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "N",
+                        "middle": [],
+                        "last": "Srivastava",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "A",
+                        "middle": [],
+                        "last": "Krizhevsky",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "I",
+                        "middle": [],
+                        "last": "Sutskever",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "R",
+                        "middle": [
+                            "R"
+                        ],
+                        "last": "Salakhutdinov",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2012,
+                "venue": "",
+                "volume": "",
+                "issue": "",
+                "pages": "",
+                "other_ids": {
+                    "arXiv": [
+                        "arXiv:1207.0580"
+                    ]
+                },
+                "num": null,
+                "urls": [],
+                "raw_text": "Hinton, G.E., Srivastava, N., Krizhevsky, A., Sutskever, I., Salakhutdinov, R.R.: Im- proving neural networks by preventing co-adaptation of feature detectors. arXiv preprint arXiv:1207.0580 (2012)",
+                "links": null
+            },
+            "BIBREF8": {
+                "ref_id": "b8",
+                "title": "3d convolutional neural networks for human action recognition. Pattern Analysis and Machine Intelligence",
+                "authors": [
+                    {
+                        "first": "S",
+                        "middle": [],
+                        "last": "Ji",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "W",
+                        "middle": [],
+                        "last": "Xu",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "M",
+                        "middle": [],
+                        "last": "Yang",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "K",
+                        "middle": [],
+                        "last": "Yu",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2013,
+                "venue": "IEEE Transactions on",
+                "volume": "35",
+                "issue": "1",
+                "pages": "221--231",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "Ji, S., Xu, W., Yang, M., Yu, K.: 3d convolutional neural networks for human action recognition. Pattern Analysis and Machine Intelligence, IEEE Transactions on 35(1), 221-231 (2013)",
+                "links": null
+            },
+            "BIBREF9": {
+                "ref_id": "b9",
+                "title": "Largescale video classification with convolutional neural networks",
+                "authors": [
+                    {
+                        "first": "A",
+                        "middle": [],
+                        "last": "Karpathy",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "G",
+                        "middle": [],
+                        "last": "Toderici",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "S",
+                        "middle": [],
+                        "last": "Shetty",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "T",
+                        "middle": [],
+                        "last": "Leung",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "R",
+                        "middle": [],
+                        "last": "Sukthankar",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "L",
+                        "middle": [],
+                        "last": "Fei-Fei",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2014,
+                "venue": "Computer Vision and Pattern Recognition (CVPR), 2014 IEEE Conference on",
+                "volume": "",
+                "issue": "",
+                "pages": "1725--1732",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "Karpathy, A., Toderici, G., Shetty, S., Leung, T., Sukthankar, R., Fei-Fei, L.: Large- scale video classification with convolutional neural networks. In: Computer Vision and Pattern Recognition (CVPR), 2014 IEEE Conference on. pp. 1725-1732. IEEE (2014)",
+                "links": null
+            },
+            "BIBREF10": {
+                "ref_id": "b10",
+                "title": "Imagenet classification with deep convolutional neural networks",
+                "authors": [
+                    {
+                        "first": "A",
+                        "middle": [],
+                        "last": "Krizhevsky",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "I",
+                        "middle": [],
+                        "last": "Sutskever",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "G",
+                        "middle": [
+                            "E"
+                        ],
+                        "last": "Hinton",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2012,
+                "venue": "Advances in neural information processing systems",
+                "volume": "",
+                "issue": "",
+                "pages": "1097--1105",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "Krizhevsky, A., Sutskever, I., Hinton, G.E.: Imagenet classification with deep convo- lutional neural networks. In: Advances in neural information processing systems. pp. 1097-1105 (2012)",
+                "links": null
+            },
+            "BIBREF11": {
+                "ref_id": "b11",
+                "title": "Backpropagation applied to handwritten zip code recognition",
+                "authors": [
+                    {
+                        "first": "Y",
+                        "middle": [],
+                        "last": "Lecun",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "B",
+                        "middle": [],
+                        "last": "Boser",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "J",
+                        "middle": [
+                            "S"
+                        ],
+                        "last": "Denker",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "D",
+                        "middle": [],
+                        "last": "Henderson",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "R",
+                        "middle": [
+                            "E"
+                        ],
+                        "last": "Howard",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "W",
+                        "middle": [],
+                        "last": "Hubbard",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "L",
+                        "middle": [
+                            "D"
+                        ],
+                        "last": "Jackel",
+                        "suffix": ""
+                    }
+                ],
+                "year": 1989,
+                "venue": "Neural computation",
+                "volume": "1",
+                "issue": "4",
+                "pages": "541--551",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "LeCun, Y., Boser, B., Denker, J.S., Henderson, D., Howard, R.E., Hubbard, W., Jackel, L.D.: Backpropagation applied to handwritten zip code recognition. Neural compu- tation 1(4), 541-551 (1989)",
+                "links": null
+            },
+            "BIBREF12": {
+                "ref_id": "b12",
+                "title": "Gradient-based learning applied to document recognition",
+                "authors": [
+                    {
+                        "first": "Y",
+                        "middle": [],
+                        "last": "Lecun",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "L",
+                        "middle": [],
+                        "last": "Bottou",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "Y",
+                        "middle": [],
+                        "last": "Bengio",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "P",
+                        "middle": [],
+                        "last": "Haffner",
+                        "suffix": ""
+                    }
+                ],
+                "year": 1998,
+                "venue": "Proceedings of the IEEE",
+                "volume": "86",
+                "issue": "11",
+                "pages": "2278--2324",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "LeCun, Y., Bottou, L., Bengio, Y., Haffner, P.: Gradient-based learning applied to doc- ument recognition. Proceedings of the IEEE 86(11), 2278-2324 (1998)",
+                "links": null
+            },
+            "BIBREF13": {
+                "ref_id": "b13",
+                "title": "Evaluation of convolutional neural networks for visual recognition",
+                "authors": [
+                    {
+                        "first": "C",
+                        "middle": [],
+                        "last": "Nebauer",
+                        "suffix": ""
+                    }
+                ],
+                "year": 1998,
+                "venue": "IEEE Transactions on",
+                "volume": "9",
+                "issue": "4",
+                "pages": "685--696",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "Nebauer, C.: Evaluation of convolutional neural networks for visual recognition. Neural Networks, IEEE Transactions on 9(4), 685-696 (1998)",
+                "links": null
+            },
+            "BIBREF14": {
+                "ref_id": "b14",
+                "title": "Best practices for convolutional neural networks applied to visual document analysis",
+                "authors": [
+                    {
+                        "first": "P",
+                        "middle": [
+                            "Y"
+                        ],
+                        "last": "Simard",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "D",
+                        "middle": [],
+                        "last": "Steinkraus",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "J",
+                        "middle": [
+                            "C"
+                        ],
+                        "last": "Platt",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2003,
+                "venue": "",
+                "volume": "",
+                "issue": "",
+                "pages": "",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "Simard, P.Y., Steinkraus, D., Platt, J.C.: Best practices for convolutional neural net- works applied to visual document analysis. In: null. p. 958. IEEE (2003)",
+                "links": null
+            },
+            "BIBREF15": {
+                "ref_id": "b15",
+                "title": "Improving neural networks with dropout",
+                "authors": [
+                    {
+                        "first": "N",
+                        "middle": [],
+                        "last": "Srivastava",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2013,
+                "venue": "",
+                "volume": "",
+                "issue": "",
+                "pages": "",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "Srivastava, N.: Improving neural networks with dropout. Ph.D. thesis, University of Toronto (2013)",
+                "links": null
+            },
+            "BIBREF16": {
+                "ref_id": "b16",
+                "title": "Pedestrian detection with convolutional neural networks",
+                "authors": [
+                    {
+                        "first": "M",
+                        "middle": [],
+                        "last": "Szarvas",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "A",
+                        "middle": [],
+                        "last": "Yoshizawa",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "M",
+                        "middle": [],
+                        "last": "Yamamoto",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "J",
+                        "middle": [],
+                        "last": "Ogata",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2005,
+                "venue": "Intelligent Vehicles Symposium, 2005. Proceedings. IEEE",
+                "volume": "",
+                "issue": "",
+                "pages": "224--229",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "Szarvas, M., Yoshizawa, A., Yamamoto, M., Ogata, J.: Pedestrian detection with con- volutional neural networks. In: Intelligent Vehicles Symposium, 2005. Proceedings. IEEE. pp. 224-229. IEEE (2005)",
+                "links": null
+            },
+            "BIBREF17": {
+                "ref_id": "b17",
+                "title": "Deep neural networks for object detection",
+                "authors": [
+                    {
+                        "first": "C",
+                        "middle": [],
+                        "last": "Szegedy",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "A",
+                        "middle": [],
+                        "last": "Toshev",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "D",
+                        "middle": [],
+                        "last": "Erhan",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2013,
+                "venue": "Advances in Neural Information Processing Systems",
+                "volume": "",
+                "issue": "",
+                "pages": "2553--2561",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "Szegedy, C., Toshev, A., Erhan, D.: Deep neural networks for object detection. In: Advances in Neural Information Processing Systems. pp. 2553-2561 (2013)",
+                "links": null
+            },
+            "BIBREF18": {
+                "ref_id": "b18",
+                "title": "A new class of convolutional neural networks (siconnets) and their application of face detection",
+                "authors": [
+                    {
+                        "first": "F",
+                        "middle": [
+                            "H C"
+                        ],
+                        "last": "Tivive",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "A",
+                        "middle": [],
+                        "last": "Bouzerdoum",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2003,
+                "venue": "Proceedings of the International Joint Conference on",
+                "volume": "3",
+                "issue": "",
+                "pages": "2157--2162",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "Tivive, F.H.C., Bouzerdoum, A.: A new class of convolutional neural networks (siconnets) and their application of face detection. In: Neural Networks, 2003. Pro- ceedings of the International Joint Conference on. vol. 3, pp. 2157-2162. IEEE (2003)",
+                "links": null
+            },
+            "BIBREF19": {
+                "ref_id": "b19",
+                "title": "Stochastic pooling for regularization of deep convolutional neural networks",
+                "authors": [
+                    {
+                        "first": "M",
+                        "middle": [
+                            "D"
+                        ],
+                        "last": "Zeiler",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "R",
+                        "middle": [],
+                        "last": "Fergus",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2013,
+                "venue": "",
+                "volume": "",
+                "issue": "",
+                "pages": "",
+                "other_ids": {
+                    "arXiv": [
+                        "arXiv:1301.3557"
+                    ]
+                },
+                "num": null,
+                "urls": [],
+                "raw_text": "Zeiler, M.D., Fergus, R.: Stochastic pooling for regularization of deep convolutional neural networks. arXiv preprint arXiv:1301.3557 (2013)",
+                "links": null
+            },
+            "BIBREF20": {
+                "ref_id": "b20",
+                "title": "Visualizing and understanding convolutional networks",
+                "authors": [
+                    {
+                        "first": "M",
+                        "middle": [
+                            "D"
+                        ],
+                        "last": "Zeiler",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "R",
+                        "middle": [],
+                        "last": "Fergus",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2014,
+                "venue": "Computer Vision-ECCV 2014",
+                "volume": "",
+                "issue": "",
+                "pages": "818--833",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "Zeiler, M.D., Fergus, R.: Visualizing and understanding convolutional networks. In: Computer Vision-ECCV 2014, pp. 818-833. Springer (2014)",
+                "links": null
+            }
+        },
+        "ref_entries": {
+            "FIGREF0": {
+                "num": null,
+                "type_str": "figure",
+                "fig_num": "1",
+                "uris": null,
+                "text": "Fig.1: A simple three layered feedforward neural network (FNN), comprised of a input layer, a hidden layer and an output layer. This structure is the basis of a number of common ANN architectures, included but not limited to Feedforward Neural Networks (FNN), Restricted Boltzmann Machines (RBMs) and Recurrent Neural Networks (RNNs)."
+            },
+            "FIGREF1": {
+                "num": null,
+                "type_str": "figure",
+                "fig_num": "2",
+                "uris": null,
+                "text": "Fig. 2: An simple CNN architecture, comprised of just five layers"
+            },
+            "FIGREF2": {
+                "num": null,
+                "type_str": "figure",
+                "fig_num": "3",
+                "uris": null,
+                "text": "Fig. 3: Activations taken from the first convolutional layer of a simplistic deep CNN, after training on the MNIST database of handwritten digits. If you look carefully, you can see that the network has successfully picked up on characteristics unique to specific numeric digits."
+            },
+            "FIGREF3": {
+                "num": null,
+                "type_str": "figure",
+                "fig_num": "5",
+                "uris": null,
+                "text": "Fig.5: A common form of CNN architecture in which convolutional layers are stacked between ReLus continuously before being passed through the pooling layer, before going between one or many fully connected ReLus."
+            }
+        }
+    }
+}

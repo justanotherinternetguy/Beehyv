@@ -2,7 +2,7 @@
     "paper_id": "vision_transformer",
     "header": {
         "generated_with": "S2ORC 1.0.0",
-        "date_generated": "2026-04-25T14:54:54.156709Z"
+        "date_generated": "2026-04-25T16:28:35.790024Z"
     },
     "title": "AN IMAGE IS WORTH 16X16 WORDS: TRANSFORMERS FOR IMAGE RECOGNITION AT SCALE",
     "authors": [
@@ -4348,137 +4348,137 @@
         },
         "ref_entries": {
             "FIGREF0": {
-                "uris": null,
                 "type_str": "figure",
-                "num": null,
+                "fig_num": "1",
                 "text": "Figure1: Model overview. We split an image into fixed-size patches, linearly embed each of them, add position embeddings, and feed the resulting sequence of vectors to a standard Transformer encoder. In order to perform classification, we use the standard approach of adding an extra learnable \"classification token\" to the sequence. The illustration of the Transformer encoder was inspired byVaswani et al. (2017).",
-                "fig_num": "1"
+                "num": null,
+                "uris": null
             },
             "FIGREF1": {
-                "uris": null,
                 "type_str": "figure",
-                "num": null,
+                "fig_num": "2",
                 "text": "Figure 2: Breakdown of VTAB performance in Natural, Specialized, and Structured task groups.",
-                "fig_num": "2"
+                "num": null,
+                "uris": null
             },
             "FIGREF2": {
-                "uris": null,
                 "type_str": "figure",
-                "num": null,
+                "fig_num": "5",
                 "text": "Figure5: Performance versus pre-training compute for different architectures: Vision Transformers, ResNets, and hybrids. Vision Transformers generally outperform ResNets with the same computational budget. Hybrids improve upon pure Transformers for smaller model sizes, but the gap vanishes for larger models.",
-                "fig_num": "5"
+                "num": null,
+                "uris": null
             },
             "FIGREF3": {
-                "uris": null,
                 "type_str": "figure",
-                "num": null,
+                "fig_num": "7",
                 "text": "4.6 SELF-SUPERVISIONTransformers show impressive performance on NLP tasks. However, much of their success stems not only from their excellent scalability but also from large scale self-supervised pre-training(Devlin",
-                "fig_num": "7"
+                "num": null,
+                "uris": null
             },
             "FIGREF4": {
-                "uris": null,
                 "type_str": "figure",
-                "num": null,
+                "fig_num": "7",
                 "text": "Figure 7: Left: Filters of the initial linear embedding of RGB values of ViT-L/32. Center: Similarity of position embeddings of ViT-L/32. Tiles show the cosine similarity between the position embedding of the patch with the indicated row and column and the position embeddings of all other patches. Right: Size of attended area by head and network depth. Each dot shows the mean attention distance across images for one of 16 heads at one layer. See Appendix D.7 for details.",
-                "fig_num": "7"
+                "num": null,
+                "uris": null
             },
             "FIGREF5": {
-                "uris": null,
                 "type_str": "figure",
-                "num": null,
+                "fig_num": "8",
                 "text": "Figure 8: Scaling different model dimensions of the Vision Transformer.",
-                "fig_num": "8"
+                "num": null,
+                "uris": null
             },
             "FIGREF6": {
-                "uris": null,
                 "type_str": "figure",
-                "num": null,
+                "fig_num": "10",
                 "text": "Figure 10: Position embeddings of models trained with different hyperparameters.",
-                "fig_num": "10"
+                "num": null,
+                "uris": null
             },
             "FIGREF7": {
-                "uris": null,
                 "type_str": "figure",
-                "num": null,
+                "fig_num": "11",
                 "text": "Figure11: Size of attended area by head and network depth. Attention distance was computed for 128 example images by averaging the distance between the query pixel and all other pixels, weighted by the attention weight. Each dot shows the mean attention distance across images for one of 16 heads at one layer. Image width is 224 pixels.",
-                "fig_num": "11"
+                "num": null,
+                "uris": null
             },
             "FIGREF8": {
-                "uris": null,
                 "type_str": "figure",
-                "num": null,
+                "fig_num": "13",
                 "text": "Figure 13, present the performance of Axial ResNet, Axial-ViT-B/32 and Axial-ViT-B/16 on Ima-geNet 5shot linear, when pretrained on JFT dataset, verses the pretraining compute, both in terms of number of FLOPs and inference time (example per seconds). As we can see, both Axial-ViT-B/32 and Axial-ViT-B/16 do better than their ViT-B counterpart in terms of performance, but it comes at",
-                "fig_num": "13"
+                "num": null,
+                "uris": null
             },
             "FIGREF9": {
-                "uris": null,
                 "type_str": "figure",
-                "num": null,
+                "fig_num": "14",
                 "text": "Figure 14: Further example attention maps as in Figure 6 (random selection).",
-                "fig_num": "14"
+                "num": null,
+                "uris": null
             },
             "TABREF0": {
                 "type_str": "table",
                 "html": null,
+                "text": "Details of Vision Transformer model variants.",
                 "num": null,
-                "content": "<table><tr><td>Model</td><td colspan=\"5\">Layers Hidden size D MLP size Heads Params</td></tr><tr><td>ViT-Base</td><td>12</td><td>768</td><td>3072</td><td>12</td><td>86M</td></tr><tr><td>ViT-Large</td><td>24</td><td>1024</td><td>4096</td><td>16</td><td>307M</td></tr><tr><td>ViT-Huge</td><td>32</td><td>1280</td><td>5120</td><td>16</td><td>632M</td></tr></table>",
-                "text": "Details of Vision Transformer model variants."
+                "content": "<table><tr><td>Model</td><td colspan=\"5\">Layers Hidden size D MLP size Heads Params</td></tr><tr><td>ViT-Base</td><td>12</td><td>768</td><td>3072</td><td>12</td><td>86M</td></tr><tr><td>ViT-Large</td><td>24</td><td>1024</td><td>4096</td><td>16</td><td>307M</td></tr><tr><td>ViT-Huge</td><td>32</td><td>1280</td><td>5120</td><td>16</td><td>632M</td></tr></table>"
             },
             "TABREF1": {
                 "type_str": "table",
                 "html": null,
+                "text": "ImageNet 88.55 \u00b1 0.04 87.76 \u00b1 0.03 85.30 \u00b1 0.02 87.54 \u00b1 0.02 88.4/88.5 * ImageNet ReaL 90.72 \u00b1 0.05 90.54 \u00b1 0.03 88.62 \u00b1 0.05",
                 "num": null,
-                "content": "<table><tr><td/><td>Ours-JFT</td><td>Ours-JFT</td><td>Ours-I21k</td><td>BiT-L</td><td>Noisy Student</td></tr><tr><td/><td>(ViT-H/14)</td><td>(ViT-L/16)</td><td colspan=\"3\">(ViT-L/16) (ResNet152x4) (EfficientNet-L2)</td></tr><tr><td/><td/><td/><td/><td>90.54</td><td>90.55</td></tr><tr><td>CIFAR-10</td><td colspan=\"3\">99.50 \u00b1 0.06 99.42 \u00b1 0.03 99.15 \u00b1 0.03</td><td>99.37 \u00b1 0.06</td><td>-</td></tr><tr><td>CIFAR-100</td><td colspan=\"3\">94.55 \u00b1 0.04 93.90 \u00b1 0.05 93.25 \u00b1 0.05</td><td>93.51 \u00b1 0.08</td><td>-</td></tr><tr><td>Oxford-IIIT Pets</td><td colspan=\"3\">97.56 \u00b1 0.03 97.32 \u00b1 0.11 94.67 \u00b1 0.15</td><td>96.62 \u00b1 0.23</td><td>-</td></tr><tr><td colspan=\"4\">Oxford Flowers-102 99.68 \u00b1 0.02 99.74 \u00b1 0.00 99.61 \u00b1 0.02</td><td>99.63 \u00b1 0.03</td><td>-</td></tr><tr><td>VTAB (19 tasks)</td><td colspan=\"3\">77.63 \u00b1 0.23 76.28 \u00b1 0.46 72.72 \u00b1 0.21</td><td>76.29 \u00b1 1.70</td><td>-</td></tr><tr><td>TPUv3-core-days</td><td>2.5k</td><td>0.68k</td><td>0.23k</td><td>9.9k</td><td>12.3k</td></tr></table>",
-                "text": "ImageNet 88.55 \u00b1 0.04 87.76 \u00b1 0.03 85.30 \u00b1 0.02 87.54 \u00b1 0.02 88.4/88.5 * ImageNet ReaL 90.72 \u00b1 0.05 90.54 \u00b1 0.03 88.62 \u00b1 0.05"
+                "content": "<table><tr><td/><td>Ours-JFT</td><td>Ours-JFT</td><td>Ours-I21k</td><td>BiT-L</td><td>Noisy Student</td></tr><tr><td/><td>(ViT-H/14)</td><td>(ViT-L/16)</td><td colspan=\"3\">(ViT-L/16) (ResNet152x4) (EfficientNet-L2)</td></tr><tr><td/><td/><td/><td/><td>90.54</td><td>90.55</td></tr><tr><td>CIFAR-10</td><td colspan=\"3\">99.50 \u00b1 0.06 99.42 \u00b1 0.03 99.15 \u00b1 0.03</td><td>99.37 \u00b1 0.06</td><td>-</td></tr><tr><td>CIFAR-100</td><td colspan=\"3\">94.55 \u00b1 0.04 93.90 \u00b1 0.05 93.25 \u00b1 0.05</td><td>93.51 \u00b1 0.08</td><td>-</td></tr><tr><td>Oxford-IIIT Pets</td><td colspan=\"3\">97.56 \u00b1 0.03 97.32 \u00b1 0.11 94.67 \u00b1 0.15</td><td>96.62 \u00b1 0.23</td><td>-</td></tr><tr><td colspan=\"4\">Oxford Flowers-102 99.68 \u00b1 0.02 99.74 \u00b1 0.00 99.61 \u00b1 0.02</td><td>99.63 \u00b1 0.03</td><td>-</td></tr><tr><td>VTAB (19 tasks)</td><td colspan=\"3\">77.63 \u00b1 0.23 76.28 \u00b1 0.46 72.72 \u00b1 0.21</td><td>76.29 \u00b1 1.70</td><td>-</td></tr><tr><td>TPUv3-core-days</td><td>2.5k</td><td>0.68k</td><td>0.23k</td><td>9.9k</td><td>12.3k</td></tr></table>"
             },
             "TABREF2": {
                 "type_str": "table",
                 "html": null,
+                "text": "Comparison with state of the art on popular image classification benchmarks. We report mean and standard deviation of the accuracies, averaged over three fine-tuning runs. Vision Transformer models pre-trained on the JFT-300M dataset outperform ResNet-based baselines on all datasets, while taking substantially less computational resources to pre-train. ViT pre-trained on the smaller public ImageNet-21k dataset performs well too. * Slightly improved 88.5% result reported inTouvron et al. (2020).",
                 "num": null,
-                "content": "<table><tr><td/><td>80</td><td>ViT-H/14</td><td>90</td><td>BiT-L (R152x4)</td><td>90</td><td>VIVI-Ex-100% (R50x3)</td><td>70</td><td>S4L (R50x1)</td></tr><tr><td>Accuracy [%]</td><td>70 75</td><td/><td>80</td><td/><td>82 88 85</td><td/><td>60</td></tr><tr><td/><td>65</td><td>VTAB (19 tasks)</td><td>70</td><td>Natural (7 tasks)</td><td>80</td><td>Specialized (4 tasks)</td><td>50</td><td>Structured (8 tasks)</td></tr></table>",
-                "text": "Comparison with state of the art on popular image classification benchmarks. We report mean and standard deviation of the accuracies, averaged over three fine-tuning runs. Vision Transformer models pre-trained on the JFT-300M dataset outperform ResNet-based baselines on all datasets, while taking substantially less computational resources to pre-train. ViT pre-trained on the smaller public ImageNet-21k dataset performs well too. * Slightly improved 88.5% result reported inTouvron et al. (2020)."
+                "content": "<table><tr><td/><td>80</td><td>ViT-H/14</td><td>90</td><td>BiT-L (R152x4)</td><td>90</td><td>VIVI-Ex-100% (R50x3)</td><td>70</td><td>S4L (R50x1)</td></tr><tr><td>Accuracy [%]</td><td>70 75</td><td/><td>80</td><td/><td>82 88 85</td><td/><td>60</td></tr><tr><td/><td>65</td><td>VTAB (19 tasks)</td><td>70</td><td>Natural (7 tasks)</td><td>80</td><td>Specialized (4 tasks)</td><td>50</td><td>Structured (8 tasks)</td></tr></table>"
             },
             "TABREF3": {
                 "type_str": "table",
                 "html": null,
+                "text": "Top1 accuracy (in %) of Vision Transformer on various datasets when pre-trained on Im-ageNet, ImageNet-21k or JFT300M. These values correspond to Figure3in the main text. Models are fine-tuned at 384 resolution. Note that the ImageNet results are computed without additional techniques (Polyak averaging and 512 resolution images) used to achieve results in Table2.",
                 "num": null,
-                "content": "<table><tr><td/><td/><td/><td colspan=\"6\">ViT-B/16 ViT-B/32 ViT-L/16 ViT-L/32 ViT-H/14</td></tr><tr><td>ImageNet</td><td colspan=\"2\">CIFAR-10</td><td>98.13</td><td>97.77</td><td colspan=\"2\">97.86</td><td>97.94 -</td><td/></tr><tr><td/><td colspan=\"2\">CIFAR-100</td><td>87.13</td><td>86.31</td><td colspan=\"2\">86.35</td><td>87.07 -</td><td/></tr><tr><td/><td colspan=\"2\">ImageNet</td><td>77.91</td><td>73.38</td><td colspan=\"2\">76.53</td><td>71.16 -</td><td/></tr><tr><td/><td colspan=\"2\">ImageNet ReaL</td><td>83.57</td><td>79.56</td><td colspan=\"2\">82.19</td><td>77.83 -</td><td/></tr><tr><td/><td colspan=\"2\">Oxford Flowers-102</td><td>89.49</td><td>85.43</td><td colspan=\"2\">89.66</td><td>86.36 -</td><td/></tr><tr><td/><td colspan=\"2\">Oxford-IIIT-Pets</td><td>93.81</td><td>92.04</td><td colspan=\"2\">93.64</td><td>91.35 -</td><td/></tr><tr><td colspan=\"3\">ImageNet-21k CIFAR-10</td><td>98.95</td><td>98.79</td><td colspan=\"2\">99.16</td><td colspan=\"2\">99.13 99.27</td></tr><tr><td/><td colspan=\"2\">CIFAR-100</td><td>91.67</td><td>91.97</td><td colspan=\"2\">93.44</td><td colspan=\"2\">93.04 93.82</td></tr><tr><td/><td colspan=\"2\">ImageNet</td><td>83.97</td><td>81.28</td><td colspan=\"2\">85.15</td><td colspan=\"2\">80.99 85.13</td></tr><tr><td/><td colspan=\"2\">ImageNet ReaL</td><td>88.35</td><td>86.63</td><td colspan=\"2\">88.40</td><td colspan=\"2\">85.65 88.70</td></tr><tr><td/><td colspan=\"2\">Oxford Flowers-102</td><td>99.38</td><td>99.11</td><td colspan=\"2\">99.61</td><td colspan=\"2\">99.19 99.51</td></tr><tr><td/><td colspan=\"2\">Oxford-IIIT-Pets</td><td>94.43</td><td>93.02</td><td colspan=\"2\">94.73</td><td colspan=\"2\">93.09 94.82</td></tr><tr><td>JFT-300M</td><td colspan=\"2\">CIFAR-10</td><td>99.00</td><td>98.61</td><td colspan=\"2\">99.38</td><td colspan=\"2\">99.19 99.50</td></tr><tr><td/><td colspan=\"2\">CIFAR-100</td><td>91.87</td><td>90.49</td><td colspan=\"2\">94.04</td><td colspan=\"2\">92.52 94.55</td></tr><tr><td/><td colspan=\"2\">ImageNet</td><td>84.15</td><td>80.73</td><td colspan=\"2\">87.12</td><td colspan=\"2\">84.37 88.04</td></tr><tr><td/><td colspan=\"2\">ImageNet ReaL</td><td>88.85</td><td>86.27</td><td colspan=\"2\">89.99</td><td colspan=\"2\">88.28 90.33</td></tr><tr><td/><td colspan=\"2\">Oxford Flowers-102</td><td>99.56</td><td>99.27</td><td colspan=\"2\">99.56</td><td colspan=\"2\">99.45 99.68</td></tr><tr><td/><td colspan=\"2\">Oxford-IIIT-Pets</td><td>95.80</td><td>93.40</td><td colspan=\"2\">97.11</td><td colspan=\"2\">95.83 97.56</td></tr><tr><td/><td colspan=\"8\">Epochs ImageNet ImageNet ReaL CIFAR-10 CIFAR-100 Pets Flowers exaFLOPs</td></tr><tr><td>name</td><td/><td/><td/><td/><td/><td/><td/><td/></tr><tr><td>ViT-B/32</td><td>7</td><td>80.73</td><td>86.27</td><td>98.61</td><td>90.49</td><td>93.40</td><td>99.27</td><td>55</td></tr><tr><td>ViT-B/16</td><td>7</td><td>84.15</td><td>88.85</td><td>99.00</td><td>91.87</td><td>95.80</td><td>99.56</td><td>224</td></tr><tr><td>ViT-L/32</td><td>7</td><td>84.37</td><td>88.28</td><td>99.19</td><td>92.52</td><td>95.83</td><td>99.45</td><td>196</td></tr><tr><td>ViT-L/16</td><td>7</td><td>86.30</td><td>89.43</td><td>99.38</td><td>93.46</td><td>96.81</td><td>99.66</td><td>783</td></tr><tr><td>ViT-L/16</td><td>14</td><td>87.12</td><td>89.99</td><td>99.38</td><td>94.04</td><td>97.11</td><td>99.56</td><td>1567</td></tr><tr><td>ViT-H/14</td><td>14</td><td>88.08</td><td>90.36</td><td>99.50</td><td>94.71</td><td>97.11</td><td>99.71</td><td>4262</td></tr><tr><td>ResNet50x1</td><td>7</td><td>77.54</td><td>84.56</td><td>97.67</td><td>86.07</td><td>91.11</td><td>94.26</td><td>50</td></tr><tr><td>ResNet50x2</td><td>7</td><td>82.12</td><td>87.94</td><td>98.29</td><td>89.20</td><td>93.43</td><td>97.02</td><td>199</td></tr><tr><td>ResNet101x1</td><td>7</td><td>80.67</td><td>87.07</td><td>98.48</td><td>89.17</td><td>94.08</td><td>95.95</td><td>96</td></tr><tr><td>ResNet152x1</td><td>7</td><td>81.88</td><td>87.96</td><td>98.82</td><td>90.22</td><td>94.17</td><td>96.94</td><td>141</td></tr><tr><td>ResNet152x2</td><td>7</td><td>84.97</td><td>89.69</td><td>99.06</td><td>92.05</td><td>95.37</td><td>98.62</td><td>563</td></tr><tr><td>ResNet152x2</td><td>14</td><td>85.56</td><td>89.89</td><td>99.24</td><td>91.92</td><td>95.75</td><td>98.75</td><td>1126</td></tr><tr><td>ResNet200x3</td><td>14</td><td>87.22</td><td>90.15</td><td>99.34</td><td>93.53</td><td>96.32</td><td>99.04</td><td>3306</td></tr><tr><td colspan=\"2\">R50x1+ViT-B/32 7</td><td>84.90</td><td>89.15</td><td>99.01</td><td>92.24</td><td>95.75</td><td>99.46</td><td>106</td></tr><tr><td colspan=\"2\">R50x1+ViT-B/16 7</td><td>85.58</td><td>89.65</td><td>99.14</td><td>92.63</td><td>96.65</td><td>99.40</td><td>274</td></tr><tr><td colspan=\"2\">R50x1+ViT-L/32 7</td><td>85.68</td><td>89.04</td><td>99.24</td><td>92.93</td><td>96.97</td><td>99.43</td><td>246</td></tr><tr><td colspan=\"2\">R50x1+ViT-L/16 7</td><td>86.60</td><td>89.72</td><td>99.18</td><td>93.64</td><td>97.03</td><td>99.40</td><td>859</td></tr><tr><td colspan=\"2\">R50x1+ViT-L/16 14</td><td>87.12</td><td>89.76</td><td>99.31</td><td>93.89</td><td>97.36</td><td>99.11</td><td>1668</td></tr></table>",
-                "text": "Top1 accuracy (in %) of Vision Transformer on various datasets when pre-trained on Im-ageNet, ImageNet-21k or JFT300M. These values correspond to Figure3in the main text. Models are fine-tuned at 384 resolution. Note that the ImageNet results are computed without additional techniques (Polyak averaging and 512 resolution images) used to achieve results in Table2."
+                "content": "<table><tr><td/><td/><td/><td colspan=\"6\">ViT-B/16 ViT-B/32 ViT-L/16 ViT-L/32 ViT-H/14</td></tr><tr><td>ImageNet</td><td colspan=\"2\">CIFAR-10</td><td>98.13</td><td>97.77</td><td colspan=\"2\">97.86</td><td>97.94 -</td><td/></tr><tr><td/><td colspan=\"2\">CIFAR-100</td><td>87.13</td><td>86.31</td><td colspan=\"2\">86.35</td><td>87.07 -</td><td/></tr><tr><td/><td colspan=\"2\">ImageNet</td><td>77.91</td><td>73.38</td><td colspan=\"2\">76.53</td><td>71.16 -</td><td/></tr><tr><td/><td colspan=\"2\">ImageNet ReaL</td><td>83.57</td><td>79.56</td><td colspan=\"2\">82.19</td><td>77.83 -</td><td/></tr><tr><td/><td colspan=\"2\">Oxford Flowers-102</td><td>89.49</td><td>85.43</td><td colspan=\"2\">89.66</td><td>86.36 -</td><td/></tr><tr><td/><td colspan=\"2\">Oxford-IIIT-Pets</td><td>93.81</td><td>92.04</td><td colspan=\"2\">93.64</td><td>91.35 -</td><td/></tr><tr><td colspan=\"3\">ImageNet-21k CIFAR-10</td><td>98.95</td><td>98.79</td><td colspan=\"2\">99.16</td><td colspan=\"2\">99.13 99.27</td></tr><tr><td/><td colspan=\"2\">CIFAR-100</td><td>91.67</td><td>91.97</td><td colspan=\"2\">93.44</td><td colspan=\"2\">93.04 93.82</td></tr><tr><td/><td colspan=\"2\">ImageNet</td><td>83.97</td><td>81.28</td><td colspan=\"2\">85.15</td><td colspan=\"2\">80.99 85.13</td></tr><tr><td/><td colspan=\"2\">ImageNet ReaL</td><td>88.35</td><td>86.63</td><td colspan=\"2\">88.40</td><td colspan=\"2\">85.65 88.70</td></tr><tr><td/><td colspan=\"2\">Oxford Flowers-102</td><td>99.38</td><td>99.11</td><td colspan=\"2\">99.61</td><td colspan=\"2\">99.19 99.51</td></tr><tr><td/><td colspan=\"2\">Oxford-IIIT-Pets</td><td>94.43</td><td>93.02</td><td colspan=\"2\">94.73</td><td colspan=\"2\">93.09 94.82</td></tr><tr><td>JFT-300M</td><td colspan=\"2\">CIFAR-10</td><td>99.00</td><td>98.61</td><td colspan=\"2\">99.38</td><td colspan=\"2\">99.19 99.50</td></tr><tr><td/><td colspan=\"2\">CIFAR-100</td><td>91.87</td><td>90.49</td><td colspan=\"2\">94.04</td><td colspan=\"2\">92.52 94.55</td></tr><tr><td/><td colspan=\"2\">ImageNet</td><td>84.15</td><td>80.73</td><td colspan=\"2\">87.12</td><td colspan=\"2\">84.37 88.04</td></tr><tr><td/><td colspan=\"2\">ImageNet ReaL</td><td>88.85</td><td>86.27</td><td colspan=\"2\">89.99</td><td colspan=\"2\">88.28 90.33</td></tr><tr><td/><td colspan=\"2\">Oxford Flowers-102</td><td>99.56</td><td>99.27</td><td colspan=\"2\">99.56</td><td colspan=\"2\">99.45 99.68</td></tr><tr><td/><td colspan=\"2\">Oxford-IIIT-Pets</td><td>95.80</td><td>93.40</td><td colspan=\"2\">97.11</td><td colspan=\"2\">95.83 97.56</td></tr><tr><td/><td colspan=\"8\">Epochs ImageNet ImageNet ReaL CIFAR-10 CIFAR-100 Pets Flowers exaFLOPs</td></tr><tr><td>name</td><td/><td/><td/><td/><td/><td/><td/><td/></tr><tr><td>ViT-B/32</td><td>7</td><td>80.73</td><td>86.27</td><td>98.61</td><td>90.49</td><td>93.40</td><td>99.27</td><td>55</td></tr><tr><td>ViT-B/16</td><td>7</td><td>84.15</td><td>88.85</td><td>99.00</td><td>91.87</td><td>95.80</td><td>99.56</td><td>224</td></tr><tr><td>ViT-L/32</td><td>7</td><td>84.37</td><td>88.28</td><td>99.19</td><td>92.52</td><td>95.83</td><td>99.45</td><td>196</td></tr><tr><td>ViT-L/16</td><td>7</td><td>86.30</td><td>89.43</td><td>99.38</td><td>93.46</td><td>96.81</td><td>99.66</td><td>783</td></tr><tr><td>ViT-L/16</td><td>14</td><td>87.12</td><td>89.99</td><td>99.38</td><td>94.04</td><td>97.11</td><td>99.56</td><td>1567</td></tr><tr><td>ViT-H/14</td><td>14</td><td>88.08</td><td>90.36</td><td>99.50</td><td>94.71</td><td>97.11</td><td>99.71</td><td>4262</td></tr><tr><td>ResNet50x1</td><td>7</td><td>77.54</td><td>84.56</td><td>97.67</td><td>86.07</td><td>91.11</td><td>94.26</td><td>50</td></tr><tr><td>ResNet50x2</td><td>7</td><td>82.12</td><td>87.94</td><td>98.29</td><td>89.20</td><td>93.43</td><td>97.02</td><td>199</td></tr><tr><td>ResNet101x1</td><td>7</td><td>80.67</td><td>87.07</td><td>98.48</td><td>89.17</td><td>94.08</td><td>95.95</td><td>96</td></tr><tr><td>ResNet152x1</td><td>7</td><td>81.88</td><td>87.96</td><td>98.82</td><td>90.22</td><td>94.17</td><td>96.94</td><td>141</td></tr><tr><td>ResNet152x2</td><td>7</td><td>84.97</td><td>89.69</td><td>99.06</td><td>92.05</td><td>95.37</td><td>98.62</td><td>563</td></tr><tr><td>ResNet152x2</td><td>14</td><td>85.56</td><td>89.89</td><td>99.24</td><td>91.92</td><td>95.75</td><td>98.75</td><td>1126</td></tr><tr><td>ResNet200x3</td><td>14</td><td>87.22</td><td>90.15</td><td>99.34</td><td>93.53</td><td>96.32</td><td>99.04</td><td>3306</td></tr><tr><td colspan=\"2\">R50x1+ViT-B/32 7</td><td>84.90</td><td>89.15</td><td>99.01</td><td>92.24</td><td>95.75</td><td>99.46</td><td>106</td></tr><tr><td colspan=\"2\">R50x1+ViT-B/16 7</td><td>85.58</td><td>89.65</td><td>99.14</td><td>92.63</td><td>96.65</td><td>99.40</td><td>274</td></tr><tr><td colspan=\"2\">R50x1+ViT-L/32 7</td><td>85.68</td><td>89.04</td><td>99.24</td><td>92.93</td><td>96.97</td><td>99.43</td><td>246</td></tr><tr><td colspan=\"2\">R50x1+ViT-L/16 7</td><td>86.60</td><td>89.72</td><td>99.18</td><td>93.64</td><td>97.03</td><td>99.40</td><td>859</td></tr><tr><td colspan=\"2\">R50x1+ViT-L/16 14</td><td>87.12</td><td>89.76</td><td>99.31</td><td>93.89</td><td>97.36</td><td>99.11</td><td>1668</td></tr></table>"
             },
             "TABREF4": {
                 "type_str": "table",
                 "html": null,
+                "text": "Fine-tuning ResNet models pre-trained with Adam and SGD.",
                 "num": null,
-                "content": "<table><tr><td/><td>0.6</td><td/><td/><td/><td>0.8</td><td/><td/></tr><tr><td>ImageNet 5shot</td><td>0.2 0.3 0.4 0.5</td><td>10 0 Relative Compute</td><td>10 1 Patch size Models All Depth Width MLP Width</td><td>Average 5shot</td><td>0.4 0.5 0.6 0.7</td><td>10 0 Relative Compute</td><td>10 1 Patch size Models All Depth Width MLP Width</td></tr></table>",
-                "text": "Fine-tuning ResNet models pre-trained with Adam and SGD."
+                "content": "<table><tr><td/><td>0.6</td><td/><td/><td/><td>0.8</td><td/><td/></tr><tr><td>ImageNet 5shot</td><td>0.2 0.3 0.4 0.5</td><td>10 0 Relative Compute</td><td>10 1 Patch size Models All Depth Width MLP Width</td><td>Average 5shot</td><td>0.4 0.5 0.6 0.7</td><td>10 0 Relative Compute</td><td>10 1 Patch size Models All Depth Width MLP Width</td></tr></table>"
             },
             "FIGREF10": {
-                "uris": null,
                 "type_str": "figure",
-                "num": null,
+                "fig_num": "13",
                 "text": "Performance of Axial-Attention based models, in terms of top-1 accuracy on ImageNet 5-shot linear, versus their speed in terms of number of FLOPs (left) and inference time (left).",
-                "fig_num": "13"
+                "num": null,
+                "uris": null
             },
             "TABREF5": {
                 "type_str": "table",
                 "html": null,
+                "text": "Published as a conference paper at ICLR 2021 Hyperparameters for training. All models are trained with a batch size of 4096 and learning rate warmup of 10k steps. For ImageNet we found it beneficial to additionally apply gradient clipping at global norm 1. Training resolution is 224.",
                 "num": null,
-                "content": "<table><tr><td>Models</td><td>Dataset</td><td colspan=\"5\">Epochs Base LR LR decay Weight decay Dropout</td></tr><tr><td>ViT-B/{16,32}</td><td>JFT-300M</td><td>7</td><td>8 \u2022 10 -4</td><td>linear</td><td>0.1</td><td>0.0</td></tr><tr><td>ViT-L/32</td><td>JFT-300M</td><td>7</td><td>6 \u2022 10 -4</td><td>linear</td><td>0.1</td><td>0.0</td></tr><tr><td>ViT-L/16</td><td>JFT-300M</td><td>7/14</td><td>4 \u2022 10 -4</td><td>linear</td><td>0.1</td><td>0.0</td></tr><tr><td>ViT-H/14</td><td>JFT-300M</td><td>14</td><td>3 \u2022 10 -4</td><td>linear</td><td>0.1</td><td>0.0</td></tr><tr><td>R50x{1,2}</td><td>JFT-300M</td><td>7</td><td>10 -3</td><td>linear</td><td>0.1</td><td>0.0</td></tr><tr><td>R101x1</td><td>JFT-300M</td><td>7</td><td>8 \u2022 10 -4</td><td>linear</td><td>0.1</td><td>0.0</td></tr><tr><td>R152x{1,2}</td><td>JFT-300M</td><td>7</td><td>6 \u2022 10 -4</td><td>linear</td><td>0.1</td><td>0.0</td></tr><tr><td colspan=\"2\">R50+ViT-B/{16,32} JFT-300M</td><td>7</td><td>8 \u2022 10 -4</td><td>linear</td><td>0.1</td><td>0.0</td></tr><tr><td>R50+ViT-L/32</td><td>JFT-300M</td><td>7</td><td>2 \u2022 10 -4</td><td>linear</td><td>0.1</td><td>0.0</td></tr><tr><td>R50+ViT-L/16</td><td>JFT-300M</td><td>7/14</td><td>4 \u2022 10 -4</td><td>linear</td><td>0.1</td><td>0.0</td></tr><tr><td>ViT-B/{16,32}</td><td>ImageNet-21k</td><td>90</td><td>10 -3</td><td>linear</td><td>0.03</td><td>0.1</td></tr><tr><td>ViT-L/{16,32}</td><td>ImageNet-21k</td><td>30/90</td><td>10 -3</td><td>linear</td><td>0.03</td><td>0.1</td></tr><tr><td>ViT- *</td><td>ImageNet</td><td>300</td><td>3 \u2022 10 -3</td><td>cosine</td><td>0.3</td><td>0.1</td></tr></table>",
-                "text": "Published as a conference paper at ICLR 2021 Hyperparameters for training. All models are trained with a batch size of 4096 and learning rate warmup of 10k steps. For ImageNet we found it beneficial to additionally apply gradient clipping at global norm 1. Training resolution is 224."
+                "content": "<table><tr><td>Models</td><td>Dataset</td><td colspan=\"5\">Epochs Base LR LR decay Weight decay Dropout</td></tr><tr><td>ViT-B/{16,32}</td><td>JFT-300M</td><td>7</td><td>8 \u2022 10 -4</td><td>linear</td><td>0.1</td><td>0.0</td></tr><tr><td>ViT-L/32</td><td>JFT-300M</td><td>7</td><td>6 \u2022 10 -4</td><td>linear</td><td>0.1</td><td>0.0</td></tr><tr><td>ViT-L/16</td><td>JFT-300M</td><td>7/14</td><td>4 \u2022 10 -4</td><td>linear</td><td>0.1</td><td>0.0</td></tr><tr><td>ViT-H/14</td><td>JFT-300M</td><td>14</td><td>3 \u2022 10 -4</td><td>linear</td><td>0.1</td><td>0.0</td></tr><tr><td>R50x{1,2}</td><td>JFT-300M</td><td>7</td><td>10 -3</td><td>linear</td><td>0.1</td><td>0.0</td></tr><tr><td>R101x1</td><td>JFT-300M</td><td>7</td><td>8 \u2022 10 -4</td><td>linear</td><td>0.1</td><td>0.0</td></tr><tr><td>R152x{1,2}</td><td>JFT-300M</td><td>7</td><td>6 \u2022 10 -4</td><td>linear</td><td>0.1</td><td>0.0</td></tr><tr><td colspan=\"2\">R50+ViT-B/{16,32} JFT-300M</td><td>7</td><td>8 \u2022 10 -4</td><td>linear</td><td>0.1</td><td>0.0</td></tr><tr><td>R50+ViT-L/32</td><td>JFT-300M</td><td>7</td><td>2 \u2022 10 -4</td><td>linear</td><td>0.1</td><td>0.0</td></tr><tr><td>R50+ViT-L/16</td><td>JFT-300M</td><td>7/14</td><td>4 \u2022 10 -4</td><td>linear</td><td>0.1</td><td>0.0</td></tr><tr><td>ViT-B/{16,32}</td><td>ImageNet-21k</td><td>90</td><td>10 -3</td><td>linear</td><td>0.03</td><td>0.1</td></tr><tr><td>ViT-L/{16,32}</td><td>ImageNet-21k</td><td>30/90</td><td>10 -3</td><td>linear</td><td>0.03</td><td>0.1</td></tr><tr><td>ViT- *</td><td>ImageNet</td><td>300</td><td>3 \u2022 10 -3</td><td>cosine</td><td>0.3</td><td>0.1</td></tr></table>"
             },
             "TABREF6": {
                 "type_str": "table",
                 "html": null,
+                "text": "To do so, we use small sub-splits from the training set (10% for Pets and Flowers, 2% for CIFAR, 1% ImageNet) as development set and train on the remaining data. For final results we train on the entire training set and evaluate on the respective test data. For fine-tuning ResNets and hybrid models we use the exact same setup, with the only exception of ImageNet where we add another value 0.06 to the learning rate sweep. Additionally,",
                 "num": null,
-                "content": "<table><tr><td colspan=\"2\">Published as a conference paper at ICLR 2021</td><td/></tr><tr><td>Dataset</td><td>Steps</td><td>Base LR</td></tr><tr><td>ImageNet</td><td>20 000</td><td>{0.003, 0.01, 0.03, 0.06}</td></tr><tr><td>CIFAR100</td><td colspan=\"2\">10 000 {0.001, 0.003, 0.01, 0.03}</td></tr><tr><td>CIFAR10</td><td colspan=\"2\">10 000 {0.001, 0.003, 0.01, 0.03}</td></tr><tr><td>Oxford-IIIT Pets</td><td>500</td><td>{0.001, 0.003, 0.01, 0.03}</td></tr><tr><td>Oxford Flowers-102</td><td>500</td><td>{0.001, 0.003, 0.01, 0.03}</td></tr><tr><td>VTAB (19 tasks)</td><td>2 500</td><td>0.01</td></tr></table>",
-                "text": "To do so, we use small sub-splits from the training set (10% for Pets and Flowers, 2% for CIFAR, 1% ImageNet) as development set and train on the remaining data. For final results we train on the entire training set and evaluate on the respective test data. For fine-tuning ResNets and hybrid models we use the exact same setup, with the only exception of ImageNet where we add another value 0.06 to the learning rate sweep. Additionally,"
+                "content": "<table><tr><td colspan=\"2\">Published as a conference paper at ICLR 2021</td><td/></tr><tr><td>Dataset</td><td>Steps</td><td>Base LR</td></tr><tr><td>ImageNet</td><td>20 000</td><td>{0.003, 0.01, 0.03, 0.06}</td></tr><tr><td>CIFAR100</td><td colspan=\"2\">10 000 {0.001, 0.003, 0.01, 0.03}</td></tr><tr><td>CIFAR10</td><td colspan=\"2\">10 000 {0.001, 0.003, 0.01, 0.03}</td></tr><tr><td>Oxford-IIIT Pets</td><td>500</td><td>{0.001, 0.003, 0.01, 0.03}</td></tr><tr><td>Oxford Flowers-102</td><td>500</td><td>{0.001, 0.003, 0.01, 0.03}</td></tr><tr><td>VTAB (19 tasks)</td><td>2 500</td><td>0.01</td></tr></table>"
             },
             "TABREF11": {
                 "type_str": "table",
                 "html": null,
+                "text": "Breakdown of VTAB-1k performance across tasks.",
                 "num": null,
-                "content": "<table><tr><td>Caltech101</td><td>CIFAR-100</td><td>DTD</td><td>Flowers102</td><td>Pets</td><td>Sun397</td><td>SVHN</td><td>Camelyon</td><td>EuroSAT</td><td>Resisc45</td><td>Retinopathy</td><td>Clevr-Count</td><td>Clevr-Dist</td><td>DMLab</td><td>dSpr-Loc</td><td>dSpr-Ori</td><td>KITTI-Dist</td><td>sNORB-Azim</td><td>sNORB-Elev</td><td>Mean</td></tr><tr><td colspan=\"20\">ViT-H/14 (JFT) 95.3 85.5 75.2 99.7 97.2 65.0 88.9 83.3 96.7 91.4 76.6 91.7 63.8 53.1 79.4 63.3 84.5 33.2 51.2 77.6</td></tr><tr><td colspan=\"20\">ViT-L/16 (JFT) 95.4 81.9 74.3 99.7 96.7 63.5 87.4 83.6 96.5 89.7 77.1 86.4 63.1 49.7 74.5 60.5 82.2 36.2 51.1 76.3</td></tr><tr><td colspan=\"20\">ViT-L/16 (I21k) 90.8 84.1 74.1 99.3 92.7 61.0 80.9 82.5 95.6 85.2 75.3 70.3 56.1 41.9 74.7 64.9 79.9 30.5 41.7 72.7</td></tr></table>",
-                "text": "Breakdown of VTAB-1k performance across tasks."
+                "content": "<table><tr><td>Caltech101</td><td>CIFAR-100</td><td>DTD</td><td>Flowers102</td><td>Pets</td><td>Sun397</td><td>SVHN</td><td>Camelyon</td><td>EuroSAT</td><td>Resisc45</td><td>Retinopathy</td><td>Clevr-Count</td><td>Clevr-Dist</td><td>DMLab</td><td>dSpr-Loc</td><td>dSpr-Ori</td><td>KITTI-Dist</td><td>sNORB-Azim</td><td>sNORB-Elev</td><td>Mean</td></tr><tr><td colspan=\"20\">ViT-H/14 (JFT) 95.3 85.5 75.2 99.7 97.2 65.0 88.9 83.3 96.7 91.4 76.6 91.7 63.8 53.1 79.4 63.3 84.5 33.2 51.2 77.6</td></tr><tr><td colspan=\"20\">ViT-L/16 (JFT) 95.4 81.9 74.3 99.7 96.7 63.5 87.4 83.6 96.5 89.7 77.1 86.4 63.1 49.7 74.5 60.5 82.2 36.2 51.1 76.3</td></tr><tr><td colspan=\"20\">ViT-L/16 (I21k) 90.8 84.1 74.1 99.3 92.7 61.0 80.9 82.5 95.6 85.2 75.3 70.3 56.1 41.9 74.7 64.9 79.9 30.5 41.7 72.7</td></tr></table>"
             }
         }
     }

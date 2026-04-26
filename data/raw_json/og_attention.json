@@ -2,7 +2,7 @@
     "paper_id": "og_attention",
     "header": {
         "generated_with": "S2ORC 1.0.0",
-        "date_generated": "2026-04-25T14:55:28.977160Z"
+        "date_generated": "2026-04-25T16:28:33.414014Z"
     },
     "title": "NEURAL MACHINE TRANSLATION BY JOINTLY LEARNING TO ALIGN AND TRANSLATE",
     "authors": [
@@ -2574,37 +2574,37 @@
         "ref_entries": {
             "FIGREF0": {
                 "uris": null,
-                "num": null,
+                "fig_num": "2",
                 "text": "Figure2: The BLEU scores of the generated translations on the test set with respect to the lengths of the sentences. The results are on the full test set which includes sentences having unknown words to the models.",
-                "type_str": "figure",
-                "fig_num": "2"
+                "num": null,
+                "type_str": "figure"
             },
             "FIGREF1": {
                 "uris": null,
-                "num": null,
+                "fig_num": "3",
                 "text": "Figure3: Four sample alignments found by RNNsearch-50. The x-axis and y-axis of each plot correspond to the words in the source sentence (English) and the generated translation (French), respectively. Each pixel shows the weight \u03b1 ij of the annotation of the j-th source word for the i-th target word (see Eq. (6)), in grayscale (0: black, 1: white). (a) an arbitrary sentence. (b-d) three randomly selected samples among the sentences without any unknown words and of length between 10 and 20 words from the test set.",
-                "type_str": "figure",
-                "fig_num": "3"
+                "num": null,
+                "type_str": "figure"
             },
             "FIGREF2": {
                 "uris": null,
-                "num": null,
+                "fig_num": "1",
                 "text": "are weight matrices. m and n are the word embedding dimensionality and the number of hidden units, respectively. \u03c3(\u2022) is as usual a logistic sigmoid function.The backward states ( \u2190h 1 , \u2022 \u2022 \u2022 , \u2190h Tx ) are computed similarly. We share the word embedding matrix E between the forward and backward RNNs, unlike the weight matrices.",
-                "type_str": "figure",
-                "fig_num": "1"
+                "num": null,
+                "type_str": "figure"
             },
             "TABREF0": {
                 "html": null,
-                "num": null,
-                "content": "<table><tr><td>Model</td><td>All</td><td>No UNK \u2022</td></tr><tr><td colspan=\"2\">RNNencdec-30 13.93</td><td>24.19</td></tr><tr><td colspan=\"2\">RNNsearch-30 21.50</td><td>31.44</td></tr><tr><td colspan=\"2\">RNNencdec-50 17.82</td><td>26.71</td></tr><tr><td colspan=\"2\">RNNsearch-50 26.75</td><td>34.16</td></tr><tr><td>RNNsearch-50</td><td>28.45</td><td>36.15</td></tr><tr><td>Moses</td><td>33.30</td><td>35.63</td></tr></table>",
                 "text": "BLEU scores of the trained models computed on the test set. The second and third columns show respectively the scores on all the sentences and, on the sentences without any unknown word in themselves and in the reference translations. Note that RNNsearch-50 was trained much longer until the performance on the development set stopped improving. (\u2022) We disallowed the models to generate[UNK]",
+                "content": "<table><tr><td>Model</td><td>All</td><td>No UNK \u2022</td></tr><tr><td colspan=\"2\">RNNencdec-30 13.93</td><td>24.19</td></tr><tr><td colspan=\"2\">RNNsearch-30 21.50</td><td>31.44</td></tr><tr><td colspan=\"2\">RNNencdec-50 17.82</td><td>26.71</td></tr><tr><td colspan=\"2\">RNNsearch-50 26.75</td><td>34.16</td></tr><tr><td>RNNsearch-50</td><td>28.45</td><td>36.15</td></tr><tr><td>Moses</td><td>33.30</td><td>35.63</td></tr></table>",
+                "num": null,
                 "type_str": "table"
             },
             "TABREF1": {
                 "html": null,
-                "num": null,
-                "content": "<table><tr><td/><td/><td colspan=\"2\">5 ) Epochs Hours</td><td>GPU</td><td colspan=\"2\">Train NLL Dev. NLL</td></tr><tr><td>RNNenc-30</td><td>8.46</td><td>6.4</td><td>109</td><td>TITAN BLACK</td><td>28.1</td><td>53.0</td></tr><tr><td>RNNenc-50</td><td>6.00</td><td>4.5</td><td>108</td><td>Quadro K-6000</td><td>44.0</td><td>43.6</td></tr><tr><td>RNNsearch-30</td><td>4.71</td><td>3.6</td><td>113</td><td>TITAN BLACK</td><td>26.7</td><td>47.2</td></tr><tr><td>RNNsearch-50</td><td>2.88</td><td>2.2</td><td>111</td><td>Quadro K-6000</td><td>40.7</td><td>38.1</td></tr><tr><td>RNNsearch-50</td><td>6.67</td><td>5.0</td><td>252</td><td>Quadro K-6000</td><td>36.7</td><td>35.2</td></tr></table>",
                 "text": "Learning statistics and relevant information. Each update corresponds to updating the parameters once using a single minibatch. One epoch is one pass through the training set. NLL is the average conditional log-probabilities of the sentences in either the training set or the development set. Note that the lengths of the sentences differ.",
+                "content": "<table><tr><td/><td/><td colspan=\"2\">5 ) Epochs Hours</td><td>GPU</td><td colspan=\"2\">Train NLL Dev. NLL</td></tr><tr><td>RNNenc-30</td><td>8.46</td><td>6.4</td><td>109</td><td>TITAN BLACK</td><td>28.1</td><td>53.0</td></tr><tr><td>RNNenc-50</td><td>6.00</td><td>4.5</td><td>108</td><td>Quadro K-6000</td><td>44.0</td><td>43.6</td></tr><tr><td>RNNsearch-30</td><td>4.71</td><td>3.6</td><td>113</td><td>TITAN BLACK</td><td>26.7</td><td>47.2</td></tr><tr><td>RNNsearch-50</td><td>2.88</td><td>2.2</td><td>111</td><td>Quadro K-6000</td><td>40.7</td><td>38.1</td></tr><tr><td>RNNsearch-50</td><td>6.67</td><td>5.0</td><td>252</td><td>Quadro K-6000</td><td>36.7</td><td>35.2</td></tr></table>",
+                "num": null,
                 "type_str": "table"
             }
         }

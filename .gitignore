@@ -1,0 +1,6 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+research_problems/*/logs/
+research_problems/*/data/MNIST/

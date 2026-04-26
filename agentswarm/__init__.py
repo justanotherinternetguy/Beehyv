@@ -14,6 +14,16 @@ from .log import SwarmLogger
 from .orchestrator import SwarmOrchestrator
 from .paper_loader import Paper, PaperChunk, load_paper, load_papers
 from .retriever import KeywordRetriever
+from .research import (
+    CodingResult,
+    ExperimentResult,
+    JudgeFeedback,
+    ModelImprovementIdea,
+    ResearchIteration,
+    ResearchPlan,
+    ResearchSession,
+    ResearchSwarmOrchestrator,
+)
 
 __all__ = [
     "Blackboard",
@@ -22,17 +32,25 @@ __all__ = [
     "Claim",
     "CodeRetriever",
     "CodeSnippet",
+    "CodingResult",
     "CrossPollinatedIdea",
     "Critique",
     "Evidence",
+    "ExperimentResult",
+    "JudgeFeedback",
     "KeywordRetriever",
+    "ModelImprovementIdea",
     "OPENROUTER_MODEL",
     "OpenRouterLLM",
     "Paper",
     "PaperChunk",
     "PaperExpertAgent",
     "PaperExpertLLM",
+    "ResearchIteration",
     "ResearchIdea",
+    "ResearchPlan",
+    "ResearchSession",
+    "ResearchSwarmOrchestrator",
     "SwarmLogger",
     "SwarmOrchestrator",
     "Synthesis",

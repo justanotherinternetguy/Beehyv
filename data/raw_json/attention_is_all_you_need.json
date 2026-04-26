@@ -2,7 +2,7 @@
     "paper_id": "attention_is_all_you_need",
     "header": {
         "generated_with": "S2ORC 1.0.0",
-        "date_generated": "2026-04-25T14:54:47.713664Z"
+        "date_generated": "2026-04-25T16:28:25.553873Z"
     },
     "title": "Attention Is All You Need",
     "authors": [
@@ -2970,39 +2970,39 @@
         },
         "ref_entries": {
             "FIGREF0": {
+                "fig_num": "1",
                 "text": "Figure 1: The Transformer -model architecture.",
                 "num": null,
-                "fig_num": "1",
                 "type_str": "figure",
                 "uris": null
             },
             "FIGREF1": {
+                "fig_num": "2",
                 "text": "Figure 2: (left) Scaled Dot-Product Attention. (right) Multi-Head Attention consists of several attention layers running in parallel.",
                 "num": null,
-                "fig_num": "2",
                 "type_str": "figure",
                 "uris": null
             },
             "TABREF0": {
                 "html": null,
                 "text": "The Transformer achieves better BLEU scores than previous state-of-the-art models on the English-to-German and English-to-French newstest2014 tests at a fraction of the training cost.",
-                "content": "<table><tr><td>Model</td><td colspan=\"2\">BLEU EN-DE EN-FR</td><td>Training Cost (FLOPs) EN-DE EN-FR</td></tr><tr><td>ByteNet [18]</td><td>23.75</td><td/><td/></tr><tr><td>Deep-Att + PosUnk [39]</td><td/><td>39.2</td><td>1.0 \u2022 10 20</td></tr><tr><td>GNMT + RL [38]</td><td>24.6</td><td>39.92</td><td>2.3 \u2022 10 19 1.4 \u2022 10 20</td></tr><tr><td>ConvS2S [9]</td><td>25.16</td><td>40.46</td><td>9.6 \u2022 10 18 1.5 \u2022 10 20</td></tr><tr><td>MoE [32]</td><td>26.03</td><td>40.56</td><td>2.0 \u2022 10 19 1.2 \u2022 10 20</td></tr><tr><td>Deep-Att + PosUnk Ensemble [39]</td><td/><td>40.4</td><td>8.0 \u2022 10 20</td></tr><tr><td>GNMT + RL Ensemble [38]</td><td>26.30</td><td>41.16</td><td>1.8 \u2022 10 20 1.1 \u2022 10 21</td></tr><tr><td>ConvS2S Ensemble [9]</td><td>26.36</td><td>41.29</td><td>7.7 \u2022 10 19 1.2 \u2022 10 21</td></tr><tr><td>Transformer (base model)</td><td>27.3</td><td>38.1</td><td>3.3 \u2022 10 18</td></tr><tr><td>Transformer (big)</td><td>28.4</td><td>41.8</td><td>2.3 \u2022 10 19</td></tr></table>",
                 "num": null,
-                "type_str": "table"
+                "type_str": "table",
+                "content": "<table><tr><td>Model</td><td colspan=\"2\">BLEU EN-DE EN-FR</td><td>Training Cost (FLOPs) EN-DE EN-FR</td></tr><tr><td>ByteNet [18]</td><td>23.75</td><td/><td/></tr><tr><td>Deep-Att + PosUnk [39]</td><td/><td>39.2</td><td>1.0 \u2022 10 20</td></tr><tr><td>GNMT + RL [38]</td><td>24.6</td><td>39.92</td><td>2.3 \u2022 10 19 1.4 \u2022 10 20</td></tr><tr><td>ConvS2S [9]</td><td>25.16</td><td>40.46</td><td>9.6 \u2022 10 18 1.5 \u2022 10 20</td></tr><tr><td>MoE [32]</td><td>26.03</td><td>40.56</td><td>2.0 \u2022 10 19 1.2 \u2022 10 20</td></tr><tr><td>Deep-Att + PosUnk Ensemble [39]</td><td/><td>40.4</td><td>8.0 \u2022 10 20</td></tr><tr><td>GNMT + RL Ensemble [38]</td><td>26.30</td><td>41.16</td><td>1.8 \u2022 10 20 1.1 \u2022 10 21</td></tr><tr><td>ConvS2S Ensemble [9]</td><td>26.36</td><td>41.29</td><td>7.7 \u2022 10 19 1.2 \u2022 10 21</td></tr><tr><td>Transformer (base model)</td><td>27.3</td><td>38.1</td><td>3.3 \u2022 10 18</td></tr><tr><td>Transformer (big)</td><td>28.4</td><td>41.8</td><td>2.3 \u2022 10 19</td></tr></table>"
             },
             "TABREF1": {
                 "html": null,
                 "text": "Variations on the Transformer architecture. Unlisted values are identical to those of the base model. All metrics are on the English-to-German translation development set, newstest2013. Listed perplexities are per-wordpiece, according to our byte-pair encoding, and should not be compared to per-word perplexities.",
-                "content": "<table><tr><td/><td colspan=\"2\">N d model</td><td>d ff</td><td>h</td><td>d k</td><td>d v</td><td colspan=\"2\">P drop \u03f5 ls</td><td>train steps (dev) (dev) PPL BLEU params \u00d710 6</td></tr><tr><td colspan=\"2\">base 6</td><td>512</td><td colspan=\"2\">2048 8</td><td>64</td><td>64</td><td>0.1</td><td colspan=\"2\">0.1 100K 4.92</td><td>25.8</td><td>65</td></tr><tr><td/><td/><td/><td/><td colspan=\"3\">1 512 512</td><td/><td/><td>5.29</td><td>24.9</td></tr><tr><td>(A)</td><td/><td/><td/><td colspan=\"3\">4 128 128 16 32 32</td><td/><td/><td>5.00 4.91</td><td>25.5 25.8</td></tr><tr><td/><td/><td/><td/><td colspan=\"2\">32 16</td><td>16</td><td/><td/><td>5.01</td><td>25.4</td></tr><tr><td>(B)</td><td/><td/><td/><td/><td>16 32</td><td/><td/><td/><td>5.16 5.01</td><td>25.1 25.4</td><td>58 60</td></tr><tr><td/><td>2</td><td/><td/><td/><td/><td/><td/><td/><td>6.11</td><td>23.7</td><td>36</td></tr><tr><td/><td>4</td><td/><td/><td/><td/><td/><td/><td/><td>5.19</td><td>25.3</td><td>50</td></tr><tr><td/><td>8</td><td/><td/><td/><td/><td/><td/><td/><td>4.88</td><td>25.5</td><td>80</td></tr><tr><td>(C)</td><td/><td>256</td><td/><td/><td>32</td><td>32</td><td/><td/><td>5.75</td><td>24.5</td><td>28</td></tr><tr><td/><td/><td>1024</td><td/><td/><td colspan=\"2\">128 128</td><td/><td/><td>4.66</td><td>26.0</td><td>168</td></tr><tr><td/><td/><td/><td>1024</td><td/><td/><td/><td/><td/><td>5.12</td><td>25.4</td><td>53</td></tr><tr><td/><td/><td/><td>4096</td><td/><td/><td/><td/><td/><td>4.75</td><td>26.2</td><td>90</td></tr><tr><td/><td/><td/><td/><td/><td/><td/><td>0.0</td><td/><td>5.77</td><td>24.6</td></tr><tr><td>(D)</td><td/><td/><td/><td/><td/><td/><td>0.2</td><td>0.0</td><td>4.95 4.67</td><td>25.5 25.3</td></tr><tr><td/><td/><td/><td/><td/><td/><td/><td/><td>0.2</td><td>5.47</td><td>25.7</td></tr><tr><td>(E)</td><td/><td colspan=\"7\">positional embedding instead of sinusoids</td><td>4.92</td><td>25.7</td></tr><tr><td>big</td><td>6</td><td colspan=\"3\">1024 4096 16</td><td/><td/><td>0.3</td><td/><td>300K 4.33</td><td>26.4</td><td>213</td></tr><tr><td colspan=\"5\">development set, newstest2013.</td><td/><td/><td/><td/></tr></table>",
                 "num": null,
-                "type_str": "table"
+                "type_str": "table",
+                "content": "<table><tr><td/><td colspan=\"2\">N d model</td><td>d ff</td><td>h</td><td>d k</td><td>d v</td><td colspan=\"2\">P drop \u03f5 ls</td><td>train steps (dev) (dev) PPL BLEU params \u00d710 6</td></tr><tr><td colspan=\"2\">base 6</td><td>512</td><td colspan=\"2\">2048 8</td><td>64</td><td>64</td><td>0.1</td><td colspan=\"2\">0.1 100K 4.92</td><td>25.8</td><td>65</td></tr><tr><td/><td/><td/><td/><td colspan=\"3\">1 512 512</td><td/><td/><td>5.29</td><td>24.9</td></tr><tr><td>(A)</td><td/><td/><td/><td colspan=\"3\">4 128 128 16 32 32</td><td/><td/><td>5.00 4.91</td><td>25.5 25.8</td></tr><tr><td/><td/><td/><td/><td colspan=\"2\">32 16</td><td>16</td><td/><td/><td>5.01</td><td>25.4</td></tr><tr><td>(B)</td><td/><td/><td/><td/><td>16 32</td><td/><td/><td/><td>5.16 5.01</td><td>25.1 25.4</td><td>58 60</td></tr><tr><td/><td>2</td><td/><td/><td/><td/><td/><td/><td/><td>6.11</td><td>23.7</td><td>36</td></tr><tr><td/><td>4</td><td/><td/><td/><td/><td/><td/><td/><td>5.19</td><td>25.3</td><td>50</td></tr><tr><td/><td>8</td><td/><td/><td/><td/><td/><td/><td/><td>4.88</td><td>25.5</td><td>80</td></tr><tr><td>(C)</td><td/><td>256</td><td/><td/><td>32</td><td>32</td><td/><td/><td>5.75</td><td>24.5</td><td>28</td></tr><tr><td/><td/><td>1024</td><td/><td/><td colspan=\"2\">128 128</td><td/><td/><td>4.66</td><td>26.0</td><td>168</td></tr><tr><td/><td/><td/><td>1024</td><td/><td/><td/><td/><td/><td>5.12</td><td>25.4</td><td>53</td></tr><tr><td/><td/><td/><td>4096</td><td/><td/><td/><td/><td/><td>4.75</td><td>26.2</td><td>90</td></tr><tr><td/><td/><td/><td/><td/><td/><td/><td>0.0</td><td/><td>5.77</td><td>24.6</td></tr><tr><td>(D)</td><td/><td/><td/><td/><td/><td/><td>0.2</td><td>0.0</td><td>4.95 4.67</td><td>25.5 25.3</td></tr><tr><td/><td/><td/><td/><td/><td/><td/><td/><td>0.2</td><td>5.47</td><td>25.7</td></tr><tr><td>(E)</td><td/><td colspan=\"7\">positional embedding instead of sinusoids</td><td>4.92</td><td>25.7</td></tr><tr><td>big</td><td>6</td><td colspan=\"3\">1024 4096 16</td><td/><td/><td>0.3</td><td/><td>300K 4.33</td><td>26.4</td><td>213</td></tr><tr><td colspan=\"5\">development set, newstest2013.</td><td/><td/><td/><td/></tr></table>"
             },
             "TABREF2": {
                 "html": null,
                 "text": "The Transformer generalizes well to English constituency parsing (Results are on Section 23 of WSJ)",
-                "content": "<table><tr><td>Parser</td><td>Training</td><td>WSJ 23 F1</td></tr><tr><td colspan=\"2\">Vinyals &amp; Kaiser el al. (2014) [37] WSJ only, discriminative</td><td>88.3</td></tr><tr><td>Petrov et al. (2006) [29]</td><td>WSJ only, discriminative</td><td>90.4</td></tr><tr><td>Zhu et al. (2013) [40]</td><td>WSJ only, discriminative</td><td>90.4</td></tr><tr><td>Dyer et al. (2016) [8]</td><td>WSJ only, discriminative</td><td>91.7</td></tr><tr><td>Transformer (4 layers)</td><td>WSJ only, discriminative</td><td>91.3</td></tr><tr><td>Zhu et al. (2013) [40]</td><td>semi-supervised</td><td>91.3</td></tr><tr><td>Huang &amp; Harper (2009) [14]</td><td>semi-supervised</td><td>91.3</td></tr><tr><td>McClosky et al. (2006) [26]</td><td>semi-supervised</td><td>92.1</td></tr><tr><td>Vinyals &amp; Kaiser el al. (2014) [37]</td><td>semi-supervised</td><td>92.1</td></tr><tr><td>Transformer (4 layers)</td><td>semi-supervised</td><td>92.7</td></tr><tr><td>Luong et al. (2015) [23]</td><td>multi-task</td><td>93.0</td></tr><tr><td>Dyer et al. (2016) [8]</td><td>generative</td><td>93.3</td></tr></table>",
                 "num": null,
-                "type_str": "table"
+                "type_str": "table",
+                "content": "<table><tr><td>Parser</td><td>Training</td><td>WSJ 23 F1</td></tr><tr><td colspan=\"2\">Vinyals &amp; Kaiser el al. (2014) [37] WSJ only, discriminative</td><td>88.3</td></tr><tr><td>Petrov et al. (2006) [29]</td><td>WSJ only, discriminative</td><td>90.4</td></tr><tr><td>Zhu et al. (2013) [40]</td><td>WSJ only, discriminative</td><td>90.4</td></tr><tr><td>Dyer et al. (2016) [8]</td><td>WSJ only, discriminative</td><td>91.7</td></tr><tr><td>Transformer (4 layers)</td><td>WSJ only, discriminative</td><td>91.3</td></tr><tr><td>Zhu et al. (2013) [40]</td><td>semi-supervised</td><td>91.3</td></tr><tr><td>Huang &amp; Harper (2009) [14]</td><td>semi-supervised</td><td>91.3</td></tr><tr><td>McClosky et al. (2006) [26]</td><td>semi-supervised</td><td>92.1</td></tr><tr><td>Vinyals &amp; Kaiser el al. (2014) [37]</td><td>semi-supervised</td><td>92.1</td></tr><tr><td>Transformer (4 layers)</td><td>semi-supervised</td><td>92.7</td></tr><tr><td>Luong et al. (2015) [23]</td><td>multi-task</td><td>93.0</td></tr><tr><td>Dyer et al. (2016) [8]</td><td>generative</td><td>93.3</td></tr></table>"
             }
         }
     }

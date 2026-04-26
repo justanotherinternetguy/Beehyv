@@ -6,6 +6,7 @@ Subcommands:
   ingest      PDF → S2ORC JSON → cleaned JSON
   discuss     Ask questions across papers (agent swarm)
   brainstorm  Cross-pollinate ideas across papers for future research directions
+  research    Autoresearch-style model improvement loop over a problem folder
   codegen     Generate code repository from a cleaned JSON paper
 
 Run `python run.py <subcommand> --help` for options.
@@ -19,6 +20,11 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
+DEFAULT_RESEARCH_PAPERS = [
+    str(ROOT / "data" / "cleaned_json" / "attention_is_all_you_need_cleaned.json"),
+    str(ROOT / "data" / "cleaned_json" / "og_attention_cleaned.json"),
+    str(ROOT / "data" / "cleaned_json" / "introcnn_cleaned.json"),
+]
 
 
 def cmd_ingest(args: argparse.Namespace) -> int:
@@ -35,7 +41,7 @@ def cmd_ingest(args: argparse.Namespace) -> int:
 
 def _swarm_argv(base: list[str], args: argparse.Namespace) -> list[str]:
     """Build sys.argv for the agentswarm CLI from run.py args."""
-    papers = args.papers or [str(ROOT / "data" / "cleaned_json" / "BERT_cleaned.json")]
+    papers = args.papers or [str(ROOT / "data" / "cleaned_json" / "bert_cleaned.json")]
     argv = base + ["--papers", *papers, "--top-k", str(args.top_k)]
     if args.model:
         argv += ["--model", args.model]
@@ -71,6 +77,64 @@ def cmd_brainstorm(args: argparse.Namespace) -> int:
          "--cp-rounds", str(args.cp_rounds)],
         args,
     )
+    return swarm_main()
+
+
+def cmd_research(args: argparse.Namespace) -> int:
+    """Run the autoresearch-style agent swarm over a code problem folder."""
+    sys.path.insert(0, str(ROOT))
+    from agentswarm.cli import main as swarm_main
+
+    papers = args.papers or DEFAULT_RESEARCH_PAPERS
+    argv = [
+        "agentswarm",
+        "research",
+        args.problem_dir,
+        "--papers",
+        *papers,
+        "--problem",
+        args.problem,
+        "--run-command",
+        args.run_command,
+        "--metrics-file",
+        args.metrics_file,
+        "--metric",
+        args.metric,
+        "--editable",
+        *args.editable,
+        "--iterations",
+        str(args.iterations),
+        "--max-agents",
+        str(args.max_agents),
+        "--max-cross-ideas",
+        str(args.max_cross_ideas),
+        "--top-k",
+        str(args.top_k),
+        "--min-delta",
+        str(args.min_delta),
+        "--model",
+        args.model,
+        "--coding-model",
+        args.coding_model,
+        "--planner-max-tokens",
+        str(args.planner_max_tokens),
+        "--coding-max-tokens",
+        str(args.coding_max_tokens),
+    ]
+    if args.goal is not None:
+        argv += ["--goal", str(args.goal)]
+    if args.keep_regressions:
+        argv.append("--keep-regressions")
+    if args.dry_run:
+        argv.append("--dry-run")
+    if args.session_dir:
+        argv += ["--session-dir", args.session_dir]
+    if args.log_file:
+        argv += ["--log-file", args.log_file]
+    if args.no_stream:
+        argv.append("--no-stream")
+
+    sys.argv = argv
     return swarm_main()
 
 
@@ -184,6 +248,48 @@ def main() -> int:
     p_brainstorm.add_argument("--log-file", default=None)
     p_brainstorm.add_argument("--no-stream", action="store_true")
 
+    # ── research ─────────────────────────────────────────────────────────────
+    p_research = sub.add_parser(
+        "research",
+        help="Autoresearch-style model improvement loop over a problem folder",
+    )
+    p_research.add_argument("problem_dir", help="Folder containing the model problem")
+    p_research.add_argument("--papers", nargs="+", default=None,
+                            help="Cleaned JSON paper files (default: attention, og_attention, introcnn)")
+    p_research.add_argument(
+        "--problem",
+        default=(
+            "Improve a poorly performing MNIST classifier while keeping the evaluation dataset "
+            "and run command fixed."
+        ),
+    )
+    p_research.add_argument(
+        "--run-command",
+        default=(
+            "python train.py --download --metrics-out logs/latest_metrics.json "
+            "--log-file logs/train_events.jsonl"
+        ),
+        help="Command to run inside problem_dir for baseline and judge evaluations",
+    )
+    p_research.add_argument("--metrics-file", default="logs/latest_metrics.json")
+    p_research.add_argument("--metric", default="test_accuracy")
+    p_research.add_argument("--editable", nargs="+", default=["model.py"])
+    p_research.add_argument("--iterations", type=int, default=2)
+    p_research.add_argument("--max-agents", type=int, default=3)
+    p_research.add_argument("--max-cross-ideas", type=int, default=6)
+    p_research.add_argument("--top-k", type=int, default=4)
+    p_research.add_argument("--goal", type=float, default=None)
+    p_research.add_argument("--min-delta", type=float, default=0.001)
+    p_research.add_argument("--keep-regressions", action="store_true")
+    p_research.add_argument("--dry-run", action="store_true")
+    p_research.add_argument("--session-dir", default=None)
+    p_research.add_argument("--model", default="nvidia/nemotron-3-super-120b-a12b:free")
+    p_research.add_argument("--coding-model", default="nvidia/nemotron-3-super-120b-a12b:free")
+    p_research.add_argument("--planner-max-tokens", type=int, default=1600)
+    p_research.add_argument("--coding-max-tokens", type=int, default=6000)
+    p_research.add_argument("--log-file", default=None)
+    p_research.add_argument("--no-stream", action="store_true")
+
     # ── codegen ───────────────────────────────────────────────────────────────
     p_codegen = sub.add_parser("codegen", help="Generate code repo from a cleaned JSON paper")
     p_codegen.add_argument("cleaned_json", help="Path to *_cleaned.json paper file")
@@ -197,6 +303,7 @@ def main() -> int:
         "ingest": cmd_ingest,
         "discuss": cmd_discuss,
         "brainstorm": cmd_brainstorm,
+        "research": cmd_research,
         "codegen": cmd_codegen,
     }
     return dispatch[args.command](args)

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import time
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
@@ -11,6 +12,7 @@ from typing import Callable, Protocol
 
 
 OPENROUTER_MODEL = "nvidia/nemotron-3-super-120b-a12b:free"
+RETRYABLE_HTTP_STATUSES = {408, 409, 425, 429, 500, 502, 503, 504}
 
 
 class PaperExpertLLM(Protocol):
@@ -35,6 +37,8 @@ class OpenRouterLLM:
     timeout: float = 60.0
     max_tokens: int = 700
     temperature: float = 0.2
+    max_retries: int = 3
+    retry_base_delay: float = 1.0
 
     def complete(self, messages: list[dict[str, str]]) -> str:
         """Return the full completion text (blocking, no streaming)."""
@@ -49,7 +53,12 @@ class OpenRouterLLM:
         Stream the completion token-by-token via on_token callback.
         Returns the full concatenated text when the stream ends.
         """
-        return self._request(messages, stream=True, on_token=on_token)
+        try:
+            return self._request(messages, stream=True, on_token=on_token)
+        except RuntimeError as exc:
+            if not _should_fallback_to_non_streaming(exc):
+                raise
+            return self._request(messages, stream=False)
 
     # ── internals ─────────────────────────────────────────────────────────────
 
@@ -92,21 +101,42 @@ class OpenRouterLLM:
         stream: bool,
         on_token: Callable[[str], None] | None = None,
     ) -> str:
-        request = self._build_request(messages, stream)
         local_url = os.environ.get("LOCAL_LLM_URL")
         timeout = float(os.environ.get("LOCAL_LLM_TIMEOUT", "300")) if local_url else self.timeout
-        try:
-            with urllib.request.urlopen(request, timeout=timeout) as response:
-                if stream:
-                    return self._consume_stream(response, on_token)
-                body = response.read().decode("utf-8")
-        except urllib.error.HTTPError as exc:
-            detail = exc.read().decode("utf-8", errors="replace")
-            raise RuntimeError(f"LLM request failed with HTTP {exc.code}: {detail}") from exc
-        except urllib.error.URLError as exc:
-            raise RuntimeError(f"LLM request failed: {exc.reason}") from exc
+        attempts = max(1, self.max_retries + 1)
+        last_error: RuntimeError | None = None
 
-        return self._extract_content(json.loads(body))
+        for attempt in range(attempts):
+            request = self._build_request(messages, stream)
+            try:
+                with urllib.request.urlopen(request, timeout=timeout) as response:
+                    if stream:
+                        return self._consume_stream(response, on_token)
+                    body = response.read().decode("utf-8")
+                return self._extract_content(json.loads(body))
+            except urllib.error.HTTPError as exc:
+                detail = exc.read().decode("utf-8", errors="replace")
+                last_error = RuntimeError(f"LLM request failed with HTTP {exc.code}: {detail}")
+                if exc.code not in RETRYABLE_HTTP_STATUSES or attempt == attempts - 1:
+                    raise last_error from exc
+                self._sleep_before_retry(attempt)
+            except urllib.error.URLError as exc:
+                last_error = RuntimeError(f"LLM request failed: {exc.reason}")
+                if attempt == attempts - 1:
+                    raise last_error from exc
+                self._sleep_before_retry(attempt)
+            except RuntimeError as exc:
+                last_error = exc
+                if not _is_retryable_runtime_error(exc) or attempt == attempts - 1:
+                    raise
+                self._sleep_before_retry(attempt)
+
+        raise last_error or RuntimeError("LLM request failed without a captured error.")
+
+    def _sleep_before_retry(self, attempt: int) -> None:
+        delay = self.retry_base_delay * (2 ** attempt)
+        if delay > 0:
+            time.sleep(delay)
 
     @staticmethod
     def _consume_stream(
@@ -128,7 +158,17 @@ class OpenRouterLLM:
                 data = json.loads(line[6:])
             except json.JSONDecodeError:
                 continue
-            delta = (data.get("choices") or [{}])[0].get("delta", {}).get("content") or ""
+            if data.get("error"):
+                raise RuntimeError(f"LLM stream failed: {data['error']!r}")
+            choice = (data.get("choices") or [{}])[0]
+            delta_obj = choice.get("delta") or {}
+            delta = (
+                delta_obj.get("content")
+                or delta_obj.get("reasoning_content")
+                or choice.get("text")
+                or (choice.get("message") or {}).get("content")
+                or ""
+            )
             if delta:
                 if on_token is not None:
                     on_token(delta)
@@ -149,3 +189,21 @@ class OpenRouterLLM:
         if not text:
             raise RuntimeError("LLM returned an empty completion.")
         return text
+
+
+def _should_fallback_to_non_streaming(exc: RuntimeError) -> bool:
+    text = str(exc)
+    return (
+        "empty streaming completion" in text
+        or "LLM stream failed" in text
+        or any(f"HTTP {status}" in text for status in RETRYABLE_HTTP_STATUSES)
+    )
+
+
+def _is_retryable_runtime_error(exc: RuntimeError) -> bool:
+    text = str(exc)
+    return (
+        "empty streaming completion" in text
+        or "LLM stream failed" in text
+        or any(f"HTTP {status}" in text for status in RETRYABLE_HTTP_STATUSES)
+    )
