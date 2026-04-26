@@ -1,4 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { SwarmViewer } from './SwarmViewer';
+
+const SWARM_VOID = 'Transformer-Augmented Vision Adaptation Gap';
 
 interface ResearchTabProps {
   jobId:          string;
@@ -162,7 +165,14 @@ export const ResearchTab: React.FC<ResearchTabProps> = ({
     autoScroll.current = atBottom;
   }, []);
 
-  const dotColor = STATUS_COLOR[status];
+  const dotColor   = STATUS_COLOR[status];
+  const isSwarm    = displayName === SWARM_VOID;
+  const swarmLines = isSwarm
+    ? lines.filter(l => l.message.startsWith('[SWARM] ')).map(l => l.message)
+    : [];
+  const termLines  = isSwarm
+    ? lines.filter(l => !l.message.startsWith('[SWARM] '))
+    : lines;
 
   return (
     <div
@@ -244,38 +254,42 @@ export const ResearchTab: React.FC<ResearchTabProps> = ({
         </button>
       </div>
 
-      {/* ── Terminal log area ───────────────────────────────────── */}
-      <div
-        ref={containerRef}
-        onScroll={handleScroll}
-        style={{
-          flex:       1,
-          overflowY:  'auto',
-          padding:    '10px 16px 20px',
-          fontFamily: "'JetBrains Mono', monospace",
-          fontSize:   12,
-          lineHeight: 1.75,
-          color:      '#a8b4c8',
-        }}
-      >
-        {lines.length === 0 && status === 'connecting' && (
-          <div style={{ color: '#374151', fontStyle: 'italic' }}>
-            Waiting for stream…
-          </div>
-        )}
+      {/* ── Main content area ───────────────────────────────────── */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: isSwarm ? 'row' : 'column', overflow: 'hidden', minHeight: 0 }}>
 
-        {lines.map(({ id, message }) => (
-          <div
-            key={id}
-            style={{
-              color:      lineColor(message),
-              whiteSpace: 'pre-wrap',
-              wordBreak:  'break-all',
-            }}
-          >
-            {message}
-          </div>
-        ))}
+        {/* Terminal log (left panel or full width) */}
+        <div
+          ref={containerRef}
+          onScroll={handleScroll}
+          style={{
+            flex:       isSwarm ? '0 0 38%' : 1,
+            overflowY:  'auto',
+            padding:    '10px 16px 20px',
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize:   12,
+            lineHeight: 1.75,
+            color:      '#a8b4c8',
+            borderRight: isSwarm ? '1px solid rgba(255,255,255,0.06)' : 'none',
+          }}
+        >
+          {lines.length === 0 && status === 'connecting' && (
+            <div style={{ color: '#374151', fontStyle: 'italic' }}>
+              Waiting for stream…
+            </div>
+          )}
+
+          {termLines.map(({ id, message }) => (
+            <div
+              key={id}
+              style={{
+                color:      lineColor(message),
+                whiteSpace: 'pre-wrap',
+                wordBreak:  'break-all',
+              }}
+            >
+              {message}
+            </div>
+          ))}
 
         {status === 'running' && (
           <div
@@ -338,8 +352,28 @@ export const ResearchTab: React.FC<ResearchTabProps> = ({
           </div>
         )}
 
-        <div ref={bottomRef} />
-      </div>
+          <div ref={bottomRef} />
+        </div>
+
+        {/* SwarmViewer — right panel, only for the MNIST swarm void */}
+        {isSwarm && (
+          <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
+            <div style={{
+              padding:      '6px 12px',
+              borderBottom: '1px solid rgba(255,255,255,0.06)',
+              background:   '#0d0f14',
+              fontFamily:   "'JetBrains Mono', monospace",
+              fontSize:     9,
+              color:        '#a78bfa',
+              letterSpacing: '0.06em',
+              flexShrink:   0,
+            }}>
+              AGENT SWARM · {swarmLines.length} log entries
+            </div>
+            <SwarmViewer lines={swarmLines} />
+          </div>
+        )}
+      </div>{/* end main content flex */}
 
       {/* ── Research button ─────────────────────────────────────────── */}
       {jobStage !== 'ingesting' && (

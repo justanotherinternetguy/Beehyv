@@ -277,7 +277,83 @@ const server = serve({
         job.stage  = 'researching';
         job.status = 'running';
 
-        const rootDir  = resolve(import.meta.dir, '../..');
+        const rootDir = resolve(import.meta.dir, '../..');
+        const push    = makePusher(job);
+
+        // ── MNIST swarm: run shell script + tail the structured log file ──────
+        if (job.voidName === 'Transformer-Augmented Vision Adaptation Gap') {
+          const swarmDir = resolve(rootDir, 'research_problems/mnist_fcnn');
+          const logFile  = resolve(swarmDir, 'logs/research_swarm_live.log');
+
+          const proc = Bun.spawn({
+            cmd: ['bash', 'run_research_swarm.sh'],
+            stdout: 'pipe', stderr: 'pipe', cwd: swarmDir,
+            env: { ...process.env, PYTHONUNBUFFERED: '1' },
+          });
+
+          const stdoutDone = drainStream(proc.stdout, '',     push);
+          const stderrDone = drainStream(proc.stderr, '',     push);
+
+          // Tail the structured log file (contains DEBUG TOKEN lines not on stderr)
+          const stopTail = { stop: false };
+          ;(async () => {
+            let offset = -1; // -1 = wait for file to appear, then snapshot size
+            while (!stopTail.stop) {
+              try {
+                const f = Bun.file(logFile);
+                if (await f.exists()) {
+                  const buf  = await f.arrayBuffer();
+                  const text = new TextDecoder().decode(buf);
+                  if (offset === -1) {
+                    // First read after file appears: start from current end so we
+                    // only stream content written by THIS run.
+                    offset = text.length;
+                  } else if (text.length > offset) {
+                    const newText = text.slice(offset);
+                    offset = text.length;
+                    for (const line of newText.split('\n')) {
+                      if (line.trim()) push('[SWARM] ', line);
+                    }
+                  }
+                }
+              } catch { /* file not yet writable */ }
+              await Bun.sleep(400);
+            }
+          })();
+
+          ;(async () => {
+            const code = await proc.exited;
+            await Promise.allSettled([stdoutDone, stderrDone]);
+            stopTail.stop = true;
+
+            // One final log-file drain to catch any lines buffered before exit
+            await Bun.sleep(600);
+            try {
+              const f = Bun.file(logFile);
+              if (await f.exists()) {
+                const buf  = await f.arrayBuffer();
+                const text = new TextDecoder().decode(buf);
+                if (text.length > (offset ?? 0)) {
+                  const newText = text.slice(offset ?? 0);
+                  for (const line of newText.split('\n')) {
+                    if (line.trim()) push('[SWARM] ', line);
+                  }
+                }
+              }
+            } catch { /* ignore */ }
+
+            job.status = code === 0 ? 'done' : 'error';
+            job.stage  = code === 0 ? 'complete' : 'ready';
+            const final = code === 0
+              ? '=== RESEARCH COMPLETE ==='
+              : `=== RESEARCH ERROR (exit ${code}) — scroll up for details ===`;
+            notify(job, final, job.status);
+          })();
+
+          return Response.json({ ok: true });
+        }
+
+        // ── Default path: generic research swarm python script ────────────────
         const gx10Url  = process.env.LOCAL_LLM_URL ?? 'http://100.123.34.54:11434';
         const scriptPy = resolve(rootDir, 'run_research_swarm.py');
 
@@ -299,12 +375,9 @@ const server = serve({
           },
         });
 
-        const push = makePusher(job);
         const stdoutDone = drainStream(proc.stdout, '',       push);
         const stderrDone = drainStream(proc.stderr, '[ERR] ', push);
 
-        // Drain all output FIRST, then fire the terminal event so no error
-        // lines are lost before the subscriber is cleared.
         ;(async () => {
           const code = await proc.exited;
           await Promise.allSettled([stdoutDone, stderrDone]);
