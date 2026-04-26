@@ -19,6 +19,12 @@ import subprocess
 import sys
 from pathlib import Path
 
+try:
+    from dotenv import load_dotenv
+    load_dotenv(Path(__file__).resolve().parent / ".env")
+except ImportError:
+    pass
+
 ROOT = Path(__file__).resolve().parent
 DEFAULT_RESEARCH_PAPERS = [
     str(ROOT / "data" / "cleaned_json" / "attention_is_all_you_need_cleaned.json"),

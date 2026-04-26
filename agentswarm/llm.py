@@ -75,11 +75,16 @@ class OpenRouterLLM:
                 raise RuntimeError(f"{self.api_key_env} is required to call OpenRouter.")
             model = self.model
 
+        max_tokens = (
+            int(os.environ.get("LOCAL_LLM_MAX_TOKENS", "2048"))
+            if local_url
+            else self.max_tokens
+        )
         payload = {
             "model": model,
             "messages": messages,
             "temperature": self.temperature,
-            "max_tokens": self.max_tokens,
+            "max_tokens": max_tokens,
             "stream": stream,
         }
         return urllib.request.Request(
@@ -182,10 +187,10 @@ class OpenRouterLLM:
     @staticmethod
     def _extract_content(data: dict) -> str:
         try:
-            content = data["choices"][0]["message"]["content"]
+            msg = data["choices"][0]["message"]
         except (KeyError, IndexError, TypeError) as exc:
             raise RuntimeError(f"LLM returned an unexpected response: {data!r}") from exc
-        text = str(content).strip()
+        text = str(msg.get("content") or msg.get("reasoning") or "").strip()
         if not text:
             raise RuntimeError("LLM returned an empty completion.")
         return text
