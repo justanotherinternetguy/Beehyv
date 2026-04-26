@@ -1,0 +1,4628 @@
+[
+  {
+    "void_id": 0,
+    "void_rank": 0,
+    "centroid": [
+      -4.000288056632831,
+      5.18201893578807
+    ],
+    "empty_radius": 0.18803561409793756,
+    "name": "Integrated UAV-based Structural Inspection and Crowd Monitoring",
+    "name_reasoning": "The surrounding papers split into two clusters\u2014UAV-driven infrastructure anomaly detection (e.g., crack detection) and UAV-driven crowd/anomaly surveillance\u2014yet no work unifies these into a joint multi\u2011task UAV system that simultaneously inspects structural health and monitors human activity.",
+    "shape": {
+      "type": "convex_hull",
+      "vertices": [
+        [
+          -3.916557550430298,
+          4.927228927612305
+        ],
+        [
+          -4.111766815185547,
+          4.97585916519165
+        ],
+        [
+          -4.257057189941406,
+          5.063667297363281
+        ],
+        [
+          -4.285231590270996,
+          5.0994977951049805
+        ],
+        [
+          -4.294961452484131,
+          5.1357221603393555
+        ],
+        [
+          -4.234696865081787,
+          5.276183128356934
+        ],
+        [
+          -3.8910956382751465,
+          5.452174663543701
+        ],
+        [
+          -3.8159048557281494,
+          5.408483982086182
+        ],
+        [
+          -3.7831850051879883,
+          5.364940166473389
+        ],
+        [
+          -3.758744239807129,
+          5.150697708129883
+        ],
+        [
+          -3.784079074859619,
+          5.0860161781311035
+        ]
+      ]
+    },
+    "shape_area": 0.18812409478709924,
+    "border_papers": [
+      {
+        "title": "Weakly-Supervised Crack Detection",
+        "DOI": "2206.06743",
+        "x": -3.9090375900268555,
+        "y": 5.017608642578125,
+        "cluster": 26
+      },
+      {
+        "title": "Anomalous Situation Detection in Complex Scenes",
+        "DOI": "1902.10016",
+        "x": -4.070658206939697,
+        "y": 5.356390476226807,
+        "cluster": 36
+      },
+      {
+        "title": "UAV-based Crowd Surveillance in Post COVID-19 Era",
+        "DOI": "2111.14176",
+        "x": -4.18824577331543,
+        "y": 5.1874308586120605,
+        "cluster": 13
+      },
+      {
+        "title": "Crack Detection as a Weakly-Supervised Problem: Towards Achieving Less\n  Annotation-Intensive Crack Detectors",
+        "DOI": "2011.02208",
+        "x": -3.91345477104187,
+        "y": 5.0090837478637695,
+        "cluster": 26
+      },
+      {
+        "title": "VisDrone-CC2020: The Vision Meets Drone Crowd Counting Challenge Results",
+        "DOI": "2107.08766",
+        "x": -4.2272539138793945,
+        "y": 5.19354772567749,
+        "cluster": 13
+      },
+      {
+        "title": "ViewBirdiformer: Learning to recover ground-plane crowd trajectories and\n  ego-motion from a single ego-centric view",
+        "DOI": "2210.06332",
+        "x": -4.111766815185547,
+        "y": 4.97585916519165,
+        "cluster": 28
+      },
+      {
+        "title": "Real-Time Dense Stereo Embedded in A UAV for Road Inspection",
+        "DOI": "1904.06017",
+        "x": -3.784079074859619,
+        "y": 5.0860161781311035,
+        "cluster": 13
+      },
+      {
+        "title": "Real-time Keypoints Detection for Autonomous Recovery of the Unmanned\n  Ground Vehicle",
+        "DOI": "2107.12852",
+        "x": -3.758744239807129,
+        "y": 5.150697708129883,
+        "cluster": 11
+      },
+      {
+        "title": "Multi-ellipses detection on images inspired by collective animal\n  behavior",
+        "DOI": "1405.5164",
+        "x": -4.234696865081787,
+        "y": 5.276183128356934,
+        "cluster": 31
+      },
+      {
+        "title": "Contextual Information Based Anomaly Detection for a Multi-Scene UAV\n  Aerial Videos",
+        "DOI": "2203.15437",
+        "x": -3.8176469802856445,
+        "y": 5.362278461456299,
+        "cluster": 47
+      },
+      {
+        "title": "Pushing the Envelope of Thin Crack Detection",
+        "DOI": "2101.03326",
+        "x": -3.916557550430298,
+        "y": 4.927228927612305,
+        "cluster": 33
+      },
+      {
+        "title": "Optimal Event Monitoring through Internet Mashup over Multivariate Time\n  Series",
+        "DOI": "2210.09992",
+        "x": -4.271833896636963,
+        "y": 5.173713684082031,
+        "cluster": 14
+      },
+      {
+        "title": "Drone swarm patrolling with uneven coverage requirements",
+        "DOI": "2107.00362",
+        "x": -3.7906041145324707,
+        "y": 5.363191604614258,
+        "cluster": 33
+      },
+      {
+        "title": "Improved Anomaly Detection in Crowded Scenes via Cell-based Analysis of\n  Foreground Speed, Size and Texture",
+        "DOI": "1304.0886",
+        "x": -4.257057189941406,
+        "y": 5.063667297363281,
+        "cluster": 36
+      },
+      {
+        "title": "Lane Boundary Geometry Extraction from Satellite Imagery",
+        "DOI": "2002.02362",
+        "x": -3.7831850051879883,
+        "y": 5.364940166473389,
+        "cluster": 42
+      },
+      {
+        "title": "Learning Consistency Pursued Correlation Filters for Real-Time UAV\n  Tracking",
+        "DOI": "2008.03704",
+        "x": -3.853515863418579,
+        "y": 5.426887512207031,
+        "cluster": 46
+      },
+      {
+        "title": "Anti-UAV: A Large Multi-Modal Benchmark for UAV Tracking",
+        "DOI": "2101.08466",
+        "x": -3.8910956382751465,
+        "y": 5.452174663543701,
+        "cluster": 13
+      },
+      {
+        "title": "ReS2tAC -- UAV-Borne Real-Time SGM Stereo Optimized for Embedded ARM and\n  CUDA Devices",
+        "DOI": "2106.07927",
+        "x": -3.8159048557281494,
+        "y": 5.408483982086182,
+        "cluster": 13
+      },
+      {
+        "title": "UAV-CROWD: Violent and non-violent crowd activity simulator from the\n  perspective of UAV",
+        "DOI": "2208.06702",
+        "x": -4.285231590270996,
+        "y": 5.0994977951049805,
+        "cluster": 44
+      },
+      {
+        "title": "Real-Time Anomaly Detection and Localization in Crowded Scenes",
+        "DOI": "1511.06936",
+        "x": -4.294961452484131,
+        "y": 5.1357221603393555,
+        "cluster": 36
+      }
+    ]
+  },
+  {
+    "void_id": 1,
+    "void_rank": 1,
+    "centroid": [
+      -3.786151061993059,
+      7.353653955669884
+    ],
+    "empty_radius": 0.14722743897426752,
+    "name": "Self-Supervised Multi-Modal Underwater Domain Adaptation",
+    "name_reasoning": "The surrounding papers cover underwater image restoration, segmentation, 3D reconstruction, and domain adaptation for single modalities, but none address a unified self\u2011supervised framework that jointly adapts across optical, sonar, and other sensor modalities while modeling uncertainty.",
+    "shape": {
+      "type": "convex_hull",
+      "vertices": [
+        [
+          -3.7729101181030273,
+          7.1116943359375
+        ],
+        [
+          -3.9636805057525635,
+          7.189261436462402
+        ],
+        [
+          -3.9664106369018555,
+          7.484036445617676
+        ],
+        [
+          -3.911860227584839,
+          7.521951675415039
+        ],
+        [
+          -3.736325979232788,
+          7.54671049118042
+        ],
+        [
+          -3.6013011932373047,
+          7.486400604248047
+        ],
+        [
+          -3.572848320007324,
+          7.305864334106445
+        ],
+        [
+          -3.5876128673553467,
+          7.255614280700684
+        ]
+      ]
+    },
+    "shape_area": 0.1344493985162103,
+    "border_papers": [
+      {
+        "title": "Self-Supervised Domain Calibration and Uncertainty Estimation for Place\n  Recognition",
+        "DOI": "2203.04446",
+        "x": -3.6892805099487305,
+        "y": 7.4645233154296875,
+        "cluster": 1
+      },
+      {
+        "title": "Single Underwater Image Restoration by Contrastive Learning",
+        "DOI": "2103.09697",
+        "x": -3.931445598602295,
+        "y": 7.329875469207764,
+        "cluster": 8
+      },
+      {
+        "title": "Weak Edge Identification Nets for Ocean Front Detection",
+        "DOI": "1909.07827",
+        "x": -3.7813498973846436,
+        "y": 7.206504821777344,
+        "cluster": 26
+      },
+      {
+        "title": "A Comparison of Few-Shot Learning Methods for Underwater Optical and\n  Sonar Image Classification",
+        "DOI": "2005.04621",
+        "x": -3.7577807903289795,
+        "y": 7.199722766876221,
+        "cluster": 41
+      },
+      {
+        "title": "The Ciona17 Dataset for Semantic Segmentation of Invasive Species in a\n  Marine Aquaculture Environment",
+        "DOI": "1702.05564",
+        "x": -3.683363914489746,
+        "y": 7.224945068359375,
+        "cluster": 7
+      },
+      {
+        "title": "Semantic Segmentation of Underwater Imagery: Dataset and Benchmark",
+        "DOI": "2004.01241",
+        "x": -3.6167428493499756,
+        "y": 7.3573079109191895,
+        "cluster": 7
+      },
+      {
+        "title": "STUN: Self-Teaching Uncertainty Estimation for Place Recognition",
+        "DOI": "2203.01851",
+        "x": -3.6630301475524902,
+        "y": 7.498620986938477,
+        "cluster": 15
+      },
+      {
+        "title": "Light Field-Based Underwater 3D Reconstruction Via Angular Resampling",
+        "DOI": "2109.02116",
+        "x": -3.9086050987243652,
+        "y": 7.205678462982178,
+        "cluster": 3
+      },
+      {
+        "title": "Unified Optimal Transport Framework for Universal Domain Adaptation",
+        "DOI": "2210.17067",
+        "x": -3.736325979232788,
+        "y": 7.54671049118042,
+        "cluster": 14
+      },
+      {
+        "title": "Self-Paced Uncertainty Estimation for One-shot Person Re-Identification",
+        "DOI": "2104.09152",
+        "x": -3.911860227584839,
+        "y": 7.521951675415039,
+        "cluster": 1
+      },
+      {
+        "title": "Anomaly Detection in Unstructured Environments using Bayesian\n  Nonparametric Scene Modeling",
+        "DOI": "1509.07979",
+        "x": -3.9424359798431396,
+        "y": 7.499496936798096,
+        "cluster": 37
+      },
+      {
+        "title": "Cross-Domain Car Detection Using Unsupervised Image-to-Image\n  Translation: From Day to Night",
+        "DOI": "1907.08719",
+        "x": -3.572848320007324,
+        "y": 7.305864334106445,
+        "cluster": 11
+      },
+      {
+        "title": "FlatteNet: A Simple Versatile Framework for Dense Pixelwise Prediction",
+        "DOI": "1909.09961",
+        "x": -3.5876128673553467,
+        "y": 7.255614280700684,
+        "cluster": 35
+      },
+      {
+        "title": "FishNet: A Versatile Backbone for Image, Region, and Pixel Level\n  Prediction",
+        "DOI": "1901.03495",
+        "x": -3.745295286178589,
+        "y": 7.135311126708984,
+        "cluster": 24
+      },
+      {
+        "title": "Exploiting Sample Uncertainty for Domain Adaptive Person\n  Re-Identification",
+        "DOI": "2012.08733",
+        "x": -3.9664106369018555,
+        "y": 7.484036445617676,
+        "cluster": 33
+      },
+      {
+        "title": "Semi-Supervised Hypothesis Transfer for Source-Free Domain Adaptation",
+        "DOI": "2107.06735",
+        "x": -3.6013011932373047,
+        "y": 7.486400604248047,
+        "cluster": 1
+      },
+      {
+        "title": "Deep Sea Robotic Imaging Simulator",
+        "DOI": "2006.15398",
+        "x": -3.788228750228882,
+        "y": 7.124496936798096,
+        "cluster": 41
+      },
+      {
+        "title": "WHOI-Plankton- A Large Scale Fine Grained Visual Recognition Benchmark\n  Dataset for Plankton Classification",
+        "DOI": "1510.00745",
+        "x": -3.760815382003784,
+        "y": 7.123547077178955,
+        "cluster": 41
+      },
+      {
+        "title": "Image-based underwater 3D reconstruction for Cultural Heritage: from\n  image collection to 3D. Critical steps and considerations",
+        "DOI": "2010.00928",
+        "x": -3.9636805057525635,
+        "y": 7.189261436462402,
+        "cluster": 29
+      },
+      {
+        "title": "LSENet: Location and Seasonality Enhanced Network for Multi-Class Ocean\n  Front Detection",
+        "DOI": "2108.02455",
+        "x": -3.7729101181030273,
+        "y": 7.1116943359375,
+        "cluster": 18
+      }
+    ]
+  },
+  {
+    "void_id": 2,
+    "void_rank": 2,
+    "centroid": [
+      2.5719809249935466,
+      13.649266584930006
+    ],
+    "empty_radius": 0.13758280121313876,
+    "name": "Privacy-Preserving Ocular Gender Classification",
+    "name_reasoning": "While the surrounding papers focus on gender prediction from iris/periocular images, bias, and identity leakage, none address methods that protect privacy while performing gender inference, a bridge between biometric identity and demographic classification.",
+    "shape": {
+      "type": "convex_hull",
+      "vertices": [
+        [
+          2.4672458171844482,
+          13.352458953857422
+        ],
+        [
+          2.402137279510498,
+          13.380488395690918
+        ],
+        [
+          2.3132433891296387,
+          13.763919830322266
+        ],
+        [
+          2.3628005981445312,
+          13.903563499450684
+        ],
+        [
+          2.438725709915161,
+          13.943503379821777
+        ],
+        [
+          2.6405277252197266,
+          13.799591064453125
+        ],
+        [
+          2.698631763458252,
+          13.736200332641602
+        ],
+        [
+          2.8066000938415527,
+          13.553288459777832
+        ],
+        [
+          2.776008129119873,
+          13.431702613830566
+        ],
+        [
+          2.735961437225342,
+          13.368151664733887
+        ],
+        [
+          2.716367721557617,
+          13.360363960266113
+        ]
+      ]
+    },
+    "shape_area": 0.19981184775053862,
+    "border_papers": [
+      {
+        "title": "Sex-Prediction from Periocular Images across Multiple Sensors and\n  Spectra",
+        "DOI": "1905.00396",
+        "x": 2.707148790359497,
+        "y": 13.623601913452148,
+        "cluster": 13
+      },
+      {
+        "title": "Deep Learning for Diagonal Earlobe Crease Detection",
+        "DOI": "2210.11582",
+        "x": 2.4397175312042236,
+        "y": 13.611379623413086,
+        "cluster": 41
+      },
+      {
+        "title": "Predicting Gender from Iris Texture May Be Harder Than It Seems",
+        "DOI": "1811.10066",
+        "x": 2.685910701751709,
+        "y": 13.726396560668945,
+        "cluster": 44
+      },
+      {
+        "title": "Gender and Ethnicity Classification of Iris Images using Deep\n  Class-Encoder",
+        "DOI": "1710.02856",
+        "x": 2.645785331726074,
+        "y": 13.767227172851562,
+        "cluster": 31
+      },
+      {
+        "title": "Sex-Classification from Cell-Phones Periocular Iris Images",
+        "DOI": "1812.11702",
+        "x": 2.6841557025909424,
+        "y": 13.747335433959961,
+        "cluster": 44
+      },
+      {
+        "title": "Gender-From-Iris or Gender-From-Mascara?",
+        "DOI": "1702.01304",
+        "x": 2.698631763458252,
+        "y": 13.736200332641602,
+        "cluster": 44
+      },
+      {
+        "title": "Analyzing Covariate Influence on Gender and Race Prediction from\n  Near-Infrared Ocular Images",
+        "DOI": "1805.01912",
+        "x": 2.72485089302063,
+        "y": 13.674017906188965,
+        "cluster": 31
+      },
+      {
+        "title": "Gender Classification from Iris Texture Images Using a New Set of Binary\n  Statistical Image Features",
+        "DOI": "1905.00372",
+        "x": 2.6405277252197266,
+        "y": 13.799591064453125,
+        "cluster": 31
+      },
+      {
+        "title": "Relevant features for Gender Classification in NIR Periocular Images",
+        "DOI": "1904.12007",
+        "x": 2.7414538860321045,
+        "y": 13.644246101379395,
+        "cluster": 31
+      },
+      {
+        "title": "Super-Resolution for Selfie Biometrics: Introduction and Application to\n  Face and Iris",
+        "DOI": "2204.05688",
+        "x": 2.3796403408050537,
+        "y": 13.774751663208008,
+        "cluster": 10
+      },
+      {
+        "title": "Vision-based Human Gender Recognition: A Survey",
+        "DOI": "1204.1611",
+        "x": 2.8066000938415527,
+        "y": 13.553288459777832,
+        "cluster": 44
+      },
+      {
+        "title": "Haven't I Seen You Before? Assessing Identity Leakage in Synthetic\n  Irises",
+        "DOI": "2211.05629",
+        "x": 2.3132433891296387,
+        "y": 13.763919830322266,
+        "cluster": 44
+      },
+      {
+        "title": "Learning from few examples: Classifying sex from retinal images via deep\n  learning",
+        "DOI": "2207.09624",
+        "x": 2.776008129119873,
+        "y": 13.431702613830566,
+        "cluster": 41
+      },
+      {
+        "title": "Probing Fairness of Mobile Ocular Biometrics Methods Across Gender on\n  VISOB 2.0 Dataset",
+        "DOI": "2011.08898",
+        "x": 2.7148263454437256,
+        "y": 13.38581371307373,
+        "cluster": 13
+      },
+      {
+        "title": "On Demographic Bias in Fingerprint Recognition",
+        "DOI": "2205.09318",
+        "x": 2.4672458171844482,
+        "y": 13.352458953857422,
+        "cluster": 33
+      },
+      {
+        "title": "11K Hands: Gender recognition and biometric identification using a large\n  dataset of hand images",
+        "DOI": "1711.04322",
+        "x": 2.402137279510498,
+        "y": 13.380488395690918,
+        "cluster": 10
+      },
+      {
+        "title": "Not Color Blind: AI Predicts Racial Identity from Black and White\n  Retinal Vessel Segmentations",
+        "DOI": "2109.13845",
+        "x": 2.716367721557617,
+        "y": 13.360363960266113,
+        "cluster": 44
+      },
+      {
+        "title": "Improving Iris Recognition Accuracy By Score Based Fusion Method",
+        "DOI": "1007.0412",
+        "x": 2.438725709915161,
+        "y": 13.943503379821777,
+        "cluster": 10
+      },
+      {
+        "title": "Class Representative Autoencoder for Low Resolution Multi-Spectral\n  Gender Classification",
+        "DOI": "1805.07905",
+        "x": 2.735961437225342,
+        "y": 13.368151664733887,
+        "cluster": 39
+      },
+      {
+        "title": "IS (Iris Security)",
+        "DOI": "cs/0308035",
+        "x": 2.3628005981445312,
+        "y": 13.903563499450684,
+        "cluster": 33
+      }
+    ]
+  },
+  {
+    "void_id": 3,
+    "void_rank": 3,
+    "centroid": [
+      -2.7470828519877606,
+      9.77809725788086
+    ],
+    "empty_radius": 0.1211893486209565,
+    "name": "Self-Supervised Contrastive Learning for Multimodal Medical Image Registration",
+    "name_reasoning": "While the surrounding papers cover point\u2011cloud geometry, neural ODEs, GAN\u2011based synthesis, and registration algorithms, none address a unified self\u2011supervised contrastive framework that jointly learns robust feature embeddings across modalities to improve registration accuracy and generalization.",
+    "shape": {
+      "type": "convex_hull",
+      "vertices": [
+        [
+          -2.7114720344543457,
+          9.547646522521973
+        ],
+        [
+          -2.8591177463531494,
+          9.62581729888916
+        ],
+        [
+          -2.9509780406951904,
+          9.692754745483398
+        ],
+        [
+          -2.939568519592285,
+          9.912129402160645
+        ],
+        [
+          -2.8415098190307617,
+          9.972618103027344
+        ],
+        [
+          -2.6111552715301514,
+          9.944899559020996
+        ],
+        [
+          -2.5391347408294678,
+          9.696549415588379
+        ],
+        [
+          -2.5855042934417725,
+          9.625914573669434
+        ],
+        [
+          -2.6617014408111572,
+          9.572809219360352
+        ]
+      ]
+    },
+    "shape_area": 0.13012266427938357,
+    "border_papers": [
+      {
+        "title": "White Matter Tracts are Point Clouds: Neuropsychological Score\n  Prediction and Critical Region Localization via Geometric Deep Learning",
+        "DOI": "2207.02402",
+        "x": -2.774658203125,
+        "y": 9.89610767364502,
+        "cluster": 30
+      },
+      {
+        "title": "Detecting Lesion Bounding Ellipses With Gaussian Proposal Networks",
+        "DOI": "1902.09658",
+        "x": -2.626117467880249,
+        "y": 9.770732879638672,
+        "cluster": 16
+      },
+      {
+        "title": "Enhancing Human-Machine Teaming for Medical Prognosis Through Neural\n  Ordinary Differential Equations (NODEs)",
+        "DOI": "2102.04121",
+        "x": -2.864353656768799,
+        "y": 9.747529029846191,
+        "cluster": 6
+      },
+      {
+        "title": "Correlation via synthesis: end-to-end nodule image generation and\n  radiogenomic map learning based on generative adversarial network",
+        "DOI": "1907.03728",
+        "x": -2.8001010417938232,
+        "y": 9.896963119506836,
+        "cluster": 24
+      },
+      {
+        "title": "The Radon cumulative distribution transform and its application to image\n  classification",
+        "DOI": "1511.03206",
+        "x": -2.8351950645446777,
+        "y": 9.67130184173584,
+        "cluster": 6
+      },
+      {
+        "title": "MOREA: a GPU-accelerated Evolutionary Algorithm for Multi-Objective\n  Deformable Registration of 3D Medical Images",
+        "DOI": "2303.04873",
+        "x": -2.6370046138763428,
+        "y": 9.65967082977295,
+        "cluster": 6
+      },
+      {
+        "title": "Bayesian Estimation of White Matter Atlas from High Angular Resolution\n  Diffusion Imaging",
+        "DOI": "1310.3233",
+        "x": -2.910087823867798,
+        "y": 9.831938743591309,
+        "cluster": 25
+      },
+      {
+        "title": "Fast Mesh-Based Medical Image Registration",
+        "DOI": "1411.2141",
+        "x": -2.8112242221832275,
+        "y": 9.610699653625488,
+        "cluster": 6
+      },
+      {
+        "title": "Ball-Scale Based Hierarchical Multi-Object Recognition in 3D Medical\n  Images",
+        "DOI": "1002.1288",
+        "x": -2.5960018634796143,
+        "y": 9.680495262145996,
+        "cluster": 6
+      },
+      {
+        "title": "NODEO: A Neural Ordinary Differential Equation Based Optimization\n  Framework for Deformable Image Registration",
+        "DOI": "2108.03443",
+        "x": -2.6309609413146973,
+        "y": 9.633846282958984,
+        "cluster": 24
+      },
+      {
+        "title": "Multi-scale Neural ODEs for 3D Medical Image Registration",
+        "DOI": "2106.08493",
+        "x": -2.8591177463531494,
+        "y": 9.62581729888916,
+        "cluster": 6
+      },
+      {
+        "title": "Adaptive Mesh Representation and Restoration of Biomedical Images",
+        "DOI": "1406.7062",
+        "x": -2.5917627811431885,
+        "y": 9.662369728088379,
+        "cluster": 6
+      },
+      {
+        "title": "Visual enhancement of Cone-beam CT by use of CycleGAN",
+        "DOI": "1901.05773",
+        "x": -2.6111552715301514,
+        "y": 9.944899559020996,
+        "cluster": 48
+      },
+      {
+        "title": "Shearlet-based compressed sensing for fast 3D cardiac MR imaging using\n  iterative reweighting",
+        "DOI": "1705.00463",
+        "x": -2.8415098190307617,
+        "y": 9.972618103027344,
+        "cluster": 25
+      },
+      {
+        "title": "Anatomical Landmarks Localization for 3D Foot Point Clouds",
+        "DOI": "2110.00937",
+        "x": -2.9509780406951904,
+        "y": 9.692754745483398,
+        "cluster": 30
+      },
+      {
+        "title": "Self-Supervised Point Cloud Completion via Inpainting",
+        "DOI": "2111.10701",
+        "x": -2.5855042934417725,
+        "y": 9.625914573669434,
+        "cluster": 30
+      },
+      {
+        "title": "NODIS: Neural Ordinary Differential Scene Understanding",
+        "DOI": "2001.04735",
+        "x": -2.6617014408111572,
+        "y": 9.572809219360352,
+        "cluster": 38
+      },
+      {
+        "title": "Scale-Agnostic Super-Resolution in MRI using Feature-Based Coordinate\n  Networks",
+        "DOI": "2210.08676",
+        "x": -2.5391347408294678,
+        "y": 9.696549415588379,
+        "cluster": 24
+      },
+      {
+        "title": "Feature Aggregation and Refinement Network for 2D AnatomicalLandmark\n  Detection",
+        "DOI": "2111.00659",
+        "x": -2.7114720344543457,
+        "y": 9.547646522521973,
+        "cluster": 24
+      },
+      {
+        "title": "NODDI-SH: a computational efficient NODDI extension for fODF estimation\n  in diffusion MRI",
+        "DOI": "1708.08999",
+        "x": -2.939568519592285,
+        "y": 9.912129402160645,
+        "cluster": 25
+      }
+    ]
+  },
+  {
+    "void_id": 4,
+    "void_rank": 4,
+    "centroid": [
+      2.724644349811214,
+      8.94762789063364
+    ],
+    "empty_radius": 0.11589715623057811,
+    "name": "Self-supervised 3D Human Motion Capture from Video",
+    "name_reasoning": "The surrounding papers focus on temporal action localization, video\u2011object correspondence, and animation synthesis, but no work connects video understanding directly to extracting 3D human motion without manual labels. A self\u2011supervised method that captures 3D motion from raw video would bridge the gap between action detection and 3D animation generation.",
+    "shape": {
+      "type": "convex_hull",
+      "vertices": [
+        [
+          2.7585647106170654,
+          8.759332656860352
+        ],
+        [
+          2.708570957183838,
+          8.764159202575684
+        ],
+        [
+          2.639744520187378,
+          8.789875984191895
+        ],
+        [
+          2.587611198425293,
+          8.851866722106934
+        ],
+        [
+          2.5420961380004883,
+          8.992902755737305
+        ],
+        [
+          2.5820541381835938,
+          9.058692932128906
+        ],
+        [
+          2.6525511741638184,
+          9.118366241455078
+        ],
+        [
+          2.8579421043395996,
+          9.090367317199707
+        ],
+        [
+          2.919973134994507,
+          8.950246810913086
+        ],
+        [
+          2.9011073112487793,
+          8.916875839233398
+        ]
+      ]
+    },
+    "shape_area": 0.09442755804752778,
+    "border_papers": [
+      {
+        "title": "TempCLR: Reconstructing Hands via Time-Coherent Contrastive Learning",
+        "DOI": "2209.00489",
+        "x": 2.609527587890625,
+        "y": 8.961054801940918,
+        "cluster": 20
+      },
+      {
+        "title": "Siamese Network with Interactive Transformer for Video Object\n  Segmentation",
+        "DOI": "2112.13983",
+        "x": 2.7048816680908203,
+        "y": 9.061827659606934,
+        "cluster": 47
+      },
+      {
+        "title": "The Animation Transformer: Visual Correspondence via Segment Matching",
+        "DOI": "2109.02614",
+        "x": 2.8323323726654053,
+        "y": 8.990469932556152,
+        "cluster": 0
+      },
+      {
+        "title": "Adaptive Proposal Generation Network for Temporal Sentence Localization\n  in Videos",
+        "DOI": "2109.06398",
+        "x": 2.6101832389831543,
+        "y": 8.883935928344727,
+        "cluster": 20
+      },
+      {
+        "title": "AniFormer: Data-driven 3D Animation with Transformer",
+        "DOI": "2110.10533",
+        "x": 2.669916868209839,
+        "y": 8.821094512939453,
+        "cluster": 0
+      },
+      {
+        "title": "Step-by-step Erasion, One-by-one Collection: A Weakly Supervised\n  Temporal Action Detector",
+        "DOI": "1807.02929",
+        "x": 2.811995506286621,
+        "y": 8.832674980163574,
+        "cluster": 26
+      },
+      {
+        "title": "TempCLR: Temporal Alignment Representation with Contrastive Learning",
+        "DOI": "2212.13738",
+        "x": 2.5778841972351074,
+        "y": 8.90417766571045,
+        "cluster": 20
+      },
+      {
+        "title": "AnimeRun: 2D Animation Visual Correspondence from Open Source 3D Movies",
+        "DOI": "2211.05709",
+        "x": 2.723198175430298,
+        "y": 9.10400104522705,
+        "cluster": 3
+      },
+      {
+        "title": "Weakly Supervised Temporal Anomaly Segmentation with Dynamic Time\n  Warping",
+        "DOI": "2108.06816",
+        "x": 2.587611198425293,
+        "y": 8.851866722106934,
+        "cluster": 26
+      },
+      {
+        "title": "Progressive Localization Networks for Language-based Moment Localization",
+        "DOI": "2102.01282",
+        "x": 2.672948122024536,
+        "y": 8.783968925476074,
+        "cluster": 27
+      },
+      {
+        "title": "MAC: Mining Activity Concepts for Language-based Temporal Localization",
+        "DOI": "1811.08925",
+        "x": 2.642205238342285,
+        "y": 8.796364784240723,
+        "cluster": 20
+      },
+      {
+        "title": "Exploiting Optical Flow Guidance for Transformer-Based Video Inpainting",
+        "DOI": "2301.10048",
+        "x": 2.9011073112487793,
+        "y": 8.916875839233398,
+        "cluster": 0
+      },
+      {
+        "title": "SimOn: A Simple Framework for Online Temporal Action Localization",
+        "DOI": "2211.04905",
+        "x": 2.639744520187378,
+        "y": 8.789875984191895,
+        "cluster": 20
+      },
+      {
+        "title": "Finding Action Tubes",
+        "DOI": "1411.6031",
+        "x": 2.5820541381835938,
+        "y": 9.058692932128906,
+        "cluster": 44
+      },
+      {
+        "title": "Dilation-Erosion for Single-Frame Supervised Temporal Action\n  Localization",
+        "DOI": "2212.06348",
+        "x": 2.708570957183838,
+        "y": 8.764159202575684,
+        "cluster": 20
+      },
+      {
+        "title": "End-to-End Video Classification with Knowledge Graphs",
+        "DOI": "1711.01714",
+        "x": 2.6525511741638184,
+        "y": 9.118366241455078,
+        "cluster": 21
+      },
+      {
+        "title": "Predicting Action Tubes",
+        "DOI": "1808.07712",
+        "x": 2.5420961380004883,
+        "y": 8.992902755737305,
+        "cluster": 1
+      },
+      {
+        "title": "A Hybrid RNN-HMM Approach for Weakly Supervised Temporal Action\n  Segmentation",
+        "DOI": "1906.01028",
+        "x": 2.7585647106170654,
+        "y": 8.759332656860352,
+        "cluster": 26
+      },
+      {
+        "title": "Video-Specific Query-Key Attention Modeling for Weakly-Supervised\n  Temporal Action Localization",
+        "DOI": "2305.04186",
+        "x": 2.8579421043395996,
+        "y": 9.090367317199707,
+        "cluster": 20
+      },
+      {
+        "title": "Motion Segmentation using Frequency Domain Transformer Networks",
+        "DOI": "2004.08638",
+        "x": 2.919973134994507,
+        "y": 8.950246810913086,
+        "cluster": 0
+      }
+    ]
+  },
+  {
+    "void_id": 5,
+    "void_rank": 5,
+    "centroid": [
+      3.1146126749825376,
+      10.62619446498495
+    ],
+    "empty_radius": 0.11362918184483416,
+    "name": "Real-Time Low-Bandwidth Controllable Facial Video Synthesis",
+    "name_reasoning": "The surrounding works focus on high-quality facial video generation, editing, compression, and detection, but lack a unified approach that enables real-time, bandwidth\u2011constrained, user\u2011controllable synthesis, bridging generation, editing, and low\u2011bitrate streaming.",
+    "shape": {
+      "type": "convex_hull",
+      "vertices": [
+        [
+          3.1754117012023926,
+          10.398508071899414
+        ],
+        [
+          3.1120288372039795,
+          10.422868728637695
+        ],
+        [
+          2.904313802719116,
+          10.578729629516602
+        ],
+        [
+          2.9090583324432373,
+          10.736614227294922
+        ],
+        [
+          2.979340076446533,
+          10.80049991607666
+        ],
+        [
+          3.2187881469726562,
+          10.838583946228027
+        ],
+        [
+          3.246145725250244,
+          10.76510238647461
+        ],
+        [
+          3.2280688285827637,
+          10.431352615356445
+        ],
+        [
+          3.2130889892578125,
+          10.412718772888184
+        ]
+      ]
+    },
+    "shape_area": 0.11283743356500509,
+    "border_papers": [
+      {
+        "title": "FacialFilmroll: High-resolution multi-shot video editing",
+        "DOI": "2110.02124",
+        "x": 3.0998172760009766,
+        "y": 10.513532638549805,
+        "cluster": 21
+      },
+      {
+        "title": "DaGAN++: Depth-Aware Generative Adversarial Network for Talking Head\n  Video Generation",
+        "DOI": "2305.06225",
+        "x": 3.2281932830810547,
+        "y": 10.622872352600098,
+        "cluster": 48
+      },
+      {
+        "title": "Expressive Talking Head Video Encoding in StyleGAN2 Latent-Space",
+        "DOI": "2203.14512",
+        "x": 3.1520166397094727,
+        "y": 10.733490943908691,
+        "cluster": 21
+      },
+      {
+        "title": "Depth-Aware Generative Adversarial Network for Talking Head Video\n  Generation",
+        "DOI": "2203.06605",
+        "x": 3.227381706237793,
+        "y": 10.554184913635254,
+        "cluster": 48
+      },
+      {
+        "title": "Self-Supervised Joint Encoding of Motion and Appearance for First Person\n  Action Recognition",
+        "DOI": "2002.03982",
+        "x": 3.108332633972168,
+        "y": 10.488261222839355,
+        "cluster": 28
+      },
+      {
+        "title": "Task-agnostic Temporally Consistent Facial Video Editing",
+        "DOI": "2007.01466",
+        "x": 3.132911205291748,
+        "y": 10.483016014099121,
+        "cluster": 21
+      },
+      {
+        "title": "Deep Hashing with Category Mask for Fast Video Retrieval",
+        "DOI": "1712.08315",
+        "x": 3.033971071243286,
+        "y": 10.481717109680176,
+        "cluster": 21
+      },
+      {
+        "title": "Deep Multi-modality Soft-decoding of Very Low Bit-rate Face Videos",
+        "DOI": "2008.01652",
+        "x": 2.960996627807617,
+        "y": 10.552193641662598,
+        "cluster": 21
+      },
+      {
+        "title": "Are You Talking to Me? Reasoned Visual Dialog Generation through\n  Adversarial Learning",
+        "DOI": "1711.07613",
+        "x": 3.246145725250244,
+        "y": 10.76510238647461,
+        "cluster": 8
+      },
+      {
+        "title": "In-N-Out: Face Video Inversion and Editing with Volumetric Decomposition",
+        "DOI": "2302.04871",
+        "x": 2.9230618476867676,
+        "y": 10.639028549194336,
+        "cluster": 21
+      },
+      {
+        "title": "Vision Transformer Based Video Hashing Retrieval for Tracing the Source\n  of Fake Videos",
+        "DOI": "2112.08117",
+        "x": 2.9195494651794434,
+        "y": 10.60938835144043,
+        "cluster": 21
+      },
+      {
+        "title": "Generative Adversarial Networks for Image and Video Synthesis:\n  Algorithms and Applications",
+        "DOI": "2008.02793",
+        "x": 3.1120288372039795,
+        "y": 10.422868728637695,
+        "cluster": 24
+      },
+      {
+        "title": "Person Perception Biases Exposed: Revisiting the First Impressions\n  Dataset",
+        "DOI": "2011.14906",
+        "x": 3.213834285736084,
+        "y": 10.80911922454834,
+        "cluster": 44
+      },
+      {
+        "title": "Ultra-low bitrate video conferencing using deep image animation",
+        "DOI": "2012.00346",
+        "x": 2.904313802719116,
+        "y": 10.578729629516602,
+        "cluster": 21
+      },
+      {
+        "title": "ViTransPAD: Video Transformer using convolution and self-attention for\n  Face Presentation Attack Detection",
+        "DOI": "2203.01562",
+        "x": 2.979340076446533,
+        "y": 10.80049991607666,
+        "cluster": 47
+      },
+      {
+        "title": "DeepLandscape: Adversarial Modeling of Landscape Video",
+        "DOI": "2008.09655",
+        "x": 3.2280688285827637,
+        "y": 10.431352615356445,
+        "cluster": 8
+      },
+      {
+        "title": "Audio-driven Neural Gesture Reenactment with Video Motion Graphs",
+        "DOI": "2207.11524",
+        "x": 2.9090583324432373,
+        "y": 10.736614227294922,
+        "cluster": 47
+      },
+      {
+        "title": "BKinD-3D: Self-Supervised 3D Keypoint Discovery from Multi-View Videos",
+        "DOI": "2212.07401",
+        "x": 3.2130889892578125,
+        "y": 10.412718772888184,
+        "cluster": 47
+      },
+      {
+        "title": "Learning to Generate Time-Lapse Videos Using Multi-Stage Dynamic\n  Generative Adversarial Networks",
+        "DOI": "1709.07592",
+        "x": 3.1754117012023926,
+        "y": 10.398508071899414,
+        "cluster": 21
+      },
+      {
+        "title": "Generative Adversarial Talking Head: Bringing Portraits to Life with a\n  Weakly Supervised Neural Network",
+        "DOI": "1803.07716",
+        "x": 3.2187881469726562,
+        "y": 10.838583946228027,
+        "cluster": 26
+      }
+    ]
+  },
+  {
+    "void_id": 6,
+    "void_rank": 6,
+    "centroid": [
+      -1.423151729092833,
+      5.268465238171339
+    ],
+    "empty_radius": 0.11066833431628587,
+    "name": "Continual Learning for Adaptive Cybersecurity Threat Detection",
+    "name_reasoning": "The surrounding works focus separately on catastrophic forgetting in continual learning and on various cybersecurity detection methods, but no framework unifies them to enable security systems that continually adapt to emerging threats without forgetting past knowledge.",
+    "shape": {
+      "type": "convex_hull",
+      "vertices": [
+        [
+          -1.4996685981750488,
+          5.115799903869629
+        ],
+        [
+          -1.543944239616394,
+          5.2066569328308105
+        ],
+        [
+          -1.5805779695510864,
+          5.341714859008789
+        ],
+        [
+          -1.4874610900878906,
+          5.413487434387207
+        ],
+        [
+          -1.3507311344146729,
+          5.426329612731934
+        ],
+        [
+          -1.2577054500579834,
+          5.302003860473633
+        ],
+        [
+          -1.2474395036697388,
+          5.280585289001465
+        ],
+        [
+          -1.2491540908813477,
+          5.246918678283691
+        ],
+        [
+          -1.305553913116455,
+          5.159510135650635
+        ],
+        [
+          -1.3624463081359863,
+          5.126641273498535
+        ]
+      ]
+    },
+    "shape_area": 0.07557187646293073,
+    "border_papers": [
+      {
+        "title": "Tackling Catastrophic Forgetting and Background Shift in Continual\n  Semantic Segmentation",
+        "DOI": "2106.15287",
+        "x": -1.3327271938323975,
+        "y": 5.332268714904785,
+        "cluster": 7
+      },
+      {
+        "title": "Inter-Domain Fusion for Enhanced Intrusion Detection in Power Systems:\n  An Evidence Theoretic and Meta-Heuristic Approach",
+        "DOI": "2111.10484",
+        "x": -1.5299445390701294,
+        "y": 5.2974958419799805,
+        "cluster": 33
+      },
+      {
+        "title": "Cybersecurity Entity Alignment via Masked Graph Attention Networks",
+        "DOI": "2207.01434",
+        "x": -1.5111805200576782,
+        "y": 5.201395034790039,
+        "cluster": 18
+      },
+      {
+        "title": "Breaking the cycle -- Colleagues are all you need",
+        "DOI": "1911.10538",
+        "x": -1.5178563594818115,
+        "y": 5.326792240142822,
+        "cluster": 14
+      },
+      {
+        "title": "Black-Box Optimization of Object Detector Scales",
+        "DOI": "2010.15823",
+        "x": -1.541673183441162,
+        "y": 5.273894309997559,
+        "cluster": 36
+      },
+      {
+        "title": "Leveraging Unstructured Data to Detect Emerging Reliability Issues",
+        "DOI": "1607.07745",
+        "x": -1.543944239616394,
+        "y": 5.2066569328308105,
+        "cluster": 14
+      },
+      {
+        "title": "GAN Memory with No Forgetting",
+        "DOI": "2006.07543",
+        "x": -1.2816065549850464,
+        "y": 5.257143497467041,
+        "cluster": 48
+      },
+      {
+        "title": "Improved Loss Function-Based Prediction Method of Extreme Temperatures\n  in Greenhouses",
+        "DOI": "2111.01366",
+        "x": -1.4796154499053955,
+        "y": 5.132373809814453,
+        "cluster": 40
+      },
+      {
+        "title": "Deep-CAPTCHA: a deep learning based CAPTCHA solver for vulnerability\n  assessment",
+        "DOI": "2006.08296",
+        "x": -1.4251571893692017,
+        "y": 5.417375564575195,
+        "cluster": 33
+      },
+      {
+        "title": "Quantitative Method for Security Situation of the Power Information\n  Network Based on the Evolutionary Neural Network",
+        "DOI": "2211.14422",
+        "x": -1.3624463081359863,
+        "y": 5.126641273498535,
+        "cluster": 33
+      },
+      {
+        "title": "AdaTest:Reinforcement Learning and Adaptive Sampling for On-chip\n  Hardware Trojan Detection",
+        "DOI": "2204.06117",
+        "x": -1.4874610900878906,
+        "y": 5.413487434387207,
+        "cluster": 5
+      },
+      {
+        "title": "Performance Prediction and Optimization of Solar Water Heater via a\n  Knowledge-Based Machine Learning Method",
+        "DOI": "1710.02511",
+        "x": -1.305553913116455,
+        "y": 5.159510135650635,
+        "cluster": 40
+      },
+      {
+        "title": "Overcoming Catastrophic Forgetting with Unlabeled Data in the Wild",
+        "DOI": "1903.12648",
+        "x": -1.2620452642440796,
+        "y": 5.262936592102051,
+        "cluster": 14
+      },
+      {
+        "title": "Content Addressable Memory Without Catastrophic Forgetting by\n  Heteroassociation with a Fixed Scaffold",
+        "DOI": "2202.00159",
+        "x": -1.2618225812911987,
+        "y": 5.2810516357421875,
+        "cluster": 1
+      },
+      {
+        "title": "Overcoming Catastrophic Forgetting in Incremental Object Detection via\n  Elastic Response Distillation",
+        "DOI": "2204.02136",
+        "x": -1.2577054500579834,
+        "y": 5.302003860473633,
+        "cluster": 36
+      },
+      {
+        "title": "Using Well-Understood Single-Objective Functions in Multiobjective\n  Black-Box Optimization Test Suites",
+        "DOI": "1604.00359",
+        "x": -1.4996685981750488,
+        "y": 5.115799903869629,
+        "cluster": 40
+      },
+      {
+        "title": "Data Leakage and Evaluation Issues in Micro-Expression Analysis",
+        "DOI": "2211.11425",
+        "x": -1.5805779695510864,
+        "y": 5.341714859008789,
+        "cluster": 1
+      },
+      {
+        "title": "Reducing Risk and Uncertainty of Deep Neural Networks on Diagnosing\n  COVID-19 Infection",
+        "DOI": "2104.14029",
+        "x": -1.3507311344146729,
+        "y": 5.426329612731934,
+        "cluster": 6
+      },
+      {
+        "title": "Overcoming Catastrophic Forgetting by Neuron-level Plasticity Control",
+        "DOI": "1907.13322",
+        "x": -1.2491540908813477,
+        "y": 5.246918678283691,
+        "cluster": 5
+      },
+      {
+        "title": "Mitigating Forgetting in Online Continual Learning via Contrasting\n  Semantically Distinct Augmentations",
+        "DOI": "2211.05347",
+        "x": -1.2474395036697388,
+        "y": 5.280585289001465,
+        "cluster": 8
+      }
+    ]
+  },
+  {
+    "void_id": 7,
+    "void_rank": 7,
+    "centroid": [
+      -1.3430239021631976,
+      4.125424149204799
+    ],
+    "empty_radius": 0.10265090475267044,
+    "name": "Passenger-aware Dynamic Transit Scheduling",
+    "name_reasoning": "While the surrounding works focus on reinforcement\u2011learning or simulation\u2011based optimization of rail and bus operations, none address incorporating real\u2011time passenger behavior and preferences into the scheduling loop, a gap that would bridge operational efficiency with user\u2011centric service design.",
+    "shape": {
+      "type": "convex_hull",
+      "vertices": [
+        [
+          -1.3842768669128418,
+          3.934314012527466
+        ],
+        [
+          -1.4482508897781372,
+          3.9574835300445557
+        ],
+        [
+          -1.4625740051269531,
+          4.237082481384277
+        ],
+        [
+          -1.3597710132598877,
+          4.316806793212891
+        ],
+        [
+          -1.2880973815917969,
+          4.308984756469727
+        ],
+        [
+          -1.1676455736160278,
+          4.20802116394043
+        ],
+        [
+          -1.1595617532730103,
+          4.193820953369141
+        ],
+        [
+          -1.2735154628753662,
+          3.9380123615264893
+        ]
+      ]
+    },
+    "shape_area": 0.08528535740126131,
+    "border_papers": [
+      {
+        "title": "Solving the single-track train scheduling problem via Deep Reinforcement\n  Learning",
+        "DOI": "2009.00433",
+        "x": -1.3963347673416138,
+        "y": 4.213146209716797,
+        "cluster": 5
+      },
+      {
+        "title": "Railway Operation Rescheduling System via Dynamic Simulation and\n  Reinforcement Learning",
+        "DOI": "2201.06276",
+        "x": -1.2582426071166992,
+        "y": 4.183297634124756,
+        "cluster": 5
+      },
+      {
+        "title": "Optimisation of a Crossdocking Distribution Centre Simulation Model",
+        "DOI": "1003.3775",
+        "x": -1.3764833211898804,
+        "y": 4.028379440307617,
+        "cluster": 40
+      },
+      {
+        "title": "Deep Reinforcement Learning based Dynamic Optimization of Bus Timetable",
+        "DOI": "2107.07066",
+        "x": -1.4445985555648804,
+        "y": 4.107954978942871,
+        "cluster": 5
+      },
+      {
+        "title": "Introduction to The Dynamic Pickup and Delivery Problem Benchmark --\n  ICAPS 2021 Competition",
+        "DOI": "2202.01256",
+        "x": -1.250123381614685,
+        "y": 4.06850528717041,
+        "cluster": 40
+      },
+      {
+        "title": "A Train Status Assistant for Indian Railways",
+        "DOI": "1809.08509",
+        "x": -1.3002915382385254,
+        "y": 4.234805107116699,
+        "cluster": 32
+      },
+      {
+        "title": "Optimal Stochastic Package Delivery Planning with Deadline: A\n  Cardinality Minimization in Routing",
+        "DOI": "1803.02232",
+        "x": -1.380744457244873,
+        "y": 3.992753267288208,
+        "cluster": 40
+      },
+      {
+        "title": "Data-driven Policy on Feasibility Determination for the Train Shunting\n  Problem",
+        "DOI": "1907.04711",
+        "x": -1.277231216430664,
+        "y": 4.246836185455322,
+        "cluster": 40
+      },
+      {
+        "title": "Optimizing Energy Efficiency in Metro Systems Under Uncertainty\n  Disturbances Using Reinforcement Learning",
+        "DOI": "2304.13443",
+        "x": -1.3146132230758667,
+        "y": 4.2676920890808105,
+        "cluster": 40
+      },
+      {
+        "title": "AI-Driven Contextual Advertising: A Technology Report and Implication\n  Analysis",
+        "DOI": "2205.00911",
+        "x": -1.4625740051269531,
+        "y": 4.237082481384277,
+        "cluster": 32
+      },
+      {
+        "title": "Weakly Labeling the Antarctic: The Penguin Colony Case",
+        "DOI": "1905.03313",
+        "x": -1.2031655311584473,
+        "y": 4.218581676483154,
+        "cluster": 26
+      },
+      {
+        "title": "An algorithm for the selection of route dependent orientation\n  information",
+        "DOI": "1907.05289",
+        "x": -1.4171544313430786,
+        "y": 3.973315954208374,
+        "cluster": 40
+      },
+      {
+        "title": "Resilient Supplier Selection in Logistics 4.0 with Heterogeneous\n  Information",
+        "DOI": "1904.09837",
+        "x": -1.4356921911239624,
+        "y": 3.9660308361053467,
+        "cluster": 40
+      },
+      {
+        "title": "Social Distance Detection Using Deep Learning And Risk Management System",
+        "DOI": "2304.10259",
+        "x": -1.2880973815917969,
+        "y": 4.308984756469727,
+        "cluster": 41
+      },
+      {
+        "title": "Predicting Enemy's Actions Improves Commander Decision-Making",
+        "DOI": "1607.06759",
+        "x": -1.3597710132598877,
+        "y": 4.316806793212891,
+        "cluster": 5
+      },
+      {
+        "title": "Improving Sample Efficiency and Multi-Agent Communication in RL-based\n  Train Rescheduling",
+        "DOI": "2004.13439",
+        "x": -1.1676455736160278,
+        "y": 4.20802116394043,
+        "cluster": 40
+      },
+      {
+        "title": "Optimizing Group Utility in Itinerary Planning: A Strategic and\n  Crowd-Aware Approach",
+        "DOI": "2304.08495",
+        "x": -1.3842768669128418,
+        "y": 3.934314012527466,
+        "cluster": 40
+      },
+      {
+        "title": "An efficient memetic, permutation-based evolutionary algorithm for\n  real-world train timetabling",
+        "DOI": "cs/0510091",
+        "x": -1.1595617532730103,
+        "y": 4.193820953369141,
+        "cluster": 40
+      },
+      {
+        "title": "Evaluating the quality of tourist agendas customized to different travel\n  styles",
+        "DOI": "1706.05518",
+        "x": -1.4482508897781372,
+        "y": 3.9574835300445557,
+        "cluster": 44
+      },
+      {
+        "title": "Mining Smart Card Data for Travelers' Mini Activities",
+        "DOI": "1712.06935",
+        "x": -1.2735154628753662,
+        "y": 3.9380123615264893,
+        "cluster": 14
+      }
+    ]
+  },
+  {
+    "void_id": 8,
+    "void_rank": 8,
+    "centroid": [
+      -2.906171057419707,
+      4.5993166235309655
+    ],
+    "empty_radius": 0.10260465225948398,
+    "name": "Privacy-Preserving Computer Vision for Smart Cities",
+    "name_reasoning": "The surrounding papers focus on perception, planning, and assistance in urban environments, but there is no work addressing how to protect individual privacy while deploying these vision systems, highlighting a gap in privacy-aware CV research for smart city applications.",
+    "shape": {
+      "type": "convex_hull",
+      "vertices": [
+        [
+          -2.8845534324645996,
+          4.409451007843018
+        ],
+        [
+          -3.008767604827881,
+          4.437460899353027
+        ],
+        [
+          -3.0731725692749023,
+          4.465051651000977
+        ],
+        [
+          -3.0974411964416504,
+          4.490555286407471
+        ],
+        [
+          -3.1074259281158447,
+          4.509815216064453
+        ],
+        [
+          -3.0205585956573486,
+          4.753759860992432
+        ],
+        [
+          -2.806105375289917,
+          4.674923896789551
+        ],
+        [
+          -2.705519437789917,
+          4.589202404022217
+        ],
+        [
+          -2.759063959121704,
+          4.428397178649902
+        ]
+      ]
+    },
+    "shape_area": 0.09358504902411369,
+    "border_papers": [
+      {
+        "title": "GANs for Urban Design",
+        "DOI": "2105.01727",
+        "x": -2.8693926334381104,
+        "y": 4.695103168487549,
+        "cluster": 48
+      },
+      {
+        "title": "Improving Emergency Response during Hurricane Season using Computer\n  Vision",
+        "DOI": "2008.07418",
+        "x": -2.8043503761291504,
+        "y": 4.611976146697998,
+        "cluster": 13
+      },
+      {
+        "title": "Towards Digital Retina in Smart Cities: A Model Generation, Utilization\n  and Communication Paradigm",
+        "DOI": "1907.13368",
+        "x": -2.879617691040039,
+        "y": 4.500207424163818,
+        "cluster": 14
+      },
+      {
+        "title": "Driver Glance Classification In-the-wild: Towards Generalization Across\n  Domains and Subjects",
+        "DOI": "2012.02906",
+        "x": -2.7888901233673096,
+        "y": 4.639614582061768,
+        "cluster": 44
+      },
+      {
+        "title": "Deep Interactive Reinforcement Learning for Path Following of Autonomous\n  Underwater Vehicle",
+        "DOI": "2001.03359",
+        "x": -2.806105375289917,
+        "y": 4.674923896789551,
+        "cluster": 5
+      },
+      {
+        "title": "Diversifying Inference Path Selection: Moving-Mobile-Network for\n  Landmark Recognition",
+        "DOI": "1912.00418",
+        "x": -2.9444003105163574,
+        "y": 4.474200248718262,
+        "cluster": 18
+      },
+      {
+        "title": "Review on Computer Vision Techniques in Emergency Situation",
+        "DOI": "1708.07455",
+        "x": -2.785311698913574,
+        "y": 4.513835430145264,
+        "cluster": 13
+      },
+      {
+        "title": "Detection of Uncertainty in Exceedance of Threshold (DUET): An\n  Adversarial Patch Localizer",
+        "DOI": "2303.10291",
+        "x": -3.056410551071167,
+        "y": 4.642702579498291,
+        "cluster": 1
+      },
+      {
+        "title": "Can User-Centered Reinforcement Learning Allow a Robot to Attract\n  Passersby without Causing Discomfort?",
+        "DOI": "1903.05881",
+        "x": -2.9075372219085693,
+        "y": 4.441054344177246,
+        "cluster": 5
+      },
+      {
+        "title": "Automated Urban Planning aware Spatial Hierarchies and Human\n  Instructions",
+        "DOI": "2209.13002",
+        "x": -2.73402738571167,
+        "y": 4.547879695892334,
+        "cluster": 11
+      },
+      {
+        "title": "Reimagining City Configuration: Automated Urban Planning via Adversarial\n  Learning",
+        "DOI": "2008.09912",
+        "x": -2.7409255504608154,
+        "y": 4.528600692749023,
+        "cluster": 8
+      },
+      {
+        "title": "Virtual Experience to Real World Application: Sidewalk Obstacle\n  Avoidance Using Reinforcement Learning for Visually Impaired",
+        "DOI": "2009.12877",
+        "x": -2.8845534324645996,
+        "y": 4.409451007843018,
+        "cluster": 11
+      },
+      {
+        "title": "Bayesian Prediction of Future Street Scenes using Synthetic Likelihoods",
+        "DOI": "1810.00746",
+        "x": -3.008767604827881,
+        "y": 4.437460899353027,
+        "cluster": 11
+      },
+      {
+        "title": "Enhancing Border Security and Countering Terrorism Through Computer\n  Vision: a Field of Artificial Intelligence",
+        "DOI": "2303.02869",
+        "x": -3.0205585956573486,
+        "y": 4.753759860992432,
+        "cluster": 32
+      },
+      {
+        "title": "Key Person Aided Re-identification in Partially Ordered Pedestrian Set",
+        "DOI": "1805.10017",
+        "x": -3.077420234680176,
+        "y": 4.494703769683838,
+        "cluster": 14
+      },
+      {
+        "title": "Deep Human-guided Conditional Variational Generative Modeling for\n  Automated Urban Planning",
+        "DOI": "2110.07717",
+        "x": -2.705519437789917,
+        "y": 4.589202404022217,
+        "cluster": 42
+      },
+      {
+        "title": "Channel Recurrent Attention Networks for Video Pedestrian Retrieval",
+        "DOI": "2010.03108",
+        "x": -3.0731725692749023,
+        "y": 4.465051651000977,
+        "cluster": 47
+      },
+      {
+        "title": "1st Place Solution to VisDA-2020: Bias Elimination for Domain Adaptive\n  Pedestrian Re-identification",
+        "DOI": "2012.13498",
+        "x": -3.0974411964416504,
+        "y": 4.490555286407471,
+        "cluster": 11
+      },
+      {
+        "title": "Deep Person Re-identification for Probabilistic Data Association in\n  Multiple Pedestrian Tracking",
+        "DOI": "1810.08565",
+        "x": -3.1074259281158447,
+        "y": 4.509815216064453,
+        "cluster": 11
+      },
+      {
+        "title": "Navigation Agents for the Visually Impaired: A Sidewalk Simulator and\n  Experiments",
+        "DOI": "1910.13249",
+        "x": -2.759063959121704,
+        "y": 4.428397178649902,
+        "cluster": 11
+      }
+    ]
+  },
+  {
+    "void_id": 9,
+    "void_rank": 9,
+    "centroid": [
+      -2.463578121722442,
+      5.891536204880652
+    ],
+    "empty_radius": 0.10227215694557347,
+    "name": "Adversarially Robust Railway Inspection",
+    "name_reasoning": "The surrounding papers focus separately on adversarial attacks/defenses in vision and on railway component detection, but there is no work that unifies them to create adversarial\u2011resilient perception systems for safety\u2011critical railway inspection.",
+    "shape": {
+      "type": "convex_hull",
+      "vertices": [
+        [
+          -2.4236412048339844,
+          5.737236499786377
+        ],
+        [
+          -2.57442045211792,
+          5.800798416137695
+        ],
+        [
+          -2.5918169021606445,
+          5.810903072357178
+        ],
+        [
+          -2.6353700160980225,
+          5.893935203552246
+        ],
+        [
+          -2.4994075298309326,
+          6.052578449249268
+        ],
+        [
+          -2.4562809467315674,
+          6.047821998596191
+        ],
+        [
+          -2.344496488571167,
+          6.007654190063477
+        ],
+        [
+          -2.3167216777801514,
+          5.949763298034668
+        ],
+        [
+          -2.307737112045288,
+          5.878080368041992
+        ],
+        [
+          -2.3201725482940674,
+          5.825956344604492
+        ],
+        [
+          -2.373499870300293,
+          5.75049352645874
+        ]
+      ]
+    },
+    "shape_area": 0.07087389921241538,
+    "border_papers": [
+      {
+        "title": "Fine-grained Synthesis of Unrestricted Adversarial Examples",
+        "DOI": "1911.09058",
+        "x": -2.394953489303589,
+        "y": 5.8157057762146,
+        "cluster": 8
+      },
+      {
+        "title": "Predicting Landscapes from Environmental Conditions Using Generative\n  Networks",
+        "DOI": "1909.10296",
+        "x": -2.513190507888794,
+        "y": 5.802103519439697,
+        "cluster": 24
+      },
+      {
+        "title": "CRAFT: Complementary Recommendations Using Adversarial Feature\n  Transformer",
+        "DOI": "1804.10871",
+        "x": -2.426412582397461,
+        "y": 5.98681640625,
+        "cluster": 8
+      },
+      {
+        "title": "FasteNet: A Fast Railway Fastener Detector",
+        "DOI": "2012.07968",
+        "x": -2.567483425140381,
+        "y": 5.934385299682617,
+        "cluster": 18
+      },
+      {
+        "title": "Messing Up 3D Virtual Environments: Transferable Adversarial 3D Objects",
+        "DOI": "2109.08465",
+        "x": -2.3543922901153564,
+        "y": 5.9216718673706055,
+        "cluster": 3
+      },
+      {
+        "title": "Automatic Rail Component Detection Based on AttnConv-Net",
+        "DOI": "2108.02423",
+        "x": -2.5962953567504883,
+        "y": 5.847977161407471,
+        "cluster": 36
+      },
+      {
+        "title": "Conditional Generative Adversarial Networks for Speed Control in\n  Trajectory Simulation",
+        "DOI": "2103.11471",
+        "x": -2.57442045211792,
+        "y": 5.800798416137695,
+        "cluster": 11
+      },
+      {
+        "title": "Enhancing Real-World Adversarial Patches through 3D Modeling of Complex\n  Target Scenes",
+        "DOI": "2102.05334",
+        "x": -2.331735610961914,
+        "y": 5.955324649810791,
+        "cluster": 3
+      },
+      {
+        "title": "Self-Supervised Adversarial Example Detection by Disentangled\n  Representation",
+        "DOI": "2105.03689",
+        "x": -2.31362247467041,
+        "y": 5.891769886016846,
+        "cluster": 8
+      },
+      {
+        "title": "IROS 2019 Lifelong Robotic Vision Challenge -- Lifelong Object\n  Recognition Report",
+        "DOI": "2004.14774",
+        "x": -2.473741054534912,
+        "y": 6.042239189147949,
+        "cluster": 13
+      },
+      {
+        "title": "Real-time Rail Recognition Based on 3D Point Clouds",
+        "DOI": "2201.02726",
+        "x": -2.5918169021606445,
+        "y": 5.810903072357178,
+        "cluster": 30
+      },
+      {
+        "title": "Who's Afraid of Adversarial Queries? The Impact of Image Modifications\n  on Content-based Image Retrieval",
+        "DOI": "1901.10332",
+        "x": -2.307737112045288,
+        "y": 5.878080368041992,
+        "cluster": 31
+      },
+      {
+        "title": "Counterfactual Explanation and Instance-Generation using\n  Cycle-Consistent Generative Adversarial Networks",
+        "DOI": "2301.08939",
+        "x": -2.4562809467315674,
+        "y": 6.047821998596191,
+        "cluster": 8
+      },
+      {
+        "title": "DADA: Deep Adversarial Data Augmentation for Extremely Low Data Regime\n  Classification",
+        "DOI": "1809.00981",
+        "x": -2.3201725482940674,
+        "y": 5.825956344604492,
+        "cluster": 8
+      },
+      {
+        "title": "Adversarial Examples for Semantic Segmentation and Object Detection",
+        "DOI": "1703.08603",
+        "x": -2.3167216777801514,
+        "y": 5.949763298034668,
+        "cluster": 7
+      },
+      {
+        "title": "Can You Spot the Chameleon? Adversarially Camouflaging Images from\n  Co-Salient Object Detection",
+        "DOI": "2009.09258",
+        "x": -2.4236412048339844,
+        "y": 5.737236499786377,
+        "cluster": 36
+      },
+      {
+        "title": "Inspirational Adversarial Image Generation",
+        "DOI": "1906.11661",
+        "x": -2.4994075298309326,
+        "y": 6.052578449249268,
+        "cluster": 8
+      },
+      {
+        "title": "Analysis of Adversarial Image Manipulations",
+        "DOI": "2305.06307",
+        "x": -2.344496488571167,
+        "y": 6.007654190063477,
+        "cluster": 31
+      },
+      {
+        "title": "FakeSafe: Human Level Data Protection by Disinformation Mapping using\n  Cycle-consistent Adversarial Network",
+        "DOI": "2011.11278",
+        "x": -2.373499870300293,
+        "y": 5.75049352645874,
+        "cluster": 33
+      },
+      {
+        "title": "High-speed Railway Fastener Detection and Localization Method based on\n  convolutional neural network",
+        "DOI": "1907.01141",
+        "x": -2.6353700160980225,
+        "y": 5.893935203552246,
+        "cluster": 4
+      }
+    ]
+  },
+  {
+    "void_id": 10,
+    "void_rank": 10,
+    "centroid": [
+      0.0382749246728807,
+      2.953712999533846
+    ],
+    "empty_radius": 0.10131300077944505,
+    "name": "Cognitive Modeling of Human Puzzle Solving",
+    "name_reasoning": "The surrounding works focus on algorithmic puzzle solving, generation, and AI evaluation, but lack studies that model and predict how humans solve puzzles, a bridge needed to align AI methods with human cognition.",
+    "shape": {
+      "type": "convex_hull",
+      "vertices": [
+        [
+          0.02955028973519802,
+          2.677643060684204
+        ],
+        [
+          -0.18744336068630219,
+          2.8717243671417236
+        ],
+        [
+          -0.22331397235393524,
+          3.008052110671997
+        ],
+        [
+          -0.22114664316177368,
+          3.0665297508239746
+        ],
+        [
+          -0.11682678014039993,
+          3.189725160598755
+        ],
+        [
+          -0.02469765953719616,
+          3.167095899581909
+        ],
+        [
+          0.31467562913894653,
+          3.067199468612671
+        ],
+        [
+          0.3315126597881317,
+          2.9450836181640625
+        ],
+        [
+          0.05870068073272705,
+          2.6861677169799805
+        ]
+      ]
+    },
+    "shape_area": 0.18036462362534578,
+    "border_papers": [
+      {
+        "title": "Ludii and XCSP: Playing and Solving Logic Puzzles",
+        "DOI": "1907.00245",
+        "x": 0.008133635856211185,
+        "y": 2.856987476348877,
+        "cluster": 19
+      },
+      {
+        "title": "A New Challenge: Approaching Tetris Link with AI",
+        "DOI": "2004.00377",
+        "x": -0.05858796462416649,
+        "y": 2.983409881591797,
+        "cluster": 32
+      },
+      {
+        "title": "Solving Logic Grid Puzzles with an Algorithm that Imitates Human\n  Behavior",
+        "DOI": "1910.06636",
+        "x": 0.0890616700053215,
+        "y": 3.041377305984497,
+        "cluster": 22
+      },
+      {
+        "title": "Pattern-Based Constraint Satisfaction and Logic Puzzles",
+        "DOI": "1304.1628",
+        "x": 0.15009638667106628,
+        "y": 3.0288727283477783,
+        "cluster": 22
+      },
+      {
+        "title": "The Riddle of Togelby",
+        "DOI": "1906.03997",
+        "x": 0.18383672833442688,
+        "y": 2.994439125061035,
+        "cluster": 44
+      },
+      {
+        "title": "Snakes AI Competition 2020 and 2021 Report",
+        "DOI": "2108.05136",
+        "x": 0.07209696620702744,
+        "y": 3.107332944869995,
+        "cluster": 32
+      },
+      {
+        "title": "Solving Archaeological Puzzles",
+        "DOI": "1812.10553",
+        "x": 0.10723590105772018,
+        "y": 2.8110477924346924,
+        "cluster": 19
+      },
+      {
+        "title": "A Puzzle-Based Dataset for Natural Language Inference",
+        "DOI": "2112.05742",
+        "x": 0.1965678632259369,
+        "y": 2.887481451034546,
+        "cluster": 27
+      },
+      {
+        "title": "Assessing the players'performance in the game of bridge: A fuzzy logic\n  approach",
+        "DOI": "1404.7279",
+        "x": -0.10583516955375671,
+        "y": 3.120375156402588,
+        "cluster": 19
+      },
+      {
+        "title": "Construction and Elicitation of a Black Box Model in the Game of Bridge",
+        "DOI": "2005.01633",
+        "x": -0.02469765953719616,
+        "y": 3.167095899581909,
+        "cluster": 19
+      },
+      {
+        "title": "Abstraction for Zooming-In to Unsolvability Reasons of Grid-Cell\n  Problems",
+        "DOI": "1909.04998",
+        "x": -0.18744336068630219,
+        "y": 2.8717243671417236,
+        "cluster": 40
+      },
+      {
+        "title": "Turing: Then, Now and Still Key",
+        "DOI": "1403.2541",
+        "x": 0.26538771390914917,
+        "y": 3.053703546524048,
+        "cluster": 32
+      },
+      {
+        "title": "Redundant Sudoku Rules",
+        "DOI": "1207.5926",
+        "x": -0.16036874055862427,
+        "y": 3.1074044704437256,
+        "cluster": 22
+      },
+      {
+        "title": "A Misanthropic Reinterpretation of the Chinese Room Problem",
+        "DOI": "1311.2912",
+        "x": -0.22331397235393524,
+        "y": 3.008052110671997,
+        "cluster": 19
+      },
+      {
+        "title": "Puzzle-AE: Novelty Detection in Images through Solving Puzzles",
+        "DOI": "2008.12959",
+        "x": 0.05870068073272705,
+        "y": 2.6861677169799805,
+        "cluster": 31
+      },
+      {
+        "title": "Automation Strategies for Unconstrained Crossword Puzzle Generation",
+        "DOI": "2007.04663",
+        "x": 0.02955028973519802,
+        "y": 2.677643060684204,
+        "cluster": 22
+      },
+      {
+        "title": "Guaranteed satisficing and finite regret: Analysis of a cognitive\n  satisficing value function",
+        "DOI": "1812.05795",
+        "x": -0.11682678014039993,
+        "y": 3.189725160598755,
+        "cluster": 40
+      },
+      {
+        "title": "D2CFR: Minimize Counterfactual Regret with Deep Dueling Neural Network",
+        "DOI": "2105.12328",
+        "x": -0.22114664316177368,
+        "y": 3.0665297508239746,
+        "cluster": 38
+      },
+      {
+        "title": "Improvised Comedy as a Turing Test",
+        "DOI": "1711.08819",
+        "x": 0.3315126597881317,
+        "y": 2.9450836181640625,
+        "cluster": 32
+      },
+      {
+        "title": "Cheating Detection Pipeline for Online Interviews and Exams",
+        "DOI": "2106.14483",
+        "x": 0.31467562913894653,
+        "y": 3.067199468612671,
+        "cluster": 33
+      }
+    ]
+  },
+  {
+    "void_id": 11,
+    "void_rank": 11,
+    "centroid": [
+      1.737361441438085,
+      3.748026488873747
+    ],
+    "empty_radius": 0.09788707863140209,
+    "name": "Causal Reinforcement Learning",
+    "name_reasoning": "The surrounding works link causal inference, influence diagrams, and explainable AI, but none address how causal reasoning can be integrated into reinforcement learning for sequential decision-making, a bridge between causal models and learning-based policies.",
+    "shape": {
+      "type": "convex_hull",
+      "vertices": [
+        [
+          1.7552552223205566,
+          3.607679843902588
+        ],
+        [
+          1.6492398977279663,
+          3.6298558712005615
+        ],
+        [
+          1.6002660989761353,
+          3.748908758163452
+        ],
+        [
+          1.6031593084335327,
+          3.7811408042907715
+        ],
+        [
+          1.6165424585342407,
+          3.81777286529541
+        ],
+        [
+          1.631382703781128,
+          3.8434231281280518
+        ],
+        [
+          1.6685354709625244,
+          3.8624167442321777
+        ],
+        [
+          1.7444539070129395,
+          3.8879544734954834
+        ],
+        [
+          1.8218356370925903,
+          3.797483444213867
+        ],
+        [
+          1.8510761260986328,
+          3.704784631729126
+        ],
+        [
+          1.8229917287826538,
+          3.634430408477783
+        ]
+      ]
+    },
+    "shape_area": 0.05031036758559537,
+    "border_papers": [
+      {
+        "title": "Belief propagation for supply networks: Efficient clustering of their\n  factor graphs",
+        "DOI": "2203.00467",
+        "x": 1.8218356370925903,
+        "y": 3.797483444213867,
+        "cluster": 18
+      },
+      {
+        "title": "Path-specific Effects Based on Information Accounts of Causality",
+        "DOI": "2106.03178",
+        "x": 1.6492218971252441,
+        "y": 3.790609359741211,
+        "cluster": 19
+      },
+      {
+        "title": "Towards a Shapley Value Graph Framework for Medical peer-influence",
+        "DOI": "2112.14624",
+        "x": 1.6917080879211426,
+        "y": 3.834615468978882,
+        "cluster": 49
+      },
+      {
+        "title": "Causal Explanations and XAI",
+        "DOI": "2201.13169",
+        "x": 1.6749521493911743,
+        "y": 3.842467784881592,
+        "cluster": 19
+      },
+      {
+        "title": "Explainability Via Causal Self-Talk",
+        "DOI": "2211.09937",
+        "x": 1.6472513675689697,
+        "y": 3.820115327835083,
+        "cluster": 19
+      },
+      {
+        "title": "CausalKG: Causal Knowledge Graph Explainability using interventional and\n  counterfactual reasoning",
+        "DOI": "2201.03647",
+        "x": 1.6241141557693481,
+        "y": 3.714982748031616,
+        "cluster": 19
+      },
+      {
+        "title": "A Method for Using Belief Networks as Influence Diagrams",
+        "DOI": "1304.2346",
+        "x": 1.8510761260986328,
+        "y": 3.704784631729126,
+        "cluster": 49
+      },
+      {
+        "title": "Frustratingly Easy Truth Discovery",
+        "DOI": "1905.00629",
+        "x": 1.6131701469421387,
+        "y": 3.7440154552459717,
+        "cluster": 19
+      },
+      {
+        "title": "A Modification of the Halpern-Pearl Definition of Causality",
+        "DOI": "1505.00162",
+        "x": 1.6685354709625244,
+        "y": 3.8624167442321777,
+        "cluster": 19
+      },
+      {
+        "title": "Three new sensitivity analysis methods for influence diagrams",
+        "DOI": "1203.3467",
+        "x": 1.7920118570327759,
+        "y": 3.6261179447174072,
+        "cluster": 1
+      },
+      {
+        "title": "ACRE: Abstract Causal REasoning Beyond Covariation",
+        "DOI": "2103.14232",
+        "x": 1.6257764101028442,
+        "y": 3.8259363174438477,
+        "cluster": 19
+      },
+      {
+        "title": "Deconfounded Image Captioning: A Causal Retrospect",
+        "DOI": "2003.03923",
+        "x": 1.6002660989761353,
+        "y": 3.748908758163452,
+        "cluster": 19
+      },
+      {
+        "title": "A platform for causal knowledge representation and inference in\n  industrial fault diagnosis based on cubic DUCG",
+        "DOI": "2203.12802",
+        "x": 1.619867205619812,
+        "y": 3.8193719387054443,
+        "cluster": 19
+      },
+      {
+        "title": "What caused what? A quantitative account of actual causation using\n  dynamical causal networks",
+        "DOI": "1708.06716",
+        "x": 1.6031593084335327,
+        "y": 3.7811408042907715,
+        "cluster": 19
+      },
+      {
+        "title": "Learning Contextual Causality from Time-consecutive Images",
+        "DOI": "2012.07138",
+        "x": 1.6165424585342407,
+        "y": 3.81777286529541,
+        "cluster": 20
+      },
+      {
+        "title": "Actual Causation in CP-logic",
+        "DOI": "1107.4865",
+        "x": 1.7444539070129395,
+        "y": 3.8879544734954834,
+        "cluster": 19
+      },
+      {
+        "title": "Structural Controllability and Observability in Influence Diagrams",
+        "DOI": "1303.5394",
+        "x": 1.7552552223205566,
+        "y": 3.607679843902588,
+        "cluster": 49
+      },
+      {
+        "title": "End-User Construction of Influence Diagrams for Bayesian Statistics",
+        "DOI": "1303.1459",
+        "x": 1.8229917287826538,
+        "y": 3.634430408477783,
+        "cluster": 19
+      },
+      {
+        "title": "Distinguishing Cause from Effect Based on Exogeneity",
+        "DOI": "1504.05651",
+        "x": 1.631382703781128,
+        "y": 3.8434231281280518,
+        "cluster": 19
+      },
+      {
+        "title": "Solving Multistage Influence Diagrams using Branch-and-Bound Search",
+        "DOI": "1203.3531",
+        "x": 1.6492398977279663,
+        "y": 3.6298558712005615,
+        "cluster": 22
+      }
+    ]
+  },
+  {
+    "void_id": 12,
+    "void_rank": 12,
+    "centroid": [
+      -4.242250545503465,
+      9.102949495745
+    ],
+    "empty_radius": 0.097175059415954,
+    "name": "Unsupervised Medical Image\u2013Report Joint Embedding",
+    "name_reasoning": "The surrounding papers cover unsupervised visual tasks like segmentation, registration, and modality translation, but none address learning a shared representation between medical images and their textual reports, a missing bridge between visual and language modalities in unsupervised medical AI.",
+    "shape": {
+      "type": "convex_hull",
+      "vertices": [
+        [
+          -4.191206932067871,
+          8.858914375305176
+        ],
+        [
+          -4.247486114501953,
+          8.871585845947266
+        ],
+        [
+          -4.352156639099121,
+          8.90212345123291
+        ],
+        [
+          -4.429012298583984,
+          9.079411506652832
+        ],
+        [
+          -4.379061698913574,
+          9.185785293579102
+        ],
+        [
+          -4.265010833740234,
+          9.337940216064453
+        ],
+        [
+          -4.20384407043457,
+          9.338197708129883
+        ],
+        [
+          -4.049817085266113,
+          9.208767890930176
+        ],
+        [
+          -4.003340721130371,
+          9.081942558288574
+        ],
+        [
+          -4.017578125,
+          8.995573043823242
+        ]
+      ]
+    },
+    "shape_area": 0.13826388682355173,
+    "border_papers": [
+      {
+        "title": "Unsupervised Body Part Regression via Spatially Self-ordering\n  Convolutional Neural Networks",
+        "DOI": "1707.03891",
+        "x": -4.23977518081665,
+        "y": 9.005805969238281,
+        "cluster": 37
+      },
+      {
+        "title": "Unsupervised Method for Intra-patient Registration of Brain Magnetic\n  Resonance Images based on Objective Function Weighting by Inverse\n  Consistency: Contribution to the BraTS-Reg Challenge",
+        "DOI": "2211.07386",
+        "x": -4.157398700714111,
+        "y": 9.150311470031738,
+        "cluster": 37
+      },
+      {
+        "title": "Virtualization of tissue staining in digital pathology using an\n  unsupervised deep learning approach",
+        "DOI": "1810.06415",
+        "x": -4.3372039794921875,
+        "y": 9.12360954284668,
+        "cluster": 37
+      },
+      {
+        "title": "Live image-based neurosurgical guidance and roadmap generation using\n  unsupervised embedding",
+        "DOI": "2303.18019",
+        "x": -4.333755970001221,
+        "y": 9.030747413635254,
+        "cluster": 37
+      },
+      {
+        "title": "Image Embedded Segmentation: Uniting Supervised and Unsupervised\n  Objectives for Segmenting Histopathological Images",
+        "DOI": "2001.11202",
+        "x": -4.274868488311768,
+        "y": 9.249910354614258,
+        "cluster": 37
+      },
+      {
+        "title": "An Unsupervised Approach for Overlapping Cervical Cell Cytoplasm\n  Segmentation",
+        "DOI": "1702.05506",
+        "x": -4.2403459548950195,
+        "y": 9.256721496582031,
+        "cluster": 37
+      },
+      {
+        "title": "Unsupervised shape and motion analysis of 3822 cardiac 4D MRIs of UK\n  Biobank",
+        "DOI": "1902.05811",
+        "x": -4.379061698913574,
+        "y": 9.185785293579102,
+        "cluster": 37
+      },
+      {
+        "title": "Unsupervised temporal context learning using convolutional neural\n  networks for laparoscopic workflow analysis",
+        "DOI": "1702.03684",
+        "x": -4.429012298583984,
+        "y": 9.079411506652832,
+        "cluster": 37
+      },
+      {
+        "title": "Recursive Cascaded Networks for Unsupervised Medical Image Registration",
+        "DOI": "1907.12353",
+        "x": -4.221431732177734,
+        "y": 8.895886421203613,
+        "cluster": 24
+      },
+      {
+        "title": "Deep learning enabled multi-wavelength spatial coherence microscope for\n  the classification of malaria-infected stages with limited labelled data size",
+        "DOI": "1903.06056",
+        "x": -4.049817085266113,
+        "y": 9.208767890930176,
+        "cluster": 41
+      },
+      {
+        "title": "PseudoAugment: Learning to Use Unlabeled Data for Data Augmentation in\n  Point Clouds",
+        "DOI": "2210.13428",
+        "x": -4.289244174957275,
+        "y": 8.886444091796875,
+        "cluster": 30
+      },
+      {
+        "title": "Neural Activation Constellations: Unsupervised Part Model Discovery with\n  Convolutional Networks",
+        "DOI": "1504.08289",
+        "x": -4.352156639099121,
+        "y": 8.90212345123291,
+        "cluster": 4
+      },
+      {
+        "title": "A Computer Vision Approach to Combat Lyme Disease",
+        "DOI": "2009.11931",
+        "x": -4.245172500610352,
+        "y": 9.332869529724121,
+        "cluster": 6
+      },
+      {
+        "title": "Convolutional Sparse Kernel Network for Unsupervised Medical Image\n  Analysis",
+        "DOI": "1807.05648",
+        "x": -4.247486114501953,
+        "y": 8.871585845947266,
+        "cluster": 37
+      },
+      {
+        "title": "Unsupervised-learning-based method for chest MRI-CT transformation using\n  structure constrained unsupervised generative attention networks",
+        "DOI": "2106.08557",
+        "x": -4.199239253997803,
+        "y": 9.33247184753418,
+        "cluster": 37
+      },
+      {
+        "title": "Graph Neural Networks for UnsupervisedDomain Adaptation of\n  Histopathological ImageAnalytics",
+        "DOI": "2008.09304",
+        "x": -4.265010833740234,
+        "y": 9.337940216064453,
+        "cluster": 37
+      },
+      {
+        "title": "Unsupervised Segmentation of Overlapping Cervical Cell Cytoplasm",
+        "DOI": "1505.05601",
+        "x": -4.20384407043457,
+        "y": 9.338197708129883,
+        "cluster": 37
+      },
+      {
+        "title": "Imbalanced Domain Generalization for Robust Single Cell Classification\n  in Hematological Cytomorphology",
+        "DOI": "2303.07771",
+        "x": -4.003340721130371,
+        "y": 9.081942558288574,
+        "cluster": 6
+      },
+      {
+        "title": "FAIM -- A ConvNet Method for Unsupervised 3D Medical Image Registration",
+        "DOI": "1811.09243",
+        "x": -4.017578125,
+        "y": 8.995573043823242,
+        "cluster": 37
+      },
+      {
+        "title": "Cascaded Feature Warping Network for Unsupervised Medical Image\n  Registration",
+        "DOI": "2103.08213",
+        "x": -4.191206932067871,
+        "y": 8.858914375305176,
+        "cluster": 37
+      }
+    ]
+  },
+  {
+    "void_id": 13,
+    "void_rank": 13,
+    "centroid": [
+      2.3776845112395706,
+      11.564500249525228
+    ],
+    "empty_radius": 0.09112310989857157,
+    "name": "Multimodal Deepfake Detection for Facial Media",
+    "name_reasoning": "The surrounding works focus on facial synthesis, visual anti\u2011spoofing, and forensic datasets, but there is no research bridging these areas with a multimodal approach that combines audio, visual, and other biometric cues to detect synthetic facial media.",
+    "shape": {
+      "type": "convex_hull",
+      "vertices": [
+        [
+          2.448465585708618,
+          11.423380851745605
+        ],
+        [
+          2.3492133617401123,
+          11.42839241027832
+        ],
+        [
+          2.2768213748931885,
+          11.44290828704834
+        ],
+        [
+          2.24548602104187,
+          11.479991912841797
+        ],
+        [
+          2.2248077392578125,
+          11.597247123718262
+        ],
+        [
+          2.260967969894409,
+          11.646979331970215
+        ],
+        [
+          2.354403495788574,
+          11.73620891571045
+        ],
+        [
+          2.5477890968322754,
+          11.597511291503906
+        ]
+      ]
+    },
+    "shape_area": 0.06597184640577325,
+    "border_papers": [
+      {
+        "title": "Video-driven Neural Physically-based Facial Asset for Production",
+        "DOI": "2202.05592",
+        "x": 2.430461883544922,
+        "y": 11.490217208862305,
+        "cluster": 21
+      },
+      {
+        "title": "Realistic face animation generation from videos",
+        "DOI": "2103.14984",
+        "x": 2.291147470474243,
+        "y": 11.59304428100586,
+        "cluster": 10
+      },
+      {
+        "title": "BioFors: A Large Biomedical Image Forensics Dataset",
+        "DOI": "2108.12961",
+        "x": 2.4551546573638916,
+        "y": 11.61247730255127,
+        "cluster": 6
+      },
+      {
+        "title": "Creating a Forensic Database of Shoeprints from Online Shoe Tread Photos",
+        "DOI": "2205.02361",
+        "x": 2.377772331237793,
+        "y": 11.657491683959961,
+        "cluster": 33
+      },
+      {
+        "title": "Surveillance Face Recognition Challenge",
+        "DOI": "1804.09691",
+        "x": 2.2764036655426025,
+        "y": 11.568960189819336,
+        "cluster": 10
+      },
+      {
+        "title": "Stitch it in Time: GAN-Based Facial Editing of Real Videos",
+        "DOI": "2201.08361",
+        "x": 2.4371795654296875,
+        "y": 11.479185104370117,
+        "cluster": 48
+      },
+      {
+        "title": "Comprehensive Dataset of Synthetic and Manipulated Overhead Imagery for\n  Development and Evaluation of Forensic Tools",
+        "DOI": "2305.05784",
+        "x": 2.342247486114502,
+        "y": 11.453975677490234,
+        "cluster": 9
+      },
+      {
+        "title": "MIDV-2020: A Comprehensive Benchmark Dataset for Identity Document\n  Analysis",
+        "DOI": "2107.00396",
+        "x": 2.432204484939575,
+        "y": 11.455336570739746,
+        "cluster": 14
+      },
+      {
+        "title": "HeadOn: Real-time Reenactment of Human Portrait Videos",
+        "DOI": "1805.11729",
+        "x": 2.4833943843841553,
+        "y": 11.502169609069824,
+        "cluster": 47
+      },
+      {
+        "title": "C3PO: Database and Benchmark for Early-stage Malicious Activity\n  Detection in 3D Printing",
+        "DOI": "1803.07544",
+        "x": 2.3828842639923096,
+        "y": 11.441400527954102,
+        "cluster": 33
+      },
+      {
+        "title": "Cross Modal Focal Loss for RGBD Face Anti-Spoofing",
+        "DOI": "2103.00948",
+        "x": 2.343010902404785,
+        "y": 11.690255165100098,
+        "cluster": 13
+      },
+      {
+        "title": "What your Facebook Profile Picture Reveals about your Personality",
+        "DOI": "1708.01292",
+        "x": 2.398533582687378,
+        "y": 11.694299697875977,
+        "cluster": 31
+      },
+      {
+        "title": "Forensic Analysis of Synthetically Generated Western Blot Images",
+        "DOI": "2112.08739",
+        "x": 2.3492133617401123,
+        "y": 11.42839241027832,
+        "cluster": 33
+      },
+      {
+        "title": "Efficient conditioned face animation using frontally-viewed embedding",
+        "DOI": "2203.08765",
+        "x": 2.260967969894409,
+        "y": 11.646979331970215,
+        "cluster": 10
+      },
+      {
+        "title": "SID4VAM: A Benchmark Dataset with Synthetic Images for Visual Attention\n  Modeling",
+        "DOI": "1910.13066",
+        "x": 2.2248077392578125,
+        "y": 11.597247123718262,
+        "cluster": 44
+      },
+      {
+        "title": "Surveillance Face Anti-spoofing",
+        "DOI": "2301.00975",
+        "x": 2.24548602104187,
+        "y": 11.479991912841797,
+        "cluster": 33
+      },
+      {
+        "title": "StyleFaceV: Face Video Generation via Decomposing and Recomposing\n  Pretrained StyleGAN3",
+        "DOI": "2208.07862",
+        "x": 2.448465585708618,
+        "y": 11.423380851745605,
+        "cluster": 21
+      },
+      {
+        "title": "An Analytical Workflow for Clustering Forensic Images",
+        "DOI": "2001.05845",
+        "x": 2.2768213748931885,
+        "y": 11.44290828704834,
+        "cluster": 31
+      },
+      {
+        "title": "Multi-Forgery Detection Challenge 2022: Push the Frontier of\n  Unconstrained and Diverse Forgery Detection",
+        "DOI": "2207.13505",
+        "x": 2.5477890968322754,
+        "y": 11.597511291503906,
+        "cluster": 33
+      },
+      {
+        "title": "DAF:re: A Challenging, Crowd-Sourced, Large-Scale, Long-Tailed Dataset\n  For Anime Character Recognition",
+        "DOI": "2101.08674",
+        "x": 2.354403495788574,
+        "y": 11.73620891571045,
+        "cluster": 12
+      }
+    ]
+  },
+  {
+    "void_id": 14,
+    "void_rank": 14,
+    "centroid": [
+      1.5592451239928111,
+      10.814768061732575
+    ],
+    "empty_radius": 0.08883582815002199,
+    "name": "Unified Egocentric Multi-modal Activity Modeling",
+    "name_reasoning": "The surrounding papers address egocentric video synchronization, visual food intake detection, gaze\u2011based motion prediction, and AR vision, yet they lack a comprehensive framework that fuses synchronized egocentric video with other sensor modalities (audio, inertial, physiological) to model daily human activities holistically.",
+    "shape": {
+      "type": "convex_hull",
+      "vertices": [
+        [
+          1.5919016599655151,
+          10.669506072998047
+        ],
+        [
+          1.480818510055542,
+          10.693851470947266
+        ],
+        [
+          1.407859444618225,
+          10.758241653442383
+        ],
+        [
+          1.5002741813659668,
+          10.973919868469238
+        ],
+        [
+          1.684651494026184,
+          10.863340377807617
+        ],
+        [
+          1.7162588834762573,
+          10.809516906738281
+        ],
+        [
+          1.7045893669128418,
+          10.79202651977539
+        ]
+      ]
+    },
+    "shape_area": 0.055462803917748715,
+    "border_papers": [
+      {
+        "title": "FLAME: Free-form Language-based Motion Synthesis & Editing",
+        "DOI": "2209.00349",
+        "x": 1.4807826280593872,
+        "y": 10.773109436035156,
+        "cluster": 27
+      },
+      {
+        "title": "Improving Food Detection For Images From a Wearable Egocentric Camera",
+        "DOI": "2301.07861",
+        "x": 1.645128846168518,
+        "y": 10.792057037353516,
+        "cluster": 13
+      },
+      {
+        "title": "Naturalizing Neuromorphic Vision Event Streams Using GANs",
+        "DOI": "2102.07243",
+        "x": 1.5750303268432617,
+        "y": 10.902190208435059,
+        "cluster": 48
+      },
+      {
+        "title": "An Intelligent Passive Food Intake Assessment System with Egocentric\n  Cameras",
+        "DOI": "2105.03142",
+        "x": 1.647859811782837,
+        "y": 10.7765531539917,
+        "cluster": 13
+      },
+      {
+        "title": "Cultural Diffusion and Trends in Facebook Photographs",
+        "DOI": "1705.08974",
+        "x": 1.568364143371582,
+        "y": 10.912808418273926,
+        "cluster": 31
+      },
+      {
+        "title": "Deep learning-based stereo camera multi-video synchronization",
+        "DOI": "2303.12916",
+        "x": 1.512798547744751,
+        "y": 10.724431037902832,
+        "cluster": 47
+      },
+      {
+        "title": "PAL: Intelligence Augmentation using Egocentric Visual Context Detection",
+        "DOI": "2105.10735",
+        "x": 1.6393022537231445,
+        "y": 10.746844291687012,
+        "cluster": 32
+      },
+      {
+        "title": "Sub-millisecond Video Synchronization of Multiple Android Smartphones",
+        "DOI": "2107.00987",
+        "x": 1.5432369709014893,
+        "y": 10.710430145263672,
+        "cluster": 21
+      },
+      {
+        "title": "Indoor Future Person Localization from an Egocentric Wearable Camera",
+        "DOI": "2103.04019",
+        "x": 1.4739199876785278,
+        "y": 10.884421348571777,
+        "cluster": 13
+      },
+      {
+        "title": "Recognizing and Curating Photo Albums via Event-Specific Image\n  Importance",
+        "DOI": "1707.05911",
+        "x": 1.5053938627243042,
+        "y": 10.715716361999512,
+        "cluster": 31
+      },
+      {
+        "title": "Fixation prediction with a combined model of bottom-up saliency and\n  vanishing point",
+        "DOI": "1512.01858",
+        "x": 1.6544487476348877,
+        "y": 10.737739562988281,
+        "cluster": 1
+      },
+      {
+        "title": "SmartDepthSync: Open Source Synchronized Video Recording System of\n  Smartphone RGB and Depth Camera Range Image Frames with Sub-millisecond\n  Precision",
+        "DOI": "2111.03552",
+        "x": 1.4366099834442139,
+        "y": 10.786437034606934,
+        "cluster": 13
+      },
+      {
+        "title": "Single-Frame based Deep View Synchronization for Unsynchronized\n  Multi-Camera Surveillance",
+        "DOI": "2007.03891",
+        "x": 1.440846562385559,
+        "y": 10.762469291687012,
+        "cluster": 13
+      },
+      {
+        "title": "GIMO: Gaze-Informed Human Motion Prediction in Context",
+        "DOI": "2204.09443",
+        "x": 1.684651494026184,
+        "y": 10.863340377807617,
+        "cluster": 45
+      },
+      {
+        "title": "Wireless Software Synchronization of Multiple Distributed Cameras",
+        "DOI": "1812.09366",
+        "x": 1.480818510055542,
+        "y": 10.693851470947266,
+        "cluster": 13
+      },
+      {
+        "title": "Modeling Cross-view Interaction Consistency for Paired Egocentric\n  Interaction Recognition",
+        "DOI": "2003.10663",
+        "x": 1.7045893669128418,
+        "y": 10.79202651977539,
+        "cluster": 44
+      },
+      {
+        "title": "Estimating 3D Motion and Forces of Person-Object Interactions from\n  Monocular Video",
+        "DOI": "1904.02683",
+        "x": 1.5919016599655151,
+        "y": 10.669506072998047,
+        "cluster": 47
+      },
+      {
+        "title": "Egocentric Image Captioning for Privacy-Preserved Passive Dietary Intake\n  Monitoring",
+        "DOI": "2107.00372",
+        "x": 1.7162588834762573,
+        "y": 10.809516906738281,
+        "cluster": 44
+      },
+      {
+        "title": "Koopman pose predictions for temporally consistent human walking\n  estimations",
+        "DOI": "2205.02737",
+        "x": 1.407859444618225,
+        "y": 10.758241653442383,
+        "cluster": 45
+      },
+      {
+        "title": "Gaze-Vergence-Controlled See-Through Vision in Augmented Reality",
+        "DOI": "2207.02645",
+        "x": 1.5002741813659668,
+        "y": 10.973919868469238,
+        "cluster": 13
+      }
+    ]
+  },
+  {
+    "void_id": 15,
+    "void_rank": 15,
+    "centroid": [
+      -2.6665022851429097,
+      11.078833250222939
+    ],
+    "empty_radius": 0.07812057867657074,
+    "name": "Vision-Guided Autonomous Robotic Surgical Manipulation",
+    "name_reasoning": "The surrounding works focus on visual perception, AR/VR, tool detection, and workflow analysis, but none address closing the loop to use that visual intelligence for autonomous instrument control during surgery.",
+    "shape": {
+      "type": "convex_hull",
+      "vertices": [
+        [
+          -2.6492018699645996,
+          10.959985733032227
+        ],
+        [
+          -2.8394854068756104,
+          11.093254089355469
+        ],
+        [
+          -2.8487606048583984,
+          11.115031242370605
+        ],
+        [
+          -2.8288776874542236,
+          11.170254707336426
+        ],
+        [
+          -2.7406344413757324,
+          11.214306831359863
+        ],
+        [
+          -2.581024169921875,
+          11.240462303161621
+        ],
+        [
+          -2.5213656425476074,
+          11.17788314819336
+        ],
+        [
+          -2.5500380992889404,
+          11.089451789855957
+        ]
+      ]
+    },
+    "shape_area": 0.05626043200561526,
+    "border_papers": [
+      {
+        "title": "Automatic Tool Landmark Detection for Stereo Vision in Robot-Assisted\n  Retinal Surgery",
+        "DOI": "1709.05665",
+        "x": -2.7217071056365967,
+        "y": 11.13410758972168,
+        "cluster": 13
+      },
+      {
+        "title": "VR-Caps: A Virtual Environment for Capsule Endoscopy",
+        "DOI": "2008.12949",
+        "x": -2.7090179920196533,
+        "y": 11.01329517364502,
+        "cluster": 13
+      },
+      {
+        "title": "Deconvolution and Restoration of Optical Endomicroscopy Images",
+        "DOI": "1701.08107",
+        "x": -2.596890926361084,
+        "y": 11.043377876281738,
+        "cluster": 39
+      },
+      {
+        "title": "Rendezvous in Time: An Attention-based Temporal Fusion approach for\n  Surgical Triplet Recognition",
+        "DOI": "2211.16963",
+        "x": -2.707730770111084,
+        "y": 11.14964485168457,
+        "cluster": 20
+      },
+      {
+        "title": "Augmented Reality needle ablation guidance tool for Irreversible\n  Electroporation in the pancreas",
+        "DOI": "1802.03274",
+        "x": -2.5757908821105957,
+        "y": 11.079161643981934,
+        "cluster": 6
+      },
+      {
+        "title": "Weakly-Supervised Learning for Tool Localization in Laparoscopic Videos",
+        "DOI": "1806.05573",
+        "x": -2.775207281112671,
+        "y": 11.084050178527832,
+        "cluster": 26
+      },
+      {
+        "title": "Learning Representations of Endoscopic Videos to Detect Tool Presence\n  Without Supervision",
+        "DOI": "2008.12321",
+        "x": -2.562241792678833,
+        "y": 11.131430625915527,
+        "cluster": 15
+      },
+      {
+        "title": "EndoL2H: Deep Super-Resolution for Capsule Endoscopy",
+        "DOI": "2002.05459",
+        "x": -2.5500380992889404,
+        "y": 11.089451789855957,
+        "cluster": 25
+      },
+      {
+        "title": "Automatic 3D Point Set Reconstruction from Stereo Laparoscopic Images\n  using Deep Neural Networks",
+        "DOI": "1608.00203",
+        "x": -2.6492018699645996,
+        "y": 10.959985733032227,
+        "cluster": 41
+      },
+      {
+        "title": "Occlusion-robust Visual Markerless Bone Tracking for Computer-Assisted\n  Orthopaedic Surgery",
+        "DOI": "2108.10608",
+        "x": -2.711996078491211,
+        "y": 11.191643714904785,
+        "cluster": 28
+      },
+      {
+        "title": "Real-time Geometry-Aware Augmented Reality in Minimally Invasive Surgery",
+        "DOI": "1708.01234",
+        "x": -2.714756488800049,
+        "y": 11.204395294189453,
+        "cluster": 3
+      },
+      {
+        "title": "Preserving Privacy in Surgical Video Analysis Using Artificial\n  Intelligence: A Deep Learning Classifier to Identify Out-of-Body Scenes in\n  Endoscopic Videos",
+        "DOI": "2301.07053",
+        "x": -2.7998313903808594,
+        "y": 11.103276252746582,
+        "cluster": 47
+      },
+      {
+        "title": "Constrained Visual-Inertial Localization With Application And Benchmark\n  in Laparoscopic Surgery",
+        "DOI": "2202.11075",
+        "x": -2.7406344413757324,
+        "y": 11.214306831359863,
+        "cluster": 13
+      },
+      {
+        "title": "Stereo Dense Scene Reconstruction and Accurate Localization for\n  Learning-Based Navigation of Laparoscope in Minimally Invasive Surgery",
+        "DOI": "2110.03912",
+        "x": -2.561311721801758,
+        "y": 11.193371772766113,
+        "cluster": 6
+      },
+      {
+        "title": "Temporal coherence-based self-supervised learning for laparoscopic\n  workflow analysis",
+        "DOI": "1806.06811",
+        "x": -2.829043388366699,
+        "y": 11.110308647155762,
+        "cluster": 15
+      },
+      {
+        "title": "Plan in 2D, execute in 3D: An augmented reality solution for cup\n  placement in total hip arthroplasty",
+        "DOI": "1801.01557",
+        "x": -2.8394854068756104,
+        "y": 11.093254089355469,
+        "cluster": 3
+      },
+      {
+        "title": "Normal reconstruction from specularity in the endoscopic setting",
+        "DOI": "2211.05642",
+        "x": -2.5213656425476074,
+        "y": 11.17788314819336,
+        "cluster": 25
+      },
+      {
+        "title": "Virtual Reality Simulator for Fetoscopic Spina Bifida Repair Surgery",
+        "DOI": "2208.00169",
+        "x": -2.581024169921875,
+        "y": 11.240462303161621,
+        "cluster": 3
+      },
+      {
+        "title": "\"Train one, Classify one, Teach one\" -- Cross-surgery transfer learning\n  for surgical step recognition",
+        "DOI": "2102.12308",
+        "x": -2.8487606048583984,
+        "y": 11.115031242370605,
+        "cluster": 46
+      },
+      {
+        "title": "ST-MTL: Spatio-Temporal Multitask Learning Model to Predict Scanpath\n  While Tracking Instruments in Robotic Surgery",
+        "DOI": "2112.08189",
+        "x": -2.8288776874542236,
+        "y": 11.170254707336426,
+        "cluster": 17
+      }
+    ]
+  },
+  {
+    "void_id": 16,
+    "void_rank": 16,
+    "centroid": [
+      -4.242115414785242,
+      10.512934344846462
+    ],
+    "empty_radius": 0.07680098473091793,
+    "name": "Foundation Models for Multimodal Thoracic Imaging",
+    "name_reasoning": "The surrounding works focus on specific tasks (segmentation, classification, registration) and individual modalities (CT, MRI, PET, colonoscopy), but there is no research unifying these modalities and tasks under a single foundation model that can be fine\u2011tuned across all thoracic imaging applications.",
+    "shape": {
+      "type": "convex_hull",
+      "vertices": [
+        [
+          -4.21585750579834,
+          10.394412994384766
+        ],
+        [
+          -4.2833662033081055,
+          10.404879570007324
+        ],
+        [
+          -4.336808681488037,
+          10.439104080200195
+        ],
+        [
+          -4.363433361053467,
+          10.538463592529297
+        ],
+        [
+          -4.289290428161621,
+          10.619853973388672
+        ],
+        [
+          -4.167450904846191,
+          10.620721817016602
+        ],
+        [
+          -4.134411811828613,
+          10.589400291442871
+        ],
+        [
+          -4.1458282470703125,
+          10.502023696899414
+        ],
+        [
+          -4.154297828674316,
+          10.444523811340332
+        ],
+        [
+          -4.161558151245117,
+          10.437036514282227
+        ],
+        [
+          -4.191710472106934,
+          10.410724639892578
+        ]
+      ]
+    },
+    "shape_area": 0.04002063035318315,
+    "border_papers": [
+      {
+        "title": "Cross-modality (CT-MRI) prior augmented deep learning for robust lung\n  tumor segmentation from small MR datasets",
+        "DOI": "1901.11369",
+        "x": -4.263639450073242,
+        "y": 10.586657524108887,
+        "cluster": 6
+      },
+      {
+        "title": "Predicting respiratory motion for real-time tumour tracking in\n  radiotherapy",
+        "DOI": "1508.00749",
+        "x": -4.256796360015869,
+        "y": 10.437549591064453,
+        "cluster": 28
+      },
+      {
+        "title": "RadioTransformer: A Cascaded Global-Focal Transformer for Visual\n  Attention-guided Disease Classification",
+        "DOI": "2202.11781",
+        "x": -4.165638446807861,
+        "y": 10.505887031555176,
+        "cluster": 0
+      },
+      {
+        "title": "Discovery Radiomics for Pathologically-Proven Computed Tomography Lung\n  Cancer Prediction",
+        "DOI": "1509.00117",
+        "x": -4.3012824058532715,
+        "y": 10.461376190185547,
+        "cluster": 6
+      },
+      {
+        "title": "Real-Time 2D-3D Deformable Registration with Deep Learning and\n  Application to Lung Radiotherapy Targeting",
+        "DOI": "1807.08388",
+        "x": -4.319486618041992,
+        "y": 10.539000511169434,
+        "cluster": 6
+      },
+      {
+        "title": "Weakly Supervised 3D Classification of Chest CT using Aggregated\n  Multi-Resolution Deep Segmentation Features",
+        "DOI": "2011.00149",
+        "x": -4.153181076049805,
+        "y": 10.49188232421875,
+        "cluster": 6
+      },
+      {
+        "title": "Delving into Masked Autoencoders for Multi-Label Thorax Disease\n  Classification",
+        "DOI": "2210.12843",
+        "x": -4.1458282470703125,
+        "y": 10.502023696899414,
+        "cluster": 6
+      },
+      {
+        "title": "Combining a Convolutional Neural Network with Autoencoders to Predict\n  the Survival Chance of COVID-19 Patients",
+        "DOI": "2104.08954",
+        "x": -4.302056312561035,
+        "y": 10.42454719543457,
+        "cluster": 4
+      },
+      {
+        "title": "Confounding variables can degrade generalization performance of\n  radiological deep learning models",
+        "DOI": "1807.00431",
+        "x": -4.161558151245117,
+        "y": 10.437036514282227,
+        "cluster": 1
+      },
+      {
+        "title": "Classification of Multiple Diseases on Body CT Scans using Weakly\n  Supervised Deep Learning",
+        "DOI": "2008.01158",
+        "x": -4.154297828674316,
+        "y": 10.444523811340332,
+        "cluster": 6
+      },
+      {
+        "title": "Co-Learning Feature Fusion Maps from PET-CT Images of Lung Cancer",
+        "DOI": "1810.02492",
+        "x": -4.342784881591797,
+        "y": 10.56087589263916,
+        "cluster": 6
+      },
+      {
+        "title": "On the Uncertain Single-View Depths in Colonoscopies",
+        "DOI": "2112.08906",
+        "x": -4.191710472106934,
+        "y": 10.410724639892578,
+        "cluster": 41
+      },
+      {
+        "title": "Discovery Radiomics via Deep Multi-Column Radiomic Sequencers for Skin\n  Cancer Detection",
+        "DOI": "1709.08248",
+        "x": -4.235660552978516,
+        "y": 10.397784233093262,
+        "cluster": 6
+      },
+      {
+        "title": "Deformation Driven Seq2Seq Longitudinal Tumor and Organs-at-Risk\n  Prediction for Radiotherapy",
+        "DOI": "2106.09076",
+        "x": -4.2833662033081055,
+        "y": 10.404879570007324,
+        "cluster": 6
+      },
+      {
+        "title": "Classification and Segmentation of Pulmonary Lesions in CT Images Using\n  a Combined VGG-XGBoost Method, and an Integrated Fuzzy Clustering-Level Set\n  Technique",
+        "DOI": "2101.00948",
+        "x": -4.289290428161621,
+        "y": 10.619853973388672,
+        "cluster": 6
+      },
+      {
+        "title": "From Hand-Crafted to Deep Learning-based Cancer Radiomics: Challenges\n  and Opportunities",
+        "DOI": "1808.07954",
+        "x": -4.336808681488037,
+        "y": 10.439104080200195,
+        "cluster": 6
+      },
+      {
+        "title": "Colonoscopy 3D Video Dataset with Paired Depth from 2D-3D Registration",
+        "DOI": "2206.08903",
+        "x": -4.21585750579834,
+        "y": 10.394412994384766,
+        "cluster": 21
+      },
+      {
+        "title": "Towards radiologist-level cancer risk assessment in CT lung screening\n  using deep learning",
+        "DOI": "1804.01901",
+        "x": -4.363433361053467,
+        "y": 10.538463592529297,
+        "cluster": 6
+      },
+      {
+        "title": "Knowledge-based Fully Convolutional Network and Its Application in\n  Segmentation of Lung CT Images",
+        "DOI": "1805.08492",
+        "x": -4.167450904846191,
+        "y": 10.620721817016602,
+        "cluster": 4
+      },
+      {
+        "title": "A New Approach to Lung Image Segmentation using Fuzzy Possibilistic\n  C-Means Algorithm",
+        "DOI": "1004.1768",
+        "x": -4.134411811828613,
+        "y": 10.589400291442871,
+        "cluster": 6
+      }
+    ]
+  },
+  {
+    "void_id": 17,
+    "void_rank": 17,
+    "centroid": [
+      0.7421640791295739,
+      9.46902504316688
+    ],
+    "empty_radius": 0.07660894712627664,
+    "name": "Diffusion-based Multimodal Object Tracking",
+    "name_reasoning": "The surrounding works cover multimodal tracking, particle filtering, and diffusion generative models separately, but no research links diffusion-driven generative priors with real-time RGB\u2011T/Depth tracking, creating a clear gap.",
+    "shape": {
+      "type": "convex_hull",
+      "vertices": [
+        [
+          0.7876576781272888,
+          9.349651336669922
+        ],
+        [
+          0.698279619216919,
+          9.36591911315918
+        ],
+        [
+          0.6446530222892761,
+          9.385815620422363
+        ],
+        [
+          0.6199530363082886,
+          9.544096946716309
+        ],
+        [
+          0.6925071477890015,
+          9.613066673278809
+        ],
+        [
+          0.7243095636367798,
+          9.614397048950195
+        ],
+        [
+          0.8400658369064331,
+          9.53745174407959
+        ],
+        [
+          0.8806720972061157,
+          9.506274223327637
+        ],
+        [
+          0.8729849457740784,
+          9.389996528625488
+        ]
+      ]
+    },
+    "shape_area": 0.05073441043899152,
+    "border_papers": [
+      {
+        "title": "Dynamic Fusion Network for RGBT Tracking",
+        "DOI": "2109.07662",
+        "x": 0.7827398180961609,
+        "y": 9.534006118774414,
+        "cluster": 25
+      },
+      {
+        "title": "Learning Dual-Fused Modality-Aware Representations for RGBD Tracking",
+        "DOI": "2211.03055",
+        "x": 0.8092974424362183,
+        "y": 9.50593090057373,
+        "cluster": 17
+      },
+      {
+        "title": "Latent-Space Inpainting for Packet Loss Concealment in Collaborative\n  Object Detection",
+        "DOI": "2102.00142",
+        "x": 0.7690739631652832,
+        "y": 9.397297859191895,
+        "cluster": 36
+      },
+      {
+        "title": "3D Human Shape Style Transfer",
+        "DOI": "2109.01587",
+        "x": 0.725051760673523,
+        "y": 9.553422927856445,
+        "cluster": 45
+      },
+      {
+        "title": "A New Adaptive Noise Covariance Matrices Estimation and Filtering\n  Method: Application to Multi-Object Tracking",
+        "DOI": "2112.12082",
+        "x": 0.8113288879394531,
+        "y": 9.533191680908203,
+        "cluster": 36
+      },
+      {
+        "title": "Siamese Infrared and Visible Light Fusion Network for RGB-T Tracking",
+        "DOI": "2103.07302",
+        "x": 0.827329695224762,
+        "y": 9.514026641845703,
+        "cluster": 25
+      },
+      {
+        "title": "SWAGAN: A Style-based Wavelet-driven Generative Model",
+        "DOI": "2102.06108",
+        "x": 0.6555346846580505,
+        "y": 9.426852226257324,
+        "cluster": 48
+      },
+      {
+        "title": "Multi-target particle filtering for the probability hypothesis density",
+        "DOI": "cs/0303018",
+        "x": 0.8080816864967346,
+        "y": 9.551278114318848,
+        "cluster": 16
+      },
+      {
+        "title": "Pastiche Master: Exemplar-Based High-Resolution Portrait Style Transfer",
+        "DOI": "2203.13248",
+        "x": 0.698279619216919,
+        "y": 9.36591911315918,
+        "cluster": 29
+      },
+      {
+        "title": "3D Face Arbitrary Style Transfer",
+        "DOI": "2303.07709",
+        "x": 0.8104162216186523,
+        "y": 9.37708854675293,
+        "cluster": 10
+      },
+      {
+        "title": "Learning Action Maps of Large Environments via First-Person Vision",
+        "DOI": "1605.01679",
+        "x": 0.8400658369064331,
+        "y": 9.53745174407959,
+        "cluster": 44
+      },
+      {
+        "title": "On-device Filtering of Social Media Images for Efficient Storage",
+        "DOI": "2004.02489",
+        "x": 0.7876576781272888,
+        "y": 9.349651336669922,
+        "cluster": 31
+      },
+      {
+        "title": "Evolutionary latent space search for driving human portrait generation",
+        "DOI": "2204.11887",
+        "x": 0.6446530222892761,
+        "y": 9.385815620422363,
+        "cluster": 10
+      },
+      {
+        "title": "HOG feature extraction from encrypted images for privacy-preserving\n  machine learning",
+        "DOI": "1904.12434",
+        "x": 0.6357665061950684,
+        "y": 9.544347763061523,
+        "cluster": 31
+      },
+      {
+        "title": "DualAfford: Learning Collaborative Visual Affordance for Dual-gripper\n  Manipulation",
+        "DOI": "2207.01971",
+        "x": 0.8712059259414673,
+        "y": 9.512736320495605,
+        "cluster": 17
+      },
+      {
+        "title": "Real Time Implementation of Spatial Filtering On FPGA",
+        "DOI": "1502.02905",
+        "x": 0.6199530363082886,
+        "y": 9.544096946716309,
+        "cluster": 25
+      },
+      {
+        "title": "Robust Report Level Cluster-to-Track Fusion",
+        "DOI": "cs/0305032",
+        "x": 0.8806720972061157,
+        "y": 9.506274223327637,
+        "cluster": 16
+      },
+      {
+        "title": "HumanDiffusion: a Coarse-to-Fine Alignment Diffusion Framework for\n  Controllable Text-Driven Person Image Generation",
+        "DOI": "2211.06235",
+        "x": 0.7243095636367798,
+        "y": 9.614397048950195,
+        "cluster": 29
+      },
+      {
+        "title": "Lattice Particle Filters",
+        "DOI": "1301.2298",
+        "x": 0.6925071477890015,
+        "y": 9.613066673278809,
+        "cluster": 16
+      },
+      {
+        "title": "Virtual Elastic Objects",
+        "DOI": "2201.04623",
+        "x": 0.8729849457740784,
+        "y": 9.389996528625488,
+        "cluster": 3
+      }
+    ]
+  },
+  {
+    "void_id": 18,
+    "void_rank": 18,
+    "centroid": [
+      0.3989749240788123,
+      11.150718546613039
+    ],
+    "empty_radius": 0.07655079012820566,
+    "name": "Differentiable Multi-Camera Calibration via Neural Implicit Representations",
+    "name_reasoning": "While the surrounding works focus on classic geometry, synthetic data, optimization, and implicit rendering separately, no research unifies camera pose estimation and calibration in an end\u2011to\u2011end differentiable framework that leverages neural implicit scene models, a bridge between geometry and learned rendering.",
+    "shape": {
+      "type": "convex_hull",
+      "vertices": [
+        [
+          0.39174410700798035,
+          11.030562400817871
+        ],
+        [
+          0.310154527425766,
+          11.0335693359375
+        ],
+        [
+          0.27060556411743164,
+          11.08762264251709
+        ],
+        [
+          0.289206326007843,
+          11.21499252319336
+        ],
+        [
+          0.3730296492576599,
+          11.269362449645996
+        ],
+        [
+          0.4172641634941101,
+          11.29528522491455
+        ],
+        [
+          0.44433072209358215,
+          11.274184226989746
+        ],
+        [
+          0.5366340279579163,
+          11.117507934570312
+        ],
+        [
+          0.4706939458847046,
+          11.060474395751953
+        ]
+      ]
+    },
+    "shape_area": 0.04691254147071788,
+    "border_papers": [
+      {
+        "title": "MessyTable: Instance Association in Multiple Camera Views",
+        "DOI": "2007.14878",
+        "x": 0.4381982386112213,
+        "y": 11.084980010986328,
+        "cluster": 13
+      },
+      {
+        "title": "3D-GIF: 3D-Controllable Object Generation via Implicit Factorized\n  Representations",
+        "DOI": "2203.06457",
+        "x": 0.45635268092155457,
+        "y": 11.20139217376709,
+        "cluster": 3
+      },
+      {
+        "title": "Adaptive Appearance Rendering",
+        "DOI": "2104.11931",
+        "x": 0.3811708688735962,
+        "y": 11.225170135498047,
+        "cluster": 29
+      },
+      {
+        "title": "Sports Camera Calibration via Synthetic Data",
+        "DOI": "1810.10658",
+        "x": 0.3408651649951935,
+        "y": 11.219487190246582,
+        "cluster": 13
+      },
+      {
+        "title": "Dynamic camera alignment optimization problem based on Fractal\n  Decomposition based Algorithm",
+        "DOI": "2209.11695",
+        "x": 0.4381692707538605,
+        "y": 11.066941261291504,
+        "cluster": 13
+      },
+      {
+        "title": "ArticulatedFusion: Real-time Reconstruction of Motion, Geometry and\n  Segmentation Using a Single Depth Camera",
+        "DOI": "1807.07243",
+        "x": 0.30382612347602844,
+        "y": 11.147933959960938,
+        "cluster": 13
+      },
+      {
+        "title": "HDNet: Human Depth Estimation for Multi-Person Camera-Space Localization",
+        "DOI": "2007.08943",
+        "x": 0.2989409267902374,
+        "y": 11.164666175842285,
+        "cluster": 13
+      },
+      {
+        "title": "Cameras Viewing Cameras Geometry",
+        "DOI": "1911.12706",
+        "x": 0.3068883419036865,
+        "y": 11.107272148132324,
+        "cluster": 13
+      },
+      {
+        "title": "Semantic-aware Generation of Multi-view Portrait Drawings",
+        "DOI": "2305.02618",
+        "x": 0.4752933979034424,
+        "y": 11.074973106384277,
+        "cluster": 7
+      },
+      {
+        "title": "Large Scale SfM with the Distributed Camera Model",
+        "DOI": "1607.03949",
+        "x": 0.2938421666622162,
+        "y": 11.105783462524414,
+        "cluster": 13
+      },
+      {
+        "title": "Estimation of Camera Locations in Highly Corrupted Scenarios: All About\n  that Base, No Shape Trouble",
+        "DOI": "1804.02591",
+        "x": 0.2859482765197754,
+        "y": 11.129631042480469,
+        "cluster": 13
+      },
+      {
+        "title": "Interval Constraint Solving for Camera Control and Motion Planning",
+        "DOI": "cs/0007002",
+        "x": 0.4706939458847046,
+        "y": 11.060474395751953,
+        "cluster": 13
+      },
+      {
+        "title": "Optimizing Camera Placements for Overlapped Coverage with 3D Camera\n  Projections",
+        "DOI": "2203.10479",
+        "x": 0.39174410700798035,
+        "y": 11.030562400817871,
+        "cluster": 13
+      },
+      {
+        "title": "Fast Automatic Visibility Optimization for Thermal Synthetic Aperture\n  Visualization",
+        "DOI": "2005.04065",
+        "x": 0.3730296492576599,
+        "y": 11.269362449645996,
+        "cluster": 25
+      },
+      {
+        "title": "TVCalib: Camera Calibration for Sports Field Registration in Soccer",
+        "DOI": "2207.11709",
+        "x": 0.289206326007843,
+        "y": 11.21499252319336,
+        "cluster": 13
+      },
+      {
+        "title": "Registering Explicit to Implicit: Towards High-Fidelity Garment mesh\n  Reconstruction from Single Images",
+        "DOI": "2203.15007",
+        "x": 0.44433072209358215,
+        "y": 11.274184226989746,
+        "cluster": 29
+      },
+      {
+        "title": "Resolving Camera Position for a Practical Application of Gaze Estimation\n  on Edge Devices",
+        "DOI": "2201.02946",
+        "x": 0.5366340279579163,
+        "y": 11.117507934570312,
+        "cluster": 13
+      },
+      {
+        "title": "Robust Camera Location Estimation by Convex Programming",
+        "DOI": "1412.0165",
+        "x": 0.27060556411743164,
+        "y": 11.08762264251709,
+        "cluster": 13
+      },
+      {
+        "title": "SieveNet: A Unified Framework for Robust Image-Based Virtual Try-On",
+        "DOI": "2001.06265",
+        "x": 0.4172641634941101,
+        "y": 11.29528522491455,
+        "cluster": 29
+      },
+      {
+        "title": "Control and Evaluation of Event Cameras Output Sharpness via Bias",
+        "DOI": "2210.13929",
+        "x": 0.310154527425766,
+        "y": 11.0335693359375,
+        "cluster": 13
+      }
+    ]
+  },
+  {
+    "void_id": 19,
+    "void_rank": 19,
+    "centroid": [
+      -2.5474116968300047,
+      3.647120829550591
+    ],
+    "empty_radius": 0.06641961761958874,
+    "name": "Fairness-aware optimization for autonomous mobility",
+    "name_reasoning": "The surrounding work focuses on routing, RL, simulation, and socio\u2011environmental links, but lacks research integrating equity or fairness constraints into autonomous and ride\u2011hailing optimization, a bridge between algorithmic efficiency and social justice.",
+    "shape": {
+      "type": "convex_hull",
+      "vertices": [
+        [
+          -2.609041690826416,
+          3.536001682281494
+        ],
+        [
+          -2.649549961090088,
+          3.5511248111724854
+        ],
+        [
+          -2.658094644546509,
+          3.624823570251465
+        ],
+        [
+          -2.5985305309295654,
+          3.774280071258545
+        ],
+        [
+          -2.529451847076416,
+          3.7942166328430176
+        ],
+        [
+          -2.424541711807251,
+          3.714132070541382
+        ],
+        [
+          -2.409031867980957,
+          3.626981735229492
+        ],
+        [
+          -2.412626266479492,
+          3.5909698009490967
+        ],
+        [
+          -2.430250883102417,
+          3.580756425857544
+        ]
+      ]
+    },
+    "shape_area": 0.045973377508062185,
+    "border_papers": [
+      {
+        "title": "Polestar: An Intelligent, Efficient and National-Wide Public\n  Transportation Routing Engine",
+        "DOI": "2007.07195",
+        "x": -2.5236456394195557,
+        "y": 3.7091429233551025,
+        "cluster": 11
+      },
+      {
+        "title": "AI-based Predictive Analytic Approaches for safeguarding the Future of\n  Electric/Hybrid Vehicles",
+        "DOI": "2304.13841",
+        "x": -2.611238718032837,
+        "y": 3.6287448406219482,
+        "cluster": 11
+      },
+      {
+        "title": "TaxiNLI: Taking a Ride up the NLU Hill",
+        "DOI": "2009.14505",
+        "x": -2.487184524536133,
+        "y": 3.6191163063049316,
+        "cluster": 11
+      },
+      {
+        "title": "Knowledge discovery from emergency ambulance dispatch during COVID-19: A\n  case study of Nagoya City, Japan",
+        "DOI": "2102.08628",
+        "x": -2.594491720199585,
+        "y": 3.697873592376709,
+        "cluster": 14
+      },
+      {
+        "title": "Reinforcement Learning for Mixed Autonomy Intersections",
+        "DOI": "2111.04686",
+        "x": -2.6206228733062744,
+        "y": 3.6423826217651367,
+        "cluster": 5
+      },
+      {
+        "title": "Managing Autonomous Mobility on Demand Systems for Better Passenger\n  Experience",
+        "DOI": "1507.02563",
+        "x": -2.518300771713257,
+        "y": 3.57014799118042,
+        "cluster": 11
+      },
+      {
+        "title": "A multi-functional simulation platform for on-demand ride service\n  operations",
+        "DOI": "2303.12336",
+        "x": -2.4908854961395264,
+        "y": 3.583895444869995,
+        "cluster": 14
+      },
+      {
+        "title": "A Comparative study of Transportation Problem under Probabilistic and\n  Fuzzy Uncertainties",
+        "DOI": "1307.1891",
+        "x": -2.499328374862671,
+        "y": 3.726011037826538,
+        "cluster": 11
+      },
+      {
+        "title": "Learning Model Predictive Controllers for Real-Time Ride-Hailing Vehicle\n  Relocation and Pricing Decisions",
+        "DOI": "2111.03204",
+        "x": -2.644890069961548,
+        "y": 3.6465559005737305,
+        "cluster": 11
+      },
+      {
+        "title": "Learn-n-Route: Learning implicit preferences for vehicle routing",
+        "DOI": "2101.03936",
+        "x": -2.444427967071533,
+        "y": 3.684345006942749,
+        "cluster": 11
+      },
+      {
+        "title": "Linking Alternative Fuel Vehicles Adoption with Socioeconomic Status and\n  Air Quality Index",
+        "DOI": "2303.08286",
+        "x": -2.57965350151062,
+        "y": 3.755021095275879,
+        "cluster": 11
+      },
+      {
+        "title": "Learning to Help Emergency Vehicles Arrive Faster: A Cooperative\n  Vehicle-Road Scheduling Approach",
+        "DOI": "2202.09773",
+        "x": -2.658094644546509,
+        "y": 3.624823570251465,
+        "cluster": 11
+      },
+      {
+        "title": "Modular Verification of Vehicle Platooning with Respect to Decisions,\n  Space and Time",
+        "DOI": "1804.06647",
+        "x": -2.609041690826416,
+        "y": 3.536001682281494,
+        "cluster": 11
+      },
+      {
+        "title": "The bi-objective multimodal car-sharing problem",
+        "DOI": "2010.10344",
+        "x": -2.430250883102417,
+        "y": 3.580756425857544,
+        "cluster": 11
+      },
+      {
+        "title": "A multi-method simulation of a high-frequency bus line using AnyLogic",
+        "DOI": "1704.05692",
+        "x": -2.5985305309295654,
+        "y": 3.774280071258545,
+        "cluster": 11
+      },
+      {
+        "title": "An Online Ride-Sharing Path Planning Strategy for Public Vehicle Systems",
+        "DOI": "1712.09356",
+        "x": -2.409031867980957,
+        "y": 3.626981735229492,
+        "cluster": 11
+      },
+      {
+        "title": "Trapezoidal Fuzzy Numbers for the Transportation Problem",
+        "DOI": "1307.1893",
+        "x": -2.424541711807251,
+        "y": 3.714132070541382,
+        "cluster": 11
+      },
+      {
+        "title": "Two Phase $Q-$learning for Bidding-based Vehicle Sharing",
+        "DOI": "1509.08932",
+        "x": -2.649549961090088,
+        "y": 3.5511248111724854,
+        "cluster": 11
+      },
+      {
+        "title": "Zone pAth Construction (ZAC) based Approaches for Effective Real-Time\n  Ridesharing",
+        "DOI": "2009.06051",
+        "x": -2.412626266479492,
+        "y": 3.5909698009490967,
+        "cluster": 11
+      },
+      {
+        "title": "Transport-based Counterfactual Models",
+        "DOI": "2108.13025",
+        "x": -2.529451847076416,
+        "y": 3.7942166328430176,
+        "cluster": 11
+      }
+    ]
+  },
+  {
+    "void_id": 20,
+    "void_rank": 20,
+    "centroid": [
+      3.7492135646362956,
+      6.743477162598311
+    ],
+    "empty_radius": 0.06523051023089002,
+    "name": "Chinese Image-to-Poetry Generation",
+    "name_reasoning": "Current work isolates Chinese scene text recognition and Chinese poetry generation; the missing bridge is a unified model that directly creates poetry from images containing Chinese characters, linking visual OCR with creative language generation.",
+    "shape": {
+      "type": "convex_hull",
+      "vertices": [
+        [
+          3.7112410068511963,
+          6.6460442543029785
+        ],
+        [
+          3.611915111541748,
+          6.798608303070068
+        ],
+        [
+          3.661487340927124,
+          6.853482246398926
+        ],
+        [
+          3.876782178878784,
+          6.8281073570251465
+        ],
+        [
+          3.8875114917755127,
+          6.720515251159668
+        ],
+        [
+          3.855036497116089,
+          6.69101095199585
+        ],
+        [
+          3.7819387912750244,
+          6.657942771911621
+        ]
+      ]
+    },
+    "shape_area": 0.0402129493103871,
+    "border_papers": [
+      {
+        "title": "Automatic construction of Chinese herbal prescription from tongue image\n  via CNNs and auxiliary latent therapy topics",
+        "DOI": "1802.02203",
+        "x": 3.751222848892212,
+        "y": 6.808676719665527,
+        "cluster": 12
+      },
+      {
+        "title": "Traditional Chinese Synthetic Datasets Verified with Labeled Data for\n  Scene Text Recognition",
+        "DOI": "2111.13327",
+        "x": 3.808000326156616,
+        "y": 6.7717461585998535,
+        "cluster": 12
+      },
+      {
+        "title": "Reading Chinese in Natural Scenes with a Bag-of-Radicals Prior",
+        "DOI": "2210.02576",
+        "x": 3.7220590114593506,
+        "y": 6.684167385101318,
+        "cluster": 27
+      },
+      {
+        "title": "Chinese/English mixed Character Segmentation as Semantic Segmentation",
+        "DOI": "1611.01982",
+        "x": 3.8255062103271484,
+        "y": 6.727234840393066,
+        "cluster": 7
+      },
+      {
+        "title": "Beyond Narrative Description: Generating Poetry from Images by\n  Multi-Adversarial Training",
+        "DOI": "1804.08473",
+        "x": 3.67394757270813,
+        "y": 6.717690467834473,
+        "cluster": 29
+      },
+      {
+        "title": "Chinese Text in the Wild",
+        "DOI": "1803.00085",
+        "x": 3.8146886825561523,
+        "y": 6.687215805053711,
+        "cluster": 43
+      },
+      {
+        "title": "Joint Architecture and Knowledge Distillation in CNN for Chinese Text\n  Recognition",
+        "DOI": "1912.07806",
+        "x": 3.7819387912750244,
+        "y": 6.657942771911621,
+        "cluster": 35
+      },
+      {
+        "title": "Shall I Compare Thee to a Machine-Written Sonnet? An Approach to\n  Algorithmic Sonnet Generation",
+        "DOI": "1811.05067",
+        "x": 3.8294520378112793,
+        "y": 6.794004440307617,
+        "cluster": 22
+      },
+      {
+        "title": "A Multi-oriented Chinese Keyword Spotter Guided by Text Line Detection",
+        "DOI": "2001.00722",
+        "x": 3.8525705337524414,
+        "y": 6.737399578094482,
+        "cluster": 12
+      },
+      {
+        "title": "Paint4Poem: A Dataset for Artistic Visualization of Classical Chinese\n  Poems",
+        "DOI": "2109.11682",
+        "x": 3.7112410068511963,
+        "y": 6.6460442543029785,
+        "cluster": 29
+      },
+      {
+        "title": "A CNN Based Scene Chinese Text Recognition Algorithm With Synthetic Data\n  Engine",
+        "DOI": "1604.01891",
+        "x": 3.854518413543701,
+        "y": 6.758594989776611,
+        "cluster": 12
+      },
+      {
+        "title": "Chinese Poetry Generation with a Salient-Clue Mechanism",
+        "DOI": "1809.04313",
+        "x": 3.8525543212890625,
+        "y": 6.698028087615967,
+        "cluster": 27
+      },
+      {
+        "title": "Chinese Poetry Generation with a Working Memory Model",
+        "DOI": "1809.04306",
+        "x": 3.8509299755096436,
+        "y": 6.693066596984863,
+        "cluster": 27
+      },
+      {
+        "title": "Flexible and Creative Chinese Poetry Generation Using Neural Memory",
+        "DOI": "1705.03773",
+        "x": 3.855036497116089,
+        "y": 6.69101095199585,
+        "cluster": 38
+      },
+      {
+        "title": "Benchmarking Chinese Text Recognition: Datasets, Baselines, and an\n  Empirical Study",
+        "DOI": "2112.15093",
+        "x": 3.8773763179779053,
+        "y": 6.752225875854492,
+        "cluster": 12
+      },
+      {
+        "title": "Robust End-to-End Offline Chinese Handwriting Text Page Spotter with\n  Text Kernel",
+        "DOI": "2107.01547",
+        "x": 3.8626370429992676,
+        "y": 6.808265209197998,
+        "cluster": 43
+      },
+      {
+        "title": "Digging Deeper into CRNN Model in Chinese Text Images Recognition",
+        "DOI": "2011.08505",
+        "x": 3.8875114917755127,
+        "y": 6.720515251159668,
+        "cluster": 38
+      },
+      {
+        "title": "Do They All Look the Same? Deciphering Chinese, Japanese and Koreans by\n  Fine-Grained Deep Learning",
+        "DOI": "1610.01854",
+        "x": 3.661487340927124,
+        "y": 6.853482246398926,
+        "cluster": 41
+      },
+      {
+        "title": "Chinese Herbal Recognition based on Competitive Attentional Fusion of\n  Multi-hierarchies Pyramid Features",
+        "DOI": "1812.09648",
+        "x": 3.611915111541748,
+        "y": 6.798608303070068,
+        "cluster": 12
+      },
+      {
+        "title": "Recognition of Images of Korean Characters Using Embedded Networks",
+        "DOI": "1911.04241",
+        "x": 3.876782178878784,
+        "y": 6.8281073570251465,
+        "cluster": 24
+      }
+    ]
+  },
+  {
+    "void_id": 21,
+    "void_rank": 21,
+    "centroid": [
+      2.1572824072837333,
+      5.550396103311003
+    ],
+    "empty_radius": 0.06501612832530723,
+    "name": "Neuro-symbolic Multimodal Commonsense Reasoning",
+    "name_reasoning": "The surrounding papers link neuro\u2011symbolic reasoning, knowledge bases, ontologies, and conversational agents, but there is no work that unifies these with visual perception or other modalities, a key bridge for embodied and real\u2011world AI.",
+    "shape": {
+      "type": "convex_hull",
+      "vertices": [
+        [
+          2.1100454330444336,
+          5.436193943023682
+        ],
+        [
+          2.038486957550049,
+          5.589571475982666
+        ],
+        [
+          2.0706210136413574,
+          5.6346259117126465
+        ],
+        [
+          2.1482174396514893,
+          5.656268119812012
+        ],
+        [
+          2.205012798309326,
+          5.661109447479248
+        ],
+        [
+          2.246884822845459,
+          5.581668853759766
+        ],
+        [
+          2.25378680229187,
+          5.557662487030029
+        ],
+        [
+          2.2566640377044678,
+          5.530289649963379
+        ],
+        [
+          2.202620267868042,
+          5.493361949920654
+        ]
+      ]
+    },
+    "shape_area": 0.03129100863992562,
+    "border_papers": [
+      {
+        "title": "JARVIS: A Neuro-Symbolic Commonsense Reasoning Framework for\n  Conversational Embodied Agents",
+        "DOI": "2208.13266",
+        "x": 2.184607744216919,
+        "y": 5.609391212463379,
+        "cluster": 32
+      },
+      {
+        "title": "Conversational Multi-Hop Reasoning with Neural Commonsense Knowledge and\n  Symbolic Logic Rules",
+        "DOI": "2109.08544",
+        "x": 2.0926220417022705,
+        "y": 5.543603897094727,
+        "cluster": 19
+      },
+      {
+        "title": "Program Transfer for Answering Complex Questions over Knowledge Bases",
+        "DOI": "2110.05743",
+        "x": 2.216517448425293,
+        "y": 5.523594856262207,
+        "cluster": 14
+      },
+      {
+        "title": "A context-aware knowledge acquisition for planning applications using\n  ontologies",
+        "DOI": "1904.09845",
+        "x": 2.202620267868042,
+        "y": 5.493361949920654,
+        "cluster": 27
+      },
+      {
+        "title": "Towards Better Response Times and Higher-Quality Queries in Interactive\n  Knowledge Base Debugging",
+        "DOI": "1609.02584",
+        "x": 2.148651361465454,
+        "y": 5.47766637802124,
+        "cluster": 14
+      },
+      {
+        "title": "CASPR: A Commonsense Reasoning-based Conversational Socialbot",
+        "DOI": "2110.05387",
+        "x": 2.2271485328674316,
+        "y": 5.512084484100342,
+        "cluster": 32
+      },
+      {
+        "title": "Neuro-symbolic Commonsense Social Reasoning",
+        "DOI": "2303.08264",
+        "x": 2.149310827255249,
+        "y": 5.630772113800049,
+        "cluster": 19
+      },
+      {
+        "title": "Emergent Analogical Reasoning in Large Language Models",
+        "DOI": "2212.09196",
+        "x": 2.084402322769165,
+        "y": 5.49746036529541,
+        "cluster": 27
+      },
+      {
+        "title": "Discovering Implicational Knowledge in Wikidata",
+        "DOI": "1902.00916",
+        "x": 2.246884822845459,
+        "y": 5.581668853759766,
+        "cluster": 19
+      },
+      {
+        "title": "Interpretable Multi-Step Reasoning with Knowledge Extraction on Complex\n  Healthcare Question Answering",
+        "DOI": "2008.02434",
+        "x": 2.14961314201355,
+        "y": 5.645712852478027,
+        "cluster": 19
+      },
+      {
+        "title": "Neural-Symbolic Commonsense Reasoner with Relation Predictors",
+        "DOI": "2105.06717",
+        "x": 2.25378680229187,
+        "y": 5.557662487030029,
+        "cluster": 19
+      },
+      {
+        "title": "Conversational Neuro-Symbolic Commonsense Reasoning",
+        "DOI": "2006.10022",
+        "x": 2.2120537757873535,
+        "y": 5.633316516876221,
+        "cluster": 19
+      },
+      {
+        "title": "Combining Commonsense Reasoning and Knowledge Acquisition to Guide Deep\n  Learning in Robotics",
+        "DOI": "2201.10266",
+        "x": 2.2566640377044678,
+        "y": 5.530289649963379,
+        "cluster": 32
+      },
+      {
+        "title": "Joint learning of ontology and semantic parser from text",
+        "DOI": "1601.00901",
+        "x": 2.203742504119873,
+        "y": 5.641667366027832,
+        "cluster": 27
+      },
+      {
+        "title": "NegatER: Unsupervised Discovery of Negatives in Commonsense Knowledge\n  Bases",
+        "DOI": "2011.07497",
+        "x": 2.1482174396514893,
+        "y": 5.656268119812012,
+        "cluster": 37
+      },
+      {
+        "title": "On the Formal Semantics of Speech-Act Based Communication in an\n  Agent-Oriented Programming Language",
+        "DOI": "1111.0041",
+        "x": 2.069472074508667,
+        "y": 5.613318920135498,
+        "cluster": 27
+      },
+      {
+        "title": "KonIQ-10k: Towards an ecologically valid and large-scale IQA database",
+        "DOI": "1803.08489",
+        "x": 2.205012798309326,
+        "y": 5.661109447479248,
+        "cluster": 14
+      },
+      {
+        "title": "Integrating cardinal direction relations and other orientation relations\n  in Qualitative Spatial Reasoning",
+        "DOI": "cs/0307048",
+        "x": 2.0706210136413574,
+        "y": 5.6346259117126465,
+        "cluster": 3
+      },
+      {
+        "title": "Model-theoretic Characterizations of Existential Rule Languages",
+        "DOI": "2001.08688",
+        "x": 2.1100454330444336,
+        "y": 5.436193943023682,
+        "cluster": 27
+      },
+      {
+        "title": "Representing, reasoning and answering questions about biological\n  pathways - various applications",
+        "DOI": "1403.0541",
+        "x": 2.038486957550049,
+        "y": 5.589571475982666,
+        "cluster": 19
+      }
+    ]
+  },
+  {
+    "void_id": 22,
+    "void_rank": 22,
+    "centroid": [
+      2.7592,
+      6.490600000000001
+    ],
+    "empty_radius": 0.078,
+    "name": "Transformer-Augmented Vision Adaptation Gap",
+    "name_reasoning": "The local papers form an intentionally sparse pocket between transformer architecture, convolutional baselines, and domain-specific vision adaptation papers, creating a visible test void inside the new transformer-augmented computer vision cluster.",
+    "shape": {
+      "type": "convex_hull",
+      "vertices": [
+        [
+          2.75,
+          6.292
+        ],
+        [
+          2.978,
+          6.415
+        ],
+        [
+          2.89,
+          6.682
+        ],
+        [
+          2.63,
+          6.626
+        ],
+        [
+          2.548,
+          6.438
+        ]
+      ],
+      "edge_style": "angular",
+      "geometry": "pentagon"
+    },
+    "shape_area": 0.10760399999999848,
+    "border_papers": [
+      {
+        "title": "A ConvNet for the 2020s",
+        "DOI": "2201.03545",
+        "x": 2.752,
+        "y": 6.32,
+        "cluster": 50,
+        "citation_count": null,
+        "year": null,
+        "abstract": null,
+        "enriched_via": "local_papers"
+      },
+      {
+        "title": "An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale",
+        "DOI": "2010.11929",
+        "x": 2.84,
+        "y": 6.368,
+        "cluster": 50,
+        "citation_count": null,
+        "year": null,
+        "abstract": null,
+        "enriched_via": "local_papers"
+      },
+      {
+        "title": "An Introduction to Convolutional Neural Networks",
+        "DOI": "",
+        "x": 2.94,
+        "y": 6.423,
+        "cluster": 50,
+        "citation_count": null,
+        "year": null,
+        "abstract": null,
+        "enriched_via": "local_papers"
+      },
+      {
+        "title": "Attention Is All You Need",
+        "DOI": "1706.03762",
+        "x": 2.915,
+        "y": 6.545,
+        "cluster": 50,
+        "citation_count": null,
+        "year": null,
+        "abstract": null,
+        "enriched_via": "local_papers"
+      },
+      {
+        "title": "ConvTransformer: A Convolutional Transformer Network for Video Frame Synthesis",
+        "DOI": "2011.10185",
+        "x": 2.875,
+        "y": 6.65,
+        "cluster": 50,
+        "citation_count": null,
+        "year": null,
+        "abstract": null,
+        "enriched_via": "local_papers"
+      },
+      {
+        "title": "Fast KV Compaction via Attention Matching",
+        "DOI": "",
+        "x": 2.756,
+        "y": 6.652,
+        "cluster": 50,
+        "citation_count": null,
+        "year": null,
+        "abstract": null,
+        "enriched_via": "local_papers"
+      },
+      {
+        "title": "Improving Classification Neural Networks by using Absolute activation function (MNIST/LeNET-5 example)",
+        "DOI": "",
+        "x": 2.648,
+        "y": 6.614,
+        "cluster": 50,
+        "citation_count": null,
+        "year": null,
+        "abstract": null,
+        "enriched_via": "local_papers"
+      },
+      {
+        "title": "RangeSeg: Efficient Lidar Semantic Segmentation on Range view",
+        "DOI": "",
+        "x": 2.588,
+        "y": 6.525,
+        "cluster": 50,
+        "citation_count": null,
+        "year": null,
+        "abstract": null,
+        "enriched_via": "local_papers"
+      },
+      {
+        "title": "Neural Machine Translation by Jointly Learning to Align and Translate",
+        "DOI": "1409.0473",
+        "x": 2.575,
+        "y": 6.444,
+        "cluster": 50,
+        "citation_count": null,
+        "year": null,
+        "abstract": null,
+        "enriched_via": "local_papers"
+      },
+      {
+        "title": "SqueezeNet: AlexNet-level Accuracy with 50x Fewer Parameters and <0.5MB Model Size",
+        "DOI": "1602.07360",
+        "x": 2.646,
+        "y": 6.39,
+        "cluster": 50,
+        "citation_count": null,
+        "year": null,
+        "abstract": null,
+        "enriched_via": "local_papers"
+      },
+      {
+        "title": "Swin Transformer: Hierarchical Vision Transformer using Shifted Windows",
+        "DOI": "2103.14030",
+        "x": 2.804,
+        "y": 6.487,
+        "cluster": 50,
+        "citation_count": null,
+        "year": null,
+        "abstract": null,
+        "enriched_via": "local_papers"
+      }
+    ],
+    "selected_papers": [
+      {
+        "title": "A ConvNet for the 2020s",
+        "DOI": "2201.03545",
+        "x": 2.752,
+        "y": 6.32,
+        "cluster": 50,
+        "citation_count": null,
+        "year": null,
+        "abstract": null,
+        "enriched_via": "local_papers",
+        "rank": 0,
+        "scores": {
+          "combined": 0.9,
+          "citation": 0.0,
+          "recency": 0.5,
+          "sector": 0.76,
+          "angle_deg": 0.0
+        }
+      },
+      {
+        "title": "An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale",
+        "DOI": "2010.11929",
+        "x": 2.84,
+        "y": 6.368,
+        "cluster": 50,
+        "citation_count": null,
+        "year": null,
+        "abstract": null,
+        "enriched_via": "local_papers",
+        "rank": 1,
+        "scores": {
+          "combined": 0.865,
+          "citation": 0.0,
+          "recency": 0.5,
+          "sector": 0.735,
+          "angle_deg": 45.0
+        }
+      },
+      {
+        "title": "An Introduction to Convolutional Neural Networks",
+        "DOI": "",
+        "x": 2.94,
+        "y": 6.423,
+        "cluster": 50,
+        "citation_count": null,
+        "year": null,
+        "abstract": null,
+        "enriched_via": "local_papers",
+        "rank": 2,
+        "scores": {
+          "combined": 0.83,
+          "citation": 0.0,
+          "recency": 0.5,
+          "sector": 0.71,
+          "angle_deg": 90.0
+        }
+      },
+      {
+        "title": "Attention Is All You Need",
+        "DOI": "1706.03762",
+        "x": 2.915,
+        "y": 6.545,
+        "cluster": 50,
+        "citation_count": null,
+        "year": null,
+        "abstract": null,
+        "enriched_via": "local_papers",
+        "rank": 3,
+        "scores": {
+          "combined": 0.795,
+          "citation": 0.0,
+          "recency": 0.5,
+          "sector": 0.685,
+          "angle_deg": 135.0
+        }
+      },
+      {
+        "title": "ConvTransformer: A Convolutional Transformer Network for Video Frame Synthesis",
+        "DOI": "2011.10185",
+        "x": 2.875,
+        "y": 6.65,
+        "cluster": 50,
+        "citation_count": null,
+        "year": null,
+        "abstract": null,
+        "enriched_via": "local_papers",
+        "rank": 4,
+        "scores": {
+          "combined": 0.76,
+          "citation": 0.0,
+          "recency": 0.5,
+          "sector": 0.66,
+          "angle_deg": 180.0
+        }
+      },
+      {
+        "title": "Improving Classification Neural Networks by using Absolute activation function (MNIST/LeNET-5 example)",
+        "DOI": "",
+        "x": 2.648,
+        "y": 6.614,
+        "cluster": 50,
+        "citation_count": null,
+        "year": null,
+        "abstract": null,
+        "enriched_via": "local_papers",
+        "rank": 5,
+        "scores": {
+          "combined": 0.725,
+          "citation": 0.0,
+          "recency": 0.5,
+          "sector": 0.635,
+          "angle_deg": 225.0
+        }
+      },
+      {
+        "title": "Neural Machine Translation by Jointly Learning to Align and Translate",
+        "DOI": "1409.0473",
+        "x": 2.575,
+        "y": 6.444,
+        "cluster": 50,
+        "citation_count": null,
+        "year": null,
+        "abstract": null,
+        "enriched_via": "local_papers",
+        "rank": 6,
+        "scores": {
+          "combined": 0.69,
+          "citation": 0.0,
+          "recency": 0.5,
+          "sector": 0.61,
+          "angle_deg": 270.0
+        }
+      },
+      {
+        "title": "Swin Transformer: Hierarchical Vision Transformer using Shifted Windows",
+        "DOI": "2103.14030",
+        "x": 2.804,
+        "y": 6.487,
+        "cluster": 50,
+        "citation_count": null,
+        "year": null,
+        "abstract": null,
+        "enriched_via": "local_papers",
+        "rank": 7,
+        "scores": {
+          "combined": 0.655,
+          "citation": 0.0,
+          "recency": 0.5,
+          "sector": 0.585,
+          "angle_deg": 315.0
+        }
+      }
+    ]
+  }
+]

@@ -1,0 +1,2900 @@
+{
+    "paper_id": "lenet_lightweight_and_efficient_lidar_semantic_segmentation_using_multi-scale_convolution_attention",
+    "header": {
+        "generated_with": "S2ORC 1.0.0",
+        "date_generated": "2026-04-26T04:34:58.290679Z"
+    },
+    "title": "RangeSeg: Efficient Lidar Semantic Segmentation on Range view",
+    "authors": [
+        {
+            "first": "Ji-Chao",
+            "middle": [],
+            "last": "Jiao",
+            "suffix": "",
+            "affiliation": {},
+            "email": ""
+        },
+        {
+            "first": "Ben",
+            "middle": [],
+            "last": "Ding",
+            "suffix": "",
+            "affiliation": {},
+            "email": ""
+        },
+        {
+            "first": "Ning",
+            "middle": [],
+            "last": "Li",
+            "suffix": "",
+            "affiliation": {},
+            "email": ""
+        },
+        {
+            "first": "Min",
+            "middle": [],
+            "last": "Pang",
+            "suffix": "",
+            "affiliation": {},
+            "email": ""
+        }
+    ],
+    "year": "",
+    "venue": null,
+    "identifiers": {},
+    "abstract": "LiDAR-based semantic segmentation is critical in the fields of robotics and autonomous driving as it provides a comprehensive understanding of the scene. This paper proposes a lightweight and efficient projection-based semantic segmentation network called LENet with an encoder-decoder structure for LiDAR-based semantic segmentation. The encoder is composed of a novel multi-scale convolutional attention (MSCA) module with varying receptive field sizes to capture features. The decoder employs an Interpolation And Convolution (IAC) mechanism utilizing bilinear interpolation for upsampling multi-resolution feature maps and integrating previous and current dimensional features through a single convolution layer. This approach significantly reduces the network's complexity while also improving its accuracy. Additionally, we introduce multiple auxiliary segmentation heads to further refine the network's accuracy. Extensive evaluations on publicly available datasets, including SemanticKITTI, SemanticPOSS, and nuScenes, show that our proposed method is lighter, more efficient, and robust compared to state-of-the-art semantic segmentation methods. Full implementation is available at https://github.com/fengluodb/LENet.",
+    "pdf_parse": {
+        "paper_id": "lenet_lightweight_and_efficient_lidar_semantic_segmentation_using_multi-scale_convolution_attention",
+        "_pdf_hash": "",
+        "abstract": [
+            {
+                "text": "LiDAR-based semantic segmentation is critical in the fields of robotics and autonomous driving as it provides a comprehensive understanding of the scene. This paper proposes a lightweight and efficient projection-based semantic segmentation network called LENet with an encoder-decoder structure for LiDAR-based semantic segmentation. The encoder is composed of a novel multi-scale convolutional attention (MSCA) module with varying receptive field sizes to capture features. The decoder employs an Interpolation And Convolution (IAC) mechanism utilizing bilinear interpolation for upsampling multi-resolution feature maps and integrating previous and current dimensional features through a single convolution layer. This approach significantly reduces the network's complexity while also improving its accuracy. Additionally, we introduce multiple auxiliary segmentation heads to further refine the network's accuracy. Extensive evaluations on publicly available datasets, including SemanticKITTI, SemanticPOSS, and nuScenes, show that our proposed method is lighter, more efficient, and robust compared to state-of-the-art semantic segmentation methods. Full implementation is available at https://github.com/fengluodb/LENet.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "Abstract",
+                "sec_num": null
+            }
+        ],
+        "body_text": [
+            {
+                "text": "Environment perception is crucial for autonomous driving vehicles to comprehend the surrounding scene. LiDAR and RGB cameras are commonly employed in the perception system of autonomous driving. While cameras have their advantages, such as high resolution and low cost, LiDAR sensors are more robust and not affected by lighting and weather conditions. Additionally, LiDAR point cloud data provides a geometry-accurate representation of objects, making it an ideal choice for 3D point cloud analysis. Point cloud semantic segmentation, which assigns labels to individual points in a point cloud, provides a rich understanding of the scene. Consequently, point cloud semantic segmentation has become an increasingly popular research topic in both academic and industrial communities.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "I. INTRODUCTION",
+                "sec_num": null
+            },
+            {
+                "text": "Due to the disorder and irregularity of 3D point clouds, it is not feasible to apply standard convolutional neural networks directly. Therefore, research efforts have been focused on exploring point cloud semantic segmentation. Pointbased methods, including PointNet [2] , PointNet++ [3] , PointCNN [4] , and RandLA-Net [5] , directly extract features from raw point clouds, which reduces the impact of computational complexity and noise errors from the pre-processing stage. However, point-based methods suffer from high computational complexity and limited processing speed. Voxelbased methods convert the irregular point clouds into regular grid representations, which allows them to use 3D convolutional neural networks. However, voxel-based methods still Accuracy(mIoU) versus inference time. Our presented LENet obtains the promising results on both single scan and multiple scans semantic segmentation in SemanticKITTI test dataset [1] .",
+                "cite_spans": [
+                    {
+                        "start": 267,
+                        "end": 270,
+                        "text": "[2]",
+                        "ref_id": "BIBREF1"
+                    },
+                    {
+                        "start": 284,
+                        "end": 287,
+                        "text": "[3]",
+                        "ref_id": "BIBREF2"
+                    },
+                    {
+                        "start": 299,
+                        "end": 302,
+                        "text": "[4]",
+                        "ref_id": "BIBREF3"
+                    },
+                    {
+                        "start": 320,
+                        "end": 323,
+                        "text": "[5]",
+                        "ref_id": "BIBREF4"
+                    },
+                    {
+                        "start": 939,
+                        "end": 942,
+                        "text": "[1]",
+                        "ref_id": "BIBREF0"
+                    }
+                ],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "I. INTRODUCTION",
+                "sec_num": null
+            },
+            {
+                "text": "face problems similar to point-based methods. Projectionbased methods overcome these issues by transforming point clouds into 2D range images via spherical projection. In addition to delivering superior inference speed and accuracy compared to point-based and voxel-based methods, projection-based methods have recently become increasingly popular due to the success of convolutional networks in image semantic segmentation.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "I. INTRODUCTION",
+                "sec_num": null
+            },
+            {
+                "text": "In this paper, we propose a lightweight and efficient Li-DAR semantic segmentation network that utilizes projectionbased methods. Through extensive experimentation on popular public benchmarks, such as SemanticKITTI [1] , we have demonstrated that our network achieves state-of-the-art accuracy with a speed of 26 frames per second (as shown in Figure I ). In summary, the main contributions of this paper are as follows: about objects of differing sizes within the LiDAR scan. This component plays a vital role in optimizing semantic segmentation.",
+                "cite_spans": [
+                    {
+                        "start": 216,
+                        "end": 219,
+                        "text": "[1]",
+                        "ref_id": "BIBREF0"
+                    }
+                ],
+                "ref_spans": [
+                    {
+                        "start": 352,
+                        "end": 353,
+                        "text": "I",
+                        "ref_id": null
+                    }
+                ],
+                "eq_spans": [],
+                "section": "I. INTRODUCTION",
+                "sec_num": null
+            },
+            {
+                "text": "\u2022 We have introduced a novel IAC module that combines bilinear interpolation for upsampling multi-resolution feature maps with a single convolution layer for integrating previous and current features. Our approach results in a lightweight and powerful mechanism that significantly reduces the complexity of the decoder while also improving accuracy.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "I. INTRODUCTION",
+                "sec_num": null
+            },
+            {
+                "text": "\u2022 We increased the accuracy of the network without adding additional inference parameters by incorporating multiple auxiliary segmentation heads. These segmentation heads refine feature maps at different resolutions, ultimately improving the learning capabilities of the network.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "I. INTRODUCTION",
+                "sec_num": null
+            },
+            {
+                "text": "\u2022 We performed comprehensive experiments on publicly available datasets, including SemanticKITTI, Seman-ticPOSS, and nuScenes. The results indicate that our proposed method attains state-of-the-art performance.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "I. INTRODUCTION",
+                "sec_num": null
+            },
+            {
+                "text": "In recent years, the availability of large-scale datasets such as SemanticKITTI [1] , NuScenes [7] , and SemanticPOSS [8] for the task of point cloud segmentation of autonomous driving scenes, combined with the rapid development of deep learning, has led to the proposal of a wide range of 3D LiDAR point cloud semantic segmentation methods. These methods can generally be categorized into four groups based on their input data representation, including point, voxel, range map, and hybrid representations.",
+                "cite_spans": [
+                    {
+                        "start": 80,
+                        "end": 83,
+                        "text": "[1]",
+                        "ref_id": "BIBREF0"
+                    },
+                    {
+                        "start": 95,
+                        "end": 98,
+                        "text": "[7]",
+                        "ref_id": "BIBREF6"
+                    },
+                    {
+                        "start": 118,
+                        "end": 121,
+                        "text": "[8]",
+                        "ref_id": "BIBREF7"
+                    }
+                ],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "II. RELATED WORK",
+                "sec_num": null
+            },
+            {
+                "text": "Point-based methods directly process the raw 3D point cloud without applying any additional transformation or pre-processing, which are able to preserve the 3D spatial structure information. The pioneering methods of this group are PointNet [2] and PointNet++ [3] , which use shared MLPs [9] to learn the properties of each point. In subsequent series of works, KPConv [10] develops deformable convolutions that can use arbitrary number of kernel points to learn local geometry. Howerver, these approaches have the disadvantages of high computational complexity and large memory consumption, which hinders them from the large-scale point cloud. RandLA-Net [5] adopts a random sampling strategy and uses local feature aggregation to reduce the information loss caused by random operations, which considerably improve the efficiency of point cloud processing and decrease the use of memory consumption.",
+                "cite_spans": [
+                    {
+                        "start": 241,
+                        "end": 244,
+                        "text": "[2]",
+                        "ref_id": "BIBREF1"
+                    },
+                    {
+                        "start": 260,
+                        "end": 263,
+                        "text": "[3]",
+                        "ref_id": "BIBREF2"
+                    },
+                    {
+                        "start": 288,
+                        "end": 291,
+                        "text": "[9]",
+                        "ref_id": "BIBREF8"
+                    },
+                    {
+                        "start": 369,
+                        "end": 373,
+                        "text": "[10]",
+                        "ref_id": "BIBREF9"
+                    },
+                    {
+                        "start": 656,
+                        "end": 659,
+                        "text": "[5]",
+                        "ref_id": "BIBREF4"
+                    }
+                ],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "II. RELATED WORK",
+                "sec_num": null
+            },
+            {
+                "text": "Voxel-based Methods Voxel-based approach to convert point clouds into voxels for processing, which can effectively solve the irregularity problem. The early voxel-based methods firstly transform a point cloud into 3D voxel representations, then use the standard 3D CNN to predict semantic labels. However, the regular 3D convolution requires the huge memory and heavy computational power. Minkowski [11] chose to use sparse convolution instead of standard 3D convolution and other standard neural network to reduce the computational cost. Cylinder3D [12] adopts 3D space partition and designs an asymmetrical residual block to reduce computation. AF2S3Net [13] achieves state-of-theart of voxel-methods, which proposes two novel attention blocks name Attentive Feature Fustion Module(AF2M) and Adaptive Feature Fustion(ASFM) to effectively learn local features and global contexts.",
+                "cite_spans": [
+                    {
+                        "start": 399,
+                        "end": 403,
+                        "text": "[11]",
+                        "ref_id": "BIBREF10"
+                    },
+                    {
+                        "start": 550,
+                        "end": 554,
+                        "text": "[12]",
+                        "ref_id": "BIBREF11"
+                    },
+                    {
+                        "start": 656,
+                        "end": 660,
+                        "text": "[13]",
+                        "ref_id": "BIBREF12"
+                    }
+                ],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "II. RELATED WORK",
+                "sec_num": null
+            },
+            {
+                "text": "Projection-based Methods project 3D point clouds into 2D image space, which can take advantage of a large amount of advanced layers for image feature extraction. SqueezeSeg [14] proposes spherical projection which maps the scatter 3D laser points into 2D Range-Image, then uses the lightweight model SqueezeNet and CRF for segmentation. Subsequently, SqueezeSegV2 [15] proposes context aggregation module (CAM) to aggregate contextual information from a larger perceptual field. RangeNet++ [6] integrates Darknet into SqueezeSeg and proposes an efficient KNN post-processing method to predict labels for point. SqueezeSegV3 [16] proposes Spatially-Adaptive Convolution (SAC) with different filters depending on the location of the input image. Sal-saNext [17] inherits the encoder-decoder architecture from SalsaNet [18] and presents an uncertainty-aware mechanism for point feature leaning. Lite-HDSeg [19] achieves state-of-the-art performance by introducing three different modules, Inception-like Context Module, Multi-class Spatial Propagation Network, and a boundary loss. To get better performance and inspired by the success of SegNext on image segmentation, we propose a novel MSCA module and IAC module to compose the new pipeline on the basis of FIDNet [20] .",
+                "cite_spans": [
+                    {
+                        "start": 173,
+                        "end": 177,
+                        "text": "[14]",
+                        "ref_id": "BIBREF13"
+                    },
+                    {
+                        "start": 364,
+                        "end": 368,
+                        "text": "[15]",
+                        "ref_id": "BIBREF14"
+                    },
+                    {
+                        "start": 490,
+                        "end": 493,
+                        "text": "[6]",
+                        "ref_id": "BIBREF5"
+                    },
+                    {
+                        "start": 624,
+                        "end": 628,
+                        "text": "[16]",
+                        "ref_id": "BIBREF15"
+                    },
+                    {
+                        "start": 755,
+                        "end": 759,
+                        "text": "[17]",
+                        "ref_id": "BIBREF16"
+                    },
+                    {
+                        "start": 816,
+                        "end": 820,
+                        "text": "[18]",
+                        "ref_id": "BIBREF17"
+                    },
+                    {
+                        "start": 903,
+                        "end": 907,
+                        "text": "[19]",
+                        "ref_id": "BIBREF18"
+                    },
+                    {
+                        "start": 1264,
+                        "end": 1268,
+                        "text": "[20]",
+                        "ref_id": "BIBREF19"
+                    }
+                ],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "II. RELATED WORK",
+                "sec_num": null
+            },
+            {
+                "text": "Hybrid methods try to integrate the advantages of the point-wise methods, the projection methods and voxel methods. SPVNAS [21] proposed a sparse point-voxel convolution, which consists of the point-based branch and sparse voxel-based branch. The point-based branch focuses on the local features of the point cloud, the sparse voxel-based branch focuses on global contexts. RPVNet [22] propose a network that fuses three types of data, which includes three branches: point-base branch, projection-based branch and voxel-based branch. Point-based branch acts as an intermediate node to fuse the output of different branches.",
+                "cite_spans": [
+                    {
+                        "start": 123,
+                        "end": 127,
+                        "text": "[21]",
+                        "ref_id": "BIBREF20"
+                    },
+                    {
+                        "start": 381,
+                        "end": 385,
+                        "text": "[22]",
+                        "ref_id": "BIBREF21"
+                    }
+                ],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "II. RELATED WORK",
+                "sec_num": null
+            },
+            {
+                "text": "Using the spherical projection approach, we can transform the unstructured point cloud into an ordered range representation that is a 2D image. The advantages of the range representation are that it can use the effective 2D convolutional operation for fast training and inference, and it can facilitate the mature deep learning technologies that have been well studied in image-based tasks.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "III. METHOD A. Range Image Representation.",
+                "sec_num": null
+            },
+            {
+                "text": "In the range image representation, each LiDAR point p = (x, y, z) with Cartesian coordinates, a spherical mapping R 3 \u2192 R 2 is used to transform it to image coordinates, as below: d, 5 x 5 d, 1 x 3 d, 1 x 5 d, 1 x 7 d, 3 x 1 d, 5 x 1 d, 7 x 1 1x1 Convolution Attention Multi-scale Feature (a) The BasicBlock (b) MSCA 3x3 SiLU BN SiLU MSCA 1x1 1x1 Fig. 3. Illustration of the BasicBlock that is used to build the encoder and the proposed MSCA. Here, d means a depth-wise convolution, k 1 \u00d7 k 2 means the kernel size of the convolution layer. We extract multi-scale features using the convolutions and then utilize them as attention weights to reweight the input of MSCA.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "III. METHOD A. Range Image Representation.",
+                "sec_num": null
+            },
+            {
+                "text": "EQUATION",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [
+                    {
+                        "start": 0,
+                        "end": 8,
+                        "text": "EQUATION",
+                        "ref_id": "EQREF",
+                        "raw_str": "u v = 1 2 1 -arctan(y, x) \u03c0 -1 w 1 -arcsin(z r -1 ) + f up f -1 h ,",
+                        "eq_num": "(1"
+                    }
+                ],
+                "section": "III. METHOD A. Range Image Representation.",
+                "sec_num": null
+            },
+            {
+                "text": "where (u, v) are image coordinates, (h, w) are the height and width of the desired range image representation, f = f up + f down is the vertical field-of-view of the sensor, and r = x 2 + y 2 + z 2 is the range of each point.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "III. METHOD A. Range Image Representation.",
+                "sec_num": null
+            },
+            {
+                "text": "Multi-scale features are crucial in semantic segmentation as they enable the processing of objects of varying sizes in a single image. To extract these features, a conventional method involves using convolutions with different receptive fields and fusing their respective fields as shown in [17] . Inspired by SegNext [23] , we propose a novel multiscale convolution attention (MSCA) module customized for our problem domain. In contrast to the original version in SegNext, we have made significant modifications and adaptations. These include resizing the MSCN convolutional kernel to suit lidar data, replacing the GELU activation function with SiLU to enhance efficiency while maintaining accuracy, and optimizing the BasicBlock structure to fully utilize MSCN's capabilities.",
+                "cite_spans": [
+                    {
+                        "start": 291,
+                        "end": 295,
+                        "text": "[17]",
+                        "ref_id": "BIBREF16"
+                    },
+                    {
+                        "start": 318,
+                        "end": 322,
+                        "text": "[23]",
+                        "ref_id": "BIBREF22"
+                    }
+                ],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "B. Convolution Attention Encoder",
+                "sec_num": null
+            },
+            {
+                "text": "As shown in Fig. 3 (b) , the MSCA module comprises three parts: a depth-wise convolution to aggregate local information, multi-branch depth-wise strip convolutions to capture multi-scale context, and a 1 \u00d7 1 convolution to model the relationship between different channels. Finally, the output of the 1 \u00d7 1 convolution is utilized directly as attention weights to re-weight the input of MSCA. Moreover, we follow [20] in adopting the pyramid structure for our encoder. The building block in the encoder, as depicted in Fig. 3 (a) , consists of a 3 \u00d7 3 convolution layer and MSCA.",
+                "cite_spans": [
+                    {
+                        "start": 413,
+                        "end": 417,
+                        "text": "[20]",
+                        "ref_id": "BIBREF19"
+                    }
+                ],
+                "ref_spans": [
+                    {
+                        "start": 17,
+                        "end": 22,
+                        "text": "3 (b)",
+                        "ref_id": null
+                    },
+                    {
+                        "start": 524,
+                        "end": 529,
+                        "text": "3 (a)",
+                        "ref_id": null
+                    }
+                ],
+                "eq_spans": [],
+                "section": "B. Convolution Attention Encoder",
+                "sec_num": null
+            },
+            {
+                "text": "To design a simple and effective decoder, we investigate several different decoder structure. In [6] , [16] , [17] , they use standard transposed convolutions or pixel-shuffle to produce the upsampled feature maps, then using a set of convolution to decoder the feature maps, which is effective but with heavy computation. In FIDNet, it's decoder uses FID (fully interpolation decoding) to decode the semantics of different levels, then using a classification head to fuse these semantics. Although FID is completely parameter-free, it doesn't have the ability to learn from the features, which makes the model's performance excessively depend on the classification head. Besides, FIDNet's classification head fuses too much low-level information, which decreases the performance.",
+                "cite_spans": [
+                    {
+                        "start": 97,
+                        "end": 100,
+                        "text": "[6]",
+                        "ref_id": "BIBREF5"
+                    },
+                    {
+                        "start": 103,
+                        "end": 107,
+                        "text": "[16]",
+                        "ref_id": "BIBREF15"
+                    },
+                    {
+                        "start": 110,
+                        "end": 114,
+                        "text": "[17]",
+                        "ref_id": "BIBREF16"
+                    }
+                ],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "C. IAC Decoder",
+                "sec_num": null
+            },
+            {
+                "text": "In this work, we presented a lightweight decoder as depicted in Fig. 2 . The IAC module contains two parts: a bilinear interpolation to upsample the feature maps which come from the encoder, and a 3 \u00d7 3 convolution to fuse the information from the encoder and the previous IAC. Finally, we use the point-wise convolution to fuse the features from the last three IAC modules. Comparing to other two decoders, our decoder has the fewest parameters and the best performance.",
+                "cite_spans": [],
+                "ref_spans": [
+                    {
+                        "start": 69,
+                        "end": 70,
+                        "text": "2",
+                        "ref_id": null
+                    }
+                ],
+                "eq_spans": [],
+                "section": "C. IAC Decoder",
+                "sec_num": null
+            },
+            {
+                "text": "In this work, we train the proposed neural network with three different loss functions, namely weighted cross-entropy loss L wce , Lov\u00e1sz loss L ls and boundary loss L bd . Finally, our total loss is following:",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "D. Loss Function",
+                "sec_num": null
+            },
+            {
+                "text": "EQUATION",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [
+                    {
+                        "start": 0,
+                        "end": 8,
+                        "text": "EQUATION",
+                        "ref_id": "EQREF",
+                        "raw_str": "L = w 1 L wce + w 2 L ls + w 3 L bd ,",
+                        "eq_num": "(2)"
+                    }
+                ],
+                "section": "D. Loss Function",
+                "sec_num": null
+            },
+            {
+                "text": "w 1 , w 2 and w 3 are the weights with respect to each loss function. In our implementation, we set w 1 = 1, w 2 = 1.5 and w 3 = 1.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "D. Loss Function",
+                "sec_num": null
+            },
+            {
+                "text": "Three loss functions account for three different problems. To cope with the imbalanced classes problem, the weighted",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "D. Loss Function",
+                "sec_num": null
+            },
+            {
+                "text": "TABLE I THE PERFORMANCE COMPARISON ON SEMANTICKITTI SINGLE SCAN BENCHMARK. Methods Size mean-IoU FPS (Hz) Params(M) car bicycle motorcycle truck other-vehicle person bicyclist motorcyclist road parking sidewalk other-ground building fence vegetation trunk terrain pole traffic-sign PointNet [2] 50K pts 14.6 2 3 46.3 1.3 0.3 0.1 0.8 0.2 0.2 0.0 61.6 15.8 35.7 1.4 41.4 12.9 31.0 4.6 17.6 2.4 3.7 PointNet++ [3]",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "D. Loss Function",
+                "sec_num": null
+            },
+            {
+                "text": "50K pts 20.1 0.1 6 53.7 1.9 0.2 0.9 0.2 0.9 1.0 0.0 72.0 18.7 41.8 5.6 62.3 16.9 46.5 13.8 30.0 6.0 8.9 SPLATNet [24] 50K pts 22.8 1 0.8 66.6 0.0 0.0 0.0 0.0 0.0 0.0 0.0 70.4 0.8 41.5 0.0 68.7 27.8 72.3 35.9 35.8 13.8 0.0 TangentConv [25] 50K pts 35.9 0.3 0.4 86. 8 1.3 12.7 11.6 10.2 17.1 20.2 0.5 82.9 15.2 61.7 9.0 82.8 44.2 75.5 42.5 55.5 30.2 22.2LatticeNet [26] 50K pts 52.9 7 -92.9 16.6 22.2 26.6 21.4 35.6 43.0 46.0 90.0 59.4 74.1 22.0 88.2 58.8 81.7 63.6 63.1 51.9 48.4 RandLA-Net [5] 50K pts 53.9 1.3 0.95 94.2 26.0 25.8 40.1 38.9 49.2 48.2 7.2 90.7 60.3 73.7 20.4 86.9 56.3 81.4 61.3 66.8 49.2 47.7 KPConv [10] 50K pts 58.8 3.8 14.9 96.0 30.2 42.5 33.4 44.3 61.5 61.6 11.8 88.8 61.3 72.7 31.6 90.5 64.2 84.8 69.2 69.1 56.4 47.4 BAAF-Net [27] 50K pts 59.9 4.8 1.23 95.4 31.8 35.5 48.7 46.7 49.5 55.7 33.0 90.9 62.2 74.4 23.6 89.8 60.8 82.7 63.4 67.9 53.7 52.0 RangeNet53++ [6] 64 \u00d7 2048 52.2 12 50 91.4 25.7 34.4 25.7 23.0 38.3 38.8 4.8 91.8 65.0 75.2 27.8 87.4 58.6 80.5 55.1 64.6 47.9 55. 9 MINet [28] 64 \u00d7 2048 55.2 24 -90.1 41.8 34.0 29.9 23.6 51.4 52.4 25.0 90.5 59.0 72.6 25.8 85.6 52.3 81.1 58.1 66.1 49.0 59.9 3D-MiniNet [29] 64 \u00d7 2048 55.8 28 4 90.5 42.3 42.1 28.5 29.4 47.8 44.1 14.5 91.6 64.2 74.5 25.4 89.4 60.8 82.8 60.8 66.7 48.0 56.6 SqueezeSegV3 [16] 64 \u00d7 2048 55.9 6 29.9 92.5 38.7 36.5 29.6 33.0 45.6 46.2 20.1 91.7 63.4 74.8 26.4 89.0 59.4 82.0 58.7 65.4 49.6 58.9",
+                "cite_spans": [
+                    {
+                        "start": 113,
+                        "end": 117,
+                        "text": "[24]",
+                        "ref_id": "BIBREF23"
+                    },
+                    {
+                        "start": 234,
+                        "end": 238,
+                        "text": "[25]",
+                        "ref_id": "BIBREF24"
+                    },
+                    {
+                        "start": 264,
+                        "end": 265,
+                        "text": "8",
+                        "ref_id": "BIBREF7"
+                    },
+                    {
+                        "start": 363,
+                        "end": 367,
+                        "text": "[26]",
+                        "ref_id": "BIBREF25"
+                    },
+                    {
+                        "start": 490,
+                        "end": 493,
+                        "text": "[5]",
+                        "ref_id": "BIBREF4"
+                    },
+                    {
+                        "start": 617,
+                        "end": 621,
+                        "text": "[10]",
+                        "ref_id": "BIBREF9"
+                    },
+                    {
+                        "start": 748,
+                        "end": 752,
+                        "text": "[27]",
+                        "ref_id": "BIBREF26"
+                    },
+                    {
+                        "start": 883,
+                        "end": 886,
+                        "text": "[6]",
+                        "ref_id": "BIBREF5"
+                    },
+                    {
+                        "start": 1001,
+                        "end": 1002,
+                        "text": "9",
+                        "ref_id": "BIBREF8"
+                    },
+                    {
+                        "start": 1009,
+                        "end": 1013,
+                        "text": "[28]",
+                        "ref_id": "BIBREF27"
+                    },
+                    {
+                        "start": 1139,
+                        "end": 1143,
+                        "text": "[29]",
+                        "ref_id": "BIBREF28"
+                    },
+                    {
+                        "start": 1272,
+                        "end": 1276,
+                        "text": "[16]",
+                        "ref_id": "BIBREF15"
+                    }
+                ],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "D. Loss Function",
+                "sec_num": null
+            },
+            {
+                "text": "SalsaNext [17] 64 \u00d7 2048 59.5 24 6.7 91.9 48.3 38.6 38.9 31.9 60.2 59.0 19.4 91.7 63.7 75.8 29.1 90.2 64.2 81.8 63.6 66.5 54.3 62.1 FIDNet [20] 64 \u00d7 2048 59.5 29 6.0 93.9 54.7 48.9 27.6 23.9 62.3 59.8 23.7 90.6 59.1 75.8 26.7 88.9 60.5 84.5 64.4 69.0 53.3 62.8 Meta-RangeSeg [30] 64 \u00d7 2048 61.0 26 6.8 93.9 50.1 43.8 43.9 43.2 63.7 53.1 18.7 90.6 64.3 74. 6 29.2 91.1 64.7 82.6 65.5 65.5 56.3 64.2 Lite-HDSeg [19] 64 \u00d7 2048 63.8 20 -92.3 40.0 55.4 37.7 39.6 59.2 71.6 54.1 93.0 68.2 78.3 29.3 91.5 65.0 78.2 65.8 65.1 59.5 67.7 CENet [31] 64 \u00d7 2048 64.7 37.8 6.7 91.9 58.6 50.3 40.6 42.3 68.9 65.9 43.5 90.3 60.9 75.1 31.5 91.0 66.2 84.5 69.7 70.0 61.5 67.6 LENet(Ours) 64 \u00d7 2048 64.5 26 4.7 93.9 57.0 51.3 44.3 44.4 66.6 64.9 36.0 91.8 68.3 76.9 30.5 91.2 66.0 83.7 68.3 67.8 58.6 63.2",
+                "cite_spans": [
+                    {
+                        "start": 10,
+                        "end": 14,
+                        "text": "[17]",
+                        "ref_id": "BIBREF16"
+                    },
+                    {
+                        "start": 139,
+                        "end": 143,
+                        "text": "[20]",
+                        "ref_id": "BIBREF19"
+                    },
+                    {
+                        "start": 275,
+                        "end": 279,
+                        "text": "[30]",
+                        "ref_id": "BIBREF29"
+                    },
+                    {
+                        "start": 356,
+                        "end": 357,
+                        "text": "6",
+                        "ref_id": "BIBREF5"
+                    }
+                ],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "D. Loss Function",
+                "sec_num": null
+            },
+            {
+                "text": "TABLE II THE PERFORMANCE COMPARISON ON SEMANTICKITTI MULTIPLE SCANS BENCHMARK. THE ITEM WITH ARROW INDICATES THE MOVING CLASS Methods mean-IoU FPS (Hz) Params(M) car bicycle motorcycle truck other-vehicle person bicyclist motorcyclist road parking sidewalk other-ground building fence vegetation trunk terrain pole traffic sign car -\u2192 bicyclist ----\u2192 person ---\u2192 motorcyclist -------\u2192 other-vehicle --------\u2192 truck --\u2192 TangentConv [25] 34.1 -0.4 84.9 2.0 18.2 21.1 18.5 1.6 0.0 0.0 83.9 38.3 64.0 15.3 85.8 49.1 79.5 43.2 56.7 36.4 31.2 40.3 1.1 6.4 1.9 30.1 42.2 DarkNet53Seg [1]",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "D. Loss Function",
+                "sec_num": null
+            },
+            {
+                "text": "41.6 --84.1 30.4 32.9 20.2 20.7 7.5 0.0 0.0 91.6 64.9 75.3 27.5 85.2 56.5 78.4 50.7 64.8 38.1 53.3 61.5 14.1 15.2 0.2 28.9 37.8 SpSequenceNet [32] 43.1 3 -88.5 24.0 26.2 29.2 22.7 6.3 0.0 0.0 90.1 57.6 73.9 27.1 91.2 66.8 84.0 66.0 65.7 50.8 48.7 53.2 41.2 26.2 36.2 2.3 0.1 TemporalLidarSeg [33] 47.0 30 -92.1 47.7 40.9 39.2 35.0 14.4 0.0 0.0 91.8 59.6 75.8 23.2 89.8 63.8 82.3 62.5 64.7 52.6 60.4 68.2 42.8 40.4 12.9 12.4 2.1 TemporalLatticeNet [34] 47.1 6.5 -91.6 35.4 36.1 26.9 23.0 9.4 0.0 0.0 91.5 59.3 75.3 27.5 89.6 65.3 84.6 66.7 70.4 57.2 60.4 59.7 41.7 9.4 48.8 5.9 0.0 Meta-RangeSeg [30] 49.7 22 6.8 90.8 50.0 49.5 29.5 34.8 16.6 0.0 0.0 90.8 62.9 74.8 26.5 89.8 62.1 82.8 65.7 66.5 56.2 64.5 69.0 60.4 57.9 22.0 16.6 2.6 LENet(Ours) 53.0 25.3 4.7 92.4 57.0 52.1 38.5 47.0 19.0 0.0 4.3 92.0 68.6 77.3 29.9 90.2 63.4 83.4 68.1 67.6 58.0 62.9 75.2 65.2 62.6 22.5 25.7 2.0 cross-entropy loss L wce is employed to maximize the prediction accuracy for point labels, which is able to balance the distributions among different classes. It's defined as",
+                "cite_spans": [
+                    {
+                        "start": 142,
+                        "end": 146,
+                        "text": "[32]",
+                        "ref_id": "BIBREF31"
+                    },
+                    {
+                        "start": 292,
+                        "end": 296,
+                        "text": "[33]",
+                        "ref_id": "BIBREF32"
+                    },
+                    {
+                        "start": 447,
+                        "end": 451,
+                        "text": "[34]",
+                        "ref_id": "BIBREF33"
+                    },
+                    {
+                        "start": 595,
+                        "end": 599,
+                        "text": "[30]",
+                        "ref_id": "BIBREF29"
+                    }
+                ],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "D. Loss Function",
+                "sec_num": null
+            },
+            {
+                "text": "EQUATION",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [
+                    {
+                        "start": 0,
+                        "end": 8,
+                        "text": "EQUATION",
+                        "ref_id": "EQREF",
+                        "raw_str": "L wce (y, \u0177) = - i 1 \u221a f i p (y i ) log (p (\u0177 i )) ,",
+                        "eq_num": "(3)"
+                    }
+                ],
+                "section": "D. Loss Function",
+                "sec_num": null
+            },
+            {
+                "text": "where y i represents the ground truth, and \u0177i is prediction and f i is the frequency of the i th class.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "D. Loss Function",
+                "sec_num": null
+            },
+            {
+                "text": "To solve the problem of optimizing the intersection-overunion(IoU), the Lov\u00e1sz loss L ls is used to maximize the intersection-over-union (IoU) score that is commonly used to in performance evaluation on semantic segmentation. It's defined as:",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "D. Loss Function",
+                "sec_num": null
+            },
+            {
+                "text": "EQUATION",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [
+                    {
+                        "start": 0,
+                        "end": 8,
+                        "text": "EQUATION",
+                        "ref_id": "EQREF",
+                        "raw_str": "L ls = 1 |C| c\u2208C \u2206 Jc (m(c)), m i (c) = 1-x i (c) if c = y i (c) x i (c) otherwise (",
+                        "eq_num": "4"
+                    }
+                ],
+                "section": "D. Loss Function",
+                "sec_num": null
+            },
+            {
+                "text": ")",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "D. Loss Function",
+                "sec_num": null
+            },
+            {
+                "text": "where |C| is the class number, \u2206 Jc represents the Lov\u00e1sz extension of the Jaccard index, x i (c) \u2208 [0, 1] and y i (c) \u2208 {-1, 1} hold the predicted probability and ground truth label of pixel i for class c, respectively.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "D. Loss Function",
+                "sec_num": null
+            },
+            {
+                "text": "To account for the blurred segmentation boundaries problem as suggested in [19] , [30] , [31] , the boundary loss function L bd is used for LiDAR semantic segmentation, which can be formulated defined as follows:",
+                "cite_spans": [
+                    {
+                        "start": 75,
+                        "end": 79,
+                        "text": "[19]",
+                        "ref_id": "BIBREF18"
+                    },
+                    {
+                        "start": 82,
+                        "end": 86,
+                        "text": "[30]",
+                        "ref_id": "BIBREF29"
+                    },
+                    {
+                        "start": 89,
+                        "end": 93,
+                        "text": "[31]",
+                        "ref_id": "BIBREF30"
+                    }
+                ],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "D. Loss Function",
+                "sec_num": null
+            },
+            {
+                "text": "EQUATION",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [
+                    {
+                        "start": 0,
+                        "end": 8,
+                        "text": "EQUATION",
+                        "ref_id": "EQREF",
+                        "raw_str": "L bd (y, \u0177) = 1 - 2P c b R c b P c b + R c b ,",
+                        "eq_num": "(5)"
+                    }
+                ],
+                "section": "D. Loss Function",
+                "sec_num": null
+            },
+            {
+                "text": "where P c b and R c b define the precision and recall of predicted boundary image \u0177b to real one y b for class c. The boundary image is computed as follows:",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "D. Loss Function",
+                "sec_num": null
+            },
+            {
+                "text": "EQUATION",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [
+                    {
+                        "start": 0,
+                        "end": 8,
+                        "text": "EQUATION",
+                        "ref_id": "EQREF",
+                        "raw_str": "y b = pool (1 -y, \u03b8 0 ) -(1 -y) \u0177b = pool (1 -\u0177, \u03b8 0 ) -(1 -\u0177)",
+                        "eq_num": "(6)"
+                    }
+                ],
+                "section": "D. Loss Function",
+                "sec_num": null
+            },
+            {
+                "text": "where pool(\u2022, \u2022) employs a pixel-wise max-pooling on a sliding window of size \u03b8 0 . In addition, we set \u03b8 0 = 3.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "D. Loss Function",
+                "sec_num": null
+            },
+            {
+                "text": "In our proposed network, the classification head fuses the last three different dimensional feature map to conduct the output, which causes it's performance mainly relies on the last three IAC module. Therefore, we use the auxiliary segmentation head to further refine our proposed network accuracy. These auxiliary segmentation heads compute the weighted loss together with the main loss. Meanwhile, each loss has the corresponding weight since the different dimensional feature maps have different expressive power, which is different from [16] , [31] . The final loss function can be defined as, TABLE III EVALUATION RESULTS ON THE SEMANTICPOSS TEST SPLIT. person rider car truck plants traffic sign pole trashcan building cone/stone fence bike ground mIoU SqueezeSeg [14] 14.2 1.0 13.2 10.4 28.0 5.1 5.7 2.3 43.6 0.2 15.6 31.0 75.0 18.9 SqueezeSeg + CRF [14]",
+                "cite_spans": [
+                    {
+                        "start": 542,
+                        "end": 546,
+                        "text": "[16]",
+                        "ref_id": "BIBREF15"
+                    },
+                    {
+                        "start": 549,
+                        "end": 553,
+                        "text": "[31]",
+                        "ref_id": "BIBREF30"
+                    }
+                ],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "D. Loss Function",
+                "sec_num": null
+            },
+            {
+                "text": "6.8 0.6 6.7 4.0 2.5 9.1 1.3 0.4 37.1 0.2 8.4 18.5 72.1 12.9 SqueezeSegV2 [15] 48.0 9.4 48.5 11.3 50.1 6.7 6.2 14.8 60.4 5.2 22.1 36.1 71.3 30.0 SqueezeSegV2 + CRF [15] 43.9 7.1 47.9 18.4 40.9 4.8 2.8 7.4 57.5 0.6 12.0 35.3 71.3 26.9",
+                "cite_spans": [
+                    {
+                        "start": 73,
+                        "end": 77,
+                        "text": "[15]",
+                        "ref_id": "BIBREF14"
+                    },
+                    {
+                        "start": 163,
+                        "end": 167,
+                        "text": "[15]",
+                        "ref_id": "BIBREF14"
+                    }
+                ],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "D. Loss Function",
+                "sec_num": null
+            },
+            {
+                "text": "RangeNet53 [6] 55.7 4.5 34.4 13.7 57.5 3.7 6.6 23.3 64.9 6.1 22.2 28.3 72.9 30.3 RangeNet53 + KNN [6] 57.3 4.6 35.0 14.1 58.3 3.9 6.9 24.1 66.1 6.6 23.4 28.6 73.5 30.9 MINet [35] 61.8 12.0 63.3 22.2 68.1 16.3 29.3 28.5 74.6 25.9 31.7 44.5 76.4 42.7 MINet + KNN [35] 62.4 12.1 63.8 22.3 68.6 16.7 30.1 28.9 75.1 28.6 32.2 44.9 76.3 43.2 FIDNet [20] 75.6 20.3 76.4 24.3 72.4 18.3 31.0 39.3 78.2 39.2 43.8 52.5 80.5 50.1 FIDNet + KNN [20] 76.0 20.9 77.2 24.5 72.6 18.8 31.9 41.4 78.6 41.1 43.4 51.8 79.5 50.6 CENet [31] 75.4 24.6 80.0 27.5 71.6 25.4 32.4 51.8 77.3 34.5 49.7 52.7 80.8 52.6 CENet + KNN [31] 76.0 24.7 80.7 27.6 71.6 25.5 33.1 53.5 77.7 37.5 48.8 51.9 79.7 53.0 Ours 76. 8 26.6 81.1 31.8 73.9 26.4 34.4 53.8 80.4 29.4 50.5 52.8 79.2 53.6 Ours + KNN 77.0 26.8 81.5 31.8 74.0 26.5 34.9 55.0 80.7 31.6 49.7 52.1 78.2 53.8",
+                "cite_spans": [
+                    {
+                        "start": 11,
+                        "end": 14,
+                        "text": "[6]",
+                        "ref_id": "BIBREF5"
+                    },
+                    {
+                        "start": 98,
+                        "end": 101,
+                        "text": "[6]",
+                        "ref_id": "BIBREF5"
+                    },
+                    {
+                        "start": 174,
+                        "end": 178,
+                        "text": "[35]",
+                        "ref_id": "BIBREF34"
+                    },
+                    {
+                        "start": 261,
+                        "end": 265,
+                        "text": "[35]",
+                        "ref_id": "BIBREF34"
+                    },
+                    {
+                        "start": 343,
+                        "end": 347,
+                        "text": "[20]",
+                        "ref_id": "BIBREF19"
+                    },
+                    {
+                        "start": 431,
+                        "end": 435,
+                        "text": "[20]",
+                        "ref_id": "BIBREF19"
+                    },
+                    {
+                        "start": 512,
+                        "end": 516,
+                        "text": "[31]",
+                        "ref_id": "BIBREF30"
+                    },
+                    {
+                        "start": 599,
+                        "end": 603,
+                        "text": "[31]",
+                        "ref_id": "BIBREF30"
+                    },
+                    {
+                        "start": 683,
+                        "end": 684,
+                        "text": "8",
+                        "ref_id": "BIBREF7"
+                    }
+                ],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "D. Loss Function",
+                "sec_num": null
+            },
+            {
+                "text": "TABLE IV EVALUATION RESULTS ON THE NUSCENES VALIDATION DATASET. barrier bicycle bus car construction vehicle motorcycle pedestrian traffic cone trailer truck driveable surface other flat sidewalk terrian manmade vegetation mIoU FIDNet [20] 73.2 38.2 86.9 83.0 38.9 71.2 70.9 60.0 66.7 76.3 93.3 70.3 72.9 72.4 86.6 84.9 71.7 FIDNet + KNN [20] 57.1 35.6 87.3 82.2 40.7 71.2 72.5 62.3 68.0 76.3 96.1 71.4 73.6 73.4 87.8 86.1 71.4 CENet [31] 74.8 39.9 85.6 83.6 46.3 78.5 72.1 60.8 66.4 77.3 93.1 69.5 73.0 72.2 86.4 84.4 72.7 CENet + KNN [31] 58.4 37.4 86.1 82.8 46.9 78.0 73.7 62.7 67.3 77.3 95.9 70.7 73.6 73.2 87.5 85.6 72.3 Ours 76.0 41.1 88.1 84.6 48.8 78.0 73.2 62.3 67.8 79.4 93.4 72.1 73.7 72.7 87.1 85.3 74.0 Ours + KNN 59.2 28.3 88.6 83.8 49.7 77.3 74.6 64.3 68.8 79.4 96.3 73.3 74.3 73.7 88.1 86.3 73.5",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "D. Loss Function",
+                "sec_num": null
+            },
+            {
+                "text": "EQUATION",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [
+                    {
+                        "start": 0,
+                        "end": 8,
+                        "text": "EQUATION",
+                        "ref_id": "EQREF",
+                        "raw_str": "L total = L main + 3 i=1 \u03bb i L(y i , \u0177i )",
+                        "eq_num": "(7)"
+                    }
+                ],
+                "section": "D. Loss Function",
+                "sec_num": null
+            },
+            {
+                "text": "where L main is the main loss, y i is the semantic output obtained from stage i, and \u0177i represents the corresponding semantic label. L(\u2022) is computed according to Equation 2. In our implementation, we set \u03bb 1 = 1, \u03bb 2 = 1 and \u03bb 3 = 0.5, empirically.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "D. Loss Function",
+                "sec_num": null
+            },
+            {
+                "text": "To evaluate our method, we use SemanticKITTI, which is a large-scale dataset for the task of point cloud segmentation of autonomous driving scenes. It provides the dense pointwise annotation for 22 sequences (43,551 scans) in KITTI Odometry Benchmark. Sequence 00 to 10 (19,130 scans) are used for training, 11 to 21 (20,351 scans) for testing. We follow the setting in [1] , and use sequence 08 (4,071 scans) for validation. To evaluate the effectiveness of our proposed approach, we submit the output the online evaluation website to obtain the results on the testing set.",
+                "cite_spans": [
+                    {
+                        "start": 370,
+                        "end": 373,
+                        "text": "[1]",
+                        "ref_id": "BIBREF0"
+                    }
+                ],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "IV. EXPERIMENT A. Experiment Setups",
+                "sec_num": null
+            },
+            {
+                "text": "To verify the universality of our proposed method, we conducted additional experiments on SemanticPOSS and nuScenes datasets. SemanticPOSS, which was collected at Peking University, uses the same data format as Se-manticKITTI. However, compared to SemanticKITTI, it is a smaller and sparser dataset with 2,988 complex LiDAR scans and a large number of dynamic instances that make it a challenging benchmark. On the other hand, nuScenes consists of 1000 sequences, each with 20 seconds of duration, recorded with a 32-beam LiDAR sensor. Among the three datasets, nuScenes has the fewest points per frame in its point cloud, but the greatest number of frames.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "IV. EXPERIMENT A. Experiment Setups",
+                "sec_num": null
+            },
+            {
+                "text": "To faciliate the fair comparison, we evaluate the performance of different methods with respect to the mean intersection over union metric (mIoU), which is defined as below:",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "IV. EXPERIMENT A. Experiment Setups",
+                "sec_num": null
+            },
+            {
+                "text": "EQUATION",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [
+                    {
+                        "start": 0,
+                        "end": 8,
+                        "text": "EQUATION",
+                        "ref_id": "EQREF",
+                        "raw_str": "mIoU = 1 n n c=1 TP c TP c + FP c + FN c ,",
+                        "eq_num": "(8)"
+                    }
+                ],
+                "section": "IV. EXPERIMENT A. Experiment Setups",
+                "sec_num": null
+            },
+            {
+                "text": "where TP c , FP c , and FN c represent true positive, false positive, and false negative predictions for the class c.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "IV. EXPERIMENT A. Experiment Setups",
+                "sec_num": null
+            },
+            {
+                "text": "We implemented our proposed method using PyTorch [36] and conducted all our experiments on a computer with four NVIDIA RTX 3090 GPUs. To train the network, we used a batch size of 8 with a range image size of 64 \u00d7 2048. We employed the AdamW [37] optimizer with default settings in PyTorch, and the initial learning rate was set to 2e -3 , which we dynamically adjusted using a cosine annealing scheduler over 50 epochs. During the training process, we performed data augmentation using random rotation, random point dropout, and flipping the 3D point cloud.",
+                "cite_spans": [
+                    {
+                        "start": 49,
+                        "end": 53,
+                        "text": "[36]",
+                        "ref_id": "BIBREF35"
+                    },
+                    {
+                        "start": 242,
+                        "end": 246,
+                        "text": "[37]",
+                        "ref_id": "BIBREF36"
+                    }
+                ],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "B. Implementation details.",
+                "sec_num": null
+            },
+            {
+                "text": "Table I displays the results of various recent methods tested on the SemanticKITTI single scan benchmark. Our",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "C. Evaluation Results and Comparisons",
+                "sec_num": null
+            },
+            {
+                "text": "TABLE V ABLATION STUDY EVALUATED ON SEMANTICKITTI VALIDATION SET. Baseline Row MSCA IAC Boundary Loss Auxiliary Loss mIou Params(M) FIDNet 1 \u2717 \u2717 \u2717 \u2717 58.3 6.05 Ours 2 \u2713 \u2717 \u2717 \u2717 59.3 5.28 3 \u2713 \u2713 \u2717 \u2717 59.9 4.74 4 \u2713 \u2713 \u2713 \u2717 61.1 4.74 5 \u2713 \u2713 \u2713 \u2713 63.1 4.74 presented method achieves the state-of-the-art performance compared to both point-based and image-based methods on the single scan benchmark (64.5% mIoU). Table II displays the quantitative results of various recent methods on the SemanticKITTI multiple scans benchmark. Our presented methods also achieve state-of-the-art performance with 53.0% mIoU. It is worth noting that our proposed network is lightweight, with just around 4.7 million parameters and operates fast at approximately 26 frames per second while maintaining high accuracy. Table III displays a comparison of our proposed LENet with other related works on SemanticPOSS. Due to differences in sensors and environments, all methods achieve slightly lower accuracy. Despite this, our proposed method achieves state-of-the-art performance, as demonstrated by its high scores in both overall mIoU and nearly all class-wise mIoU metrics. Table IV compares the performance of our proposed LENet against FIDNet and CENet on the nuScenes validation set. Compared to SemanticKITTI and SemanticPOSS, the nuScenes dataset has the most sparsely sampled point cloud, making the task more challenging. Despite this, our method still achieves high accuracy, surpassing both the baseline FIDNet and CENet by 2.3% and 0.4%, respectively.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "C. Evaluation Results and Comparisons",
+                "sec_num": null
+            },
+            {
+                "text": "In order to better visualize the improvements of our proposed model over the baseline system, we present a qualitative comparison of FIDNet and LENet in Fig. 4 . We compare the prediction results and generated error maps of both models on three data frames from the SemanticKITTI validation set. The comparison demonstrates a significant improvement of our proposed method over FIDNet.",
+                "cite_spans": [],
+                "ref_spans": [
+                    {
+                        "start": 158,
+                        "end": 159,
+                        "text": "4",
+                        "ref_id": "FIGREF2"
+                    }
+                ],
+                "eq_spans": [],
+                "section": "C. Evaluation Results and Comparisons",
+                "sec_num": null
+            },
+            {
+                "text": "In this section, we present the results of multiple ablation experiments conducted on the SemanticKITTI validation set (sequence 08) to observe the performance impact of individual modules in our proposed network. For a fair comparison, we use FIDNet as the baseline since it has a similar network structure to ours. We then replace the baseline with our proposed MSCA and IAC modules from Section III. Finally, we incrementally add the boundary loss and auxiliary loss to evaluate their effectiveness for our network. Table V displays the number of model parameters and corresponding mIoU scores on the SemanticKITTI validation set. Our proposed LENet approach demonstrates over 4.8% improvement and 25% reduction in parameters compared to the baseline, validating the efficacy of each individual module.",
+                "cite_spans": [],
+                "ref_spans": [
+                    {
+                        "start": 525,
+                        "end": 526,
+                        "text": "V",
+                        "ref_id": null
+                    }
+                ],
+                "eq_spans": [],
+                "section": "D. Ablation Studies",
+                "sec_num": null
+            },
+            {
+                "text": "Our proposed network achieved improved accuracy, with an increase of over 1.0% when we replaced the basic block of the baseline with the MSCA. Meanwhile, because of the use of group convolution in MSCA, our network reduced the total number of parameters to 5.28M, making it lightweight. After replacing the original decoder with the IAC, our network also yielded an improved accuracy, which was approximately 0.6% better compared to the prev. Despite IAC containing learnable convolutional parameters, the improved performance clearly demonstrates the efficacy of ICA. Furthermore, the use of ICA eliminates the need for a heavy segmentation head in the decoder, like FIDNet, resulting in a smaller number of parameters (4.74M). In terms of the additional loss functions, the boundary loss delivered a performance gain of over 1.2%, while the auxiliary loss achieved an impressive performance jump of over 2.0%.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "D. Ablation Studies",
+                "sec_num": null
+            },
+            {
+                "text": "We propose a lightweight and efficient real-time CNN model called LENet for the task of LiDAR point cloud segmentation. Our novel encoder-decoder architecture is based on MSCA and IAC. In addition, we incorporate a boundary loss to emphasize semantic boundaries and several extra segmentation heads to further improve feature learning ability without affecting parameter or efficiency costs. Our proposed method achieves state-of-the-art performance on single-scan semantic segmentation and multiple-scan semantic segmentation as well as real-time capability, as demonstrated by the evaluation on the SemanticKITTI test dataset. Moreover, we conducted further experiments on SemanticPOSS and nuScenes and achieved promising results.",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "V. CONCLUSIONS",
+                "sec_num": null
+            },
+            {
+                "text": "\u2022 We have developed a novel multi-scale convolutional attention module (MSCA) to replace the ResNet block within our encoder. By using varying kernel sizes (3,5,7), MSCA is able to capture critical information",
+                "cite_spans": [],
+                "ref_spans": [],
+                "eq_spans": [],
+                "section": "",
+                "sec_num": null
+            }
+        ],
+        "back_matter": [],
+        "bib_entries": {
+            "BIBREF0": {
+                "ref_id": "b0",
+                "title": "Semantickitti: A dataset for semantic scene understanding of lidar sequences",
+                "authors": [
+                    {
+                        "first": "J",
+                        "middle": [],
+                        "last": "Behley",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "M",
+                        "middle": [],
+                        "last": "Garbade",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "A",
+                        "middle": [],
+                        "last": "Milioto",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "J",
+                        "middle": [],
+                        "last": "Quenzel",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "S",
+                        "middle": [],
+                        "last": "Behnke",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "C",
+                        "middle": [],
+                        "last": "Stachniss",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "J",
+                        "middle": [],
+                        "last": "Gall",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2019,
+                "venue": "Proceedings of the IEEE/CVF International Conference on Computer Vision",
+                "volume": "",
+                "issue": "",
+                "pages": "9297--9307",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "J. Behley, M. Garbade, A. Milioto, J. Quenzel, S. Behnke, C. Stach- niss, and J. Gall, \"Semantickitti: A dataset for semantic scene un- derstanding of lidar sequences,\" in Proceedings of the IEEE/CVF International Conference on Computer Vision, 2019, pp. 9297-9307.",
+                "links": null
+            },
+            "BIBREF1": {
+                "ref_id": "b1",
+                "title": "Pointnet: Deep learning on point sets for 3d classification and segmentation",
+                "authors": [
+                    {
+                        "first": "C",
+                        "middle": [
+                            "R"
+                        ],
+                        "last": "Qi",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "H",
+                        "middle": [],
+                        "last": "Su",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "K",
+                        "middle": [],
+                        "last": "Mo",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "L",
+                        "middle": [
+                            "J"
+                        ],
+                        "last": "Guibas",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2017,
+                "venue": "Proceedings of the IEEE conference on computer vision and pattern recognition",
+                "volume": "",
+                "issue": "",
+                "pages": "652--660",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "C. R. Qi, H. Su, K. Mo, and L. J. Guibas, \"Pointnet: Deep learning on point sets for 3d classification and segmentation,\" in Proceedings of the IEEE conference on computer vision and pattern recognition, 2017, pp. 652-660.",
+                "links": null
+            },
+            "BIBREF2": {
+                "ref_id": "b2",
+                "title": "Pointnet++: Deep hierarchical feature learning on point sets in a metric space",
+                "authors": [
+                    {
+                        "first": "C",
+                        "middle": [
+                            "R"
+                        ],
+                        "last": "Qi",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "L",
+                        "middle": [],
+                        "last": "Yi",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "H",
+                        "middle": [],
+                        "last": "Su",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "L",
+                        "middle": [
+                            "J"
+                        ],
+                        "last": "Guibas",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2017,
+                "venue": "",
+                "volume": "",
+                "issue": "",
+                "pages": "",
+                "other_ids": {
+                    "arXiv": [
+                        "arXiv:1706.02413"
+                    ]
+                },
+                "num": null,
+                "urls": [],
+                "raw_text": "C. R. Qi, L. Yi, H. Su, and L. J. Guibas, \"Pointnet++: Deep hierarchical feature learning on point sets in a metric space,\" arXiv preprint arXiv:1706.02413, 2017.",
+                "links": null
+            },
+            "BIBREF3": {
+                "ref_id": "b3",
+                "title": "Pointcnn: Convolution on \u03c7-transformed points",
+                "authors": [
+                    {
+                        "first": "Y",
+                        "middle": [],
+                        "last": "Li",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "R",
+                        "middle": [],
+                        "last": "Bu",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "M",
+                        "middle": [],
+                        "last": "Sun",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "W",
+                        "middle": [],
+                        "last": "Wu",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "X",
+                        "middle": [],
+                        "last": "Di",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "B",
+                        "middle": [],
+                        "last": "Chen",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2018,
+                "venue": "Proceedings of the 32nd International Conference on Neural Information Processing Systems",
+                "volume": "",
+                "issue": "",
+                "pages": "828--838",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "Y. Li, R. Bu, M. Sun, W. Wu, X. Di, and B. Chen, \"Pointcnn: Convolution on \u03c7-transformed points,\" in Proceedings of the 32nd International Conference on Neural Information Processing Systems, 2018, pp. 828-838.",
+                "links": null
+            },
+            "BIBREF4": {
+                "ref_id": "b4",
+                "title": "Randla-net: Efficient semantic segmentation of largescale point clouds",
+                "authors": [
+                    {
+                        "first": "Q",
+                        "middle": [],
+                        "last": "Hu",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "B",
+                        "middle": [],
+                        "last": "Yang",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "L",
+                        "middle": [],
+                        "last": "Xie",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "S",
+                        "middle": [],
+                        "last": "Rosa",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "Y",
+                        "middle": [],
+                        "last": "Guo",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "Z",
+                        "middle": [],
+                        "last": "Wang",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "N",
+                        "middle": [],
+                        "last": "Trigoni",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "A",
+                        "middle": [],
+                        "last": "Markham",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2020,
+                "venue": "Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition",
+                "volume": "",
+                "issue": "",
+                "pages": "11--108",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "Q. Hu, B. Yang, L. Xie, S. Rosa, Y. Guo, Z. Wang, N. Trigoni, and A. Markham, \"Randla-net: Efficient semantic segmentation of large- scale point clouds,\" in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, 2020, pp. 11 108-11 117.",
+                "links": null
+            },
+            "BIBREF5": {
+                "ref_id": "b5",
+                "title": "Rangenet++: Fast and accurate lidar semantic segmentation",
+                "authors": [
+                    {
+                        "first": "A",
+                        "middle": [],
+                        "last": "Milioto",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "I",
+                        "middle": [],
+                        "last": "Vizzo",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "J",
+                        "middle": [],
+                        "last": "Behley",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "C",
+                        "middle": [],
+                        "last": "Stachniss",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2019,
+                "venue": "2019 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)",
+                "volume": "",
+                "issue": "",
+                "pages": "4213--4220",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "A. Milioto, I. Vizzo, J. Behley, and C. Stachniss, \"Rangenet++: Fast and accurate lidar semantic segmentation,\" in 2019 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS). IEEE, 2019, pp. 4213-4220.",
+                "links": null
+            },
+            "BIBREF6": {
+                "ref_id": "b6",
+                "title": "nuscenes: A multimodal dataset for autonomous driving",
+                "authors": [
+                    {
+                        "first": "H",
+                        "middle": [],
+                        "last": "Caesar",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "V",
+                        "middle": [],
+                        "last": "Bankiti",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "A",
+                        "middle": [
+                            "H"
+                        ],
+                        "last": "Lang",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "S",
+                        "middle": [],
+                        "last": "Vora",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "V",
+                        "middle": [
+                            "E"
+                        ],
+                        "last": "Liong",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "Q",
+                        "middle": [],
+                        "last": "Xu",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "A",
+                        "middle": [],
+                        "last": "Krishnan",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "Y",
+                        "middle": [],
+                        "last": "Pan",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "G",
+                        "middle": [],
+                        "last": "Baldan",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "O",
+                        "middle": [],
+                        "last": "Beijbom",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2019,
+                "venue": "",
+                "volume": "",
+                "issue": "",
+                "pages": "",
+                "other_ids": {
+                    "arXiv": [
+                        "arXiv:1903.11027"
+                    ]
+                },
+                "num": null,
+                "urls": [],
+                "raw_text": "H. Caesar, V. Bankiti, A. H. Lang, S. Vora, V. E. Liong, Q. Xu, A. Kr- ishnan, Y. Pan, G. Baldan, and O. Beijbom, \"nuscenes: A multimodal dataset for autonomous driving,\" arXiv preprint arXiv:1903.11027, 2019.",
+                "links": null
+            },
+            "BIBREF7": {
+                "ref_id": "b7",
+                "title": "Semanticposs: A point cloud dataset with large quantity of dynamic instances",
+                "authors": [
+                    {
+                        "first": "Y",
+                        "middle": [],
+                        "last": "Pan",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "B",
+                        "middle": [],
+                        "last": "Gao",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "J",
+                        "middle": [],
+                        "last": "Mei",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "S",
+                        "middle": [],
+                        "last": "Geng",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "C",
+                        "middle": [],
+                        "last": "Li",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "H",
+                        "middle": [],
+                        "last": "Zhao",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2020,
+                "venue": "2020 IEEE Intelligent Vehicles Symposium (IV)",
+                "volume": "",
+                "issue": "",
+                "pages": "687--693",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "Y. Pan, B. Gao, J. Mei, S. Geng, C. Li, and H. Zhao, \"Semanticposs: A point cloud dataset with large quantity of dynamic instances,\" in 2020 IEEE Intelligent Vehicles Symposium (IV). IEEE, 2020, pp. 687-693.",
+                "links": null
+            },
+            "BIBREF8": {
+                "ref_id": "b8",
+                "title": "Explorations in the Microstructure of Cognition: Psychological and Biological Models",
+                "authors": [
+                    {
+                        "first": "J",
+                        "middle": [
+                            "L"
+                        ],
+                        "last": "Mcclelland",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "D",
+                        "middle": [
+                            "E"
+                        ],
+                        "last": "Rumelhart",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "P",
+                        "middle": [
+                            "R"
+                        ],
+                        "last": "Group",
+                        "suffix": ""
+                    }
+                ],
+                "year": 1987,
+                "venue": "",
+                "volume": "2",
+                "issue": "",
+                "pages": "",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "J. L. McClelland, D. E. Rumelhart, P. R. Group, et al., Parallel Distributed Processing, Volume 2: Explorations in the Microstructure of Cognition: Psychological and Biological Models. MIT press, 1987, vol. 2.",
+                "links": null
+            },
+            "BIBREF9": {
+                "ref_id": "b9",
+                "title": "Kpconv: Flexible and deformable convolution for point clouds",
+                "authors": [
+                    {
+                        "first": "H",
+                        "middle": [],
+                        "last": "Thomas",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "C",
+                        "middle": [
+                            "R"
+                        ],
+                        "last": "Qi",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "J.-E",
+                        "middle": [],
+                        "last": "Deschaud",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "B",
+                        "middle": [],
+                        "last": "Marcotegui",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "F",
+                        "middle": [],
+                        "last": "Goulette",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "L",
+                        "middle": [
+                            "J"
+                        ],
+                        "last": "Guibas",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2019,
+                "venue": "Proceedings of the IEEE/CVF International Conference on Computer Vision",
+                "volume": "",
+                "issue": "",
+                "pages": "6411--6420",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "H. Thomas, C. R. Qi, J.-E. Deschaud, B. Marcotegui, F. Goulette, and L. J. Guibas, \"Kpconv: Flexible and deformable convolution for point clouds,\" in Proceedings of the IEEE/CVF International Conference on Computer Vision, 2019, pp. 6411-6420.",
+                "links": null
+            },
+            "BIBREF10": {
+                "ref_id": "b10",
+                "title": "4d spatio-temporal convnets: Minkowski convolutional neural networks",
+                "authors": [
+                    {
+                        "first": "C",
+                        "middle": [],
+                        "last": "Choy",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "J",
+                        "middle": [],
+                        "last": "Gwak",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "S",
+                        "middle": [],
+                        "last": "Savarese",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2019,
+                "venue": "Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition",
+                "volume": "",
+                "issue": "",
+                "pages": "3075--3084",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "C. Choy, J. Gwak, and S. Savarese, \"4d spatio-temporal convnets: Minkowski convolutional neural networks,\" in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, 2019, pp. 3075-3084.",
+                "links": null
+            },
+            "BIBREF11": {
+                "ref_id": "b11",
+                "title": "Cylindrical and asymmetrical 3d convolution networks for lidar segmentation",
+                "authors": [
+                    {
+                        "first": "X",
+                        "middle": [],
+                        "last": "Zhu",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "H",
+                        "middle": [],
+                        "last": "Zhou",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "T",
+                        "middle": [],
+                        "last": "Wang",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "F",
+                        "middle": [],
+                        "last": "Hong",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "Y",
+                        "middle": [],
+                        "last": "Ma",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "W",
+                        "middle": [],
+                        "last": "Li",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "H",
+                        "middle": [],
+                        "last": "Li",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "D",
+                        "middle": [],
+                        "last": "Lin",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2020,
+                "venue": "",
+                "volume": "",
+                "issue": "",
+                "pages": "",
+                "other_ids": {
+                    "arXiv": [
+                        "arXiv:2011.10033"
+                    ]
+                },
+                "num": null,
+                "urls": [],
+                "raw_text": "X. Zhu, H. Zhou, T. Wang, F. Hong, Y. Ma, W. Li, H. Li, and D. Lin, \"Cylindrical and asymmetrical 3d convolution networks for lidar segmentation,\" arXiv preprint arXiv:2011.10033, 2020.",
+                "links": null
+            },
+            "BIBREF12": {
+                "ref_id": "b12",
+                "title": "2-s3net: Attentive feature fusion with adaptive feature selection for sparse semantic segmentation network",
+                "authors": [
+                    {
+                        "first": "R",
+                        "middle": [],
+                        "last": "Cheng",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "R",
+                        "middle": [],
+                        "last": "Razani",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "E",
+                        "middle": [],
+                        "last": "Taghavi",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "E",
+                        "middle": [],
+                        "last": "Li",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "B",
+                        "middle": [],
+                        "last": "Liu",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2021,
+                "venue": "",
+                "volume": "",
+                "issue": "",
+                "pages": "",
+                "other_ids": {
+                    "arXiv": [
+                        "arXiv:2102.04530"
+                    ]
+                },
+                "num": null,
+                "urls": [],
+                "raw_text": "R. Cheng, R. Razani, E. Taghavi, E. Li, and B. Liu, \"2-s3net: Attentive feature fusion with adaptive feature selection for sparse semantic segmentation network,\" arXiv preprint arXiv:2102.04530, 2021.",
+                "links": null
+            },
+            "BIBREF13": {
+                "ref_id": "b13",
+                "title": "Squeezeseg: Convolutional neural nets with recurrent crf for real-time road-object segmentation from 3d lidar point cloud",
+                "authors": [
+                    {
+                        "first": "B",
+                        "middle": [],
+                        "last": "Wu",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "A",
+                        "middle": [],
+                        "last": "Wan",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "X",
+                        "middle": [],
+                        "last": "Yue",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "K",
+                        "middle": [],
+                        "last": "Keutzer",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2018,
+                "venue": "2018 IEEE International Conference on Robotics and Automation (ICRA)",
+                "volume": "",
+                "issue": "",
+                "pages": "1887--1893",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "B. Wu, A. Wan, X. Yue, and K. Keutzer, \"Squeezeseg: Convolutional neural nets with recurrent crf for real-time road-object segmentation from 3d lidar point cloud,\" in 2018 IEEE International Conference on Robotics and Automation (ICRA). IEEE, 2018, pp. 1887-1893.",
+                "links": null
+            },
+            "BIBREF14": {
+                "ref_id": "b14",
+                "title": "Squeezesegv2: Improved model structure and unsupervised domain adaptation for roadobject segmentation from a lidar point cloud",
+                "authors": [
+                    {
+                        "first": "B",
+                        "middle": [],
+                        "last": "Wu",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "X",
+                        "middle": [],
+                        "last": "Zhou",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "S",
+                        "middle": [],
+                        "last": "Zhao",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "X",
+                        "middle": [],
+                        "last": "Yue",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "K",
+                        "middle": [],
+                        "last": "Keutzer",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2019,
+                "venue": "2019 International Conference on Robotics and Automation (ICRA)",
+                "volume": "",
+                "issue": "",
+                "pages": "4376--4382",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "B. Wu, X. Zhou, S. Zhao, X. Yue, and K. Keutzer, \"Squeezesegv2: Im- proved model structure and unsupervised domain adaptation for road- object segmentation from a lidar point cloud,\" in 2019 International Conference on Robotics and Automation (ICRA). IEEE, 2019, pp. 4376-4382.",
+                "links": null
+            },
+            "BIBREF15": {
+                "ref_id": "b15",
+                "title": "Squeezesegv3: Spatially-adaptive convolution for efficient point-cloud segmentation",
+                "authors": [
+                    {
+                        "first": "C",
+                        "middle": [],
+                        "last": "Xu",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "B",
+                        "middle": [],
+                        "last": "Wu",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "Z",
+                        "middle": [],
+                        "last": "Wang",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "W",
+                        "middle": [],
+                        "last": "Zhan",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "P",
+                        "middle": [],
+                        "last": "Vajda",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "K",
+                        "middle": [],
+                        "last": "Keutzer",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "M",
+                        "middle": [],
+                        "last": "Tomizuka",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2020,
+                "venue": "European Conference on Computer Vision",
+                "volume": "",
+                "issue": "",
+                "pages": "1--19",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "C. Xu, B. Wu, Z. Wang, W. Zhan, P. Vajda, K. Keutzer, and M. Tomizuka, \"Squeezesegv3: Spatially-adaptive convolution for effi- cient point-cloud segmentation,\" in European Conference on Computer Vision. Springer, 2020, pp. 1-19.",
+                "links": null
+            },
+            "BIBREF16": {
+                "ref_id": "b16",
+                "title": "Salsanext: Fast semantic segmentation of lidar point clouds for autonomous driving",
+                "authors": [
+                    {
+                        "first": "T",
+                        "middle": [],
+                        "last": "Cortinhal",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "G",
+                        "middle": [],
+                        "last": "Tzelepis",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "E",
+                        "middle": [
+                            "E"
+                        ],
+                        "last": "Aksoy",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2020,
+                "venue": "",
+                "volume": "",
+                "issue": "",
+                "pages": "",
+                "other_ids": {
+                    "arXiv": [
+                        "arXiv:2003.03653"
+                    ]
+                },
+                "num": null,
+                "urls": [],
+                "raw_text": "T. Cortinhal, G. Tzelepis, and E. E. Aksoy, \"Salsanext: Fast semantic segmentation of lidar point clouds for autonomous driving,\" arXiv preprint arXiv:2003.03653, 2020.",
+                "links": null
+            },
+            "BIBREF17": {
+                "ref_id": "b17",
+                "title": "Salsanet: Fast road and vehicle segmentation in lidar point clouds for autonomous driving",
+                "authors": [
+                    {
+                        "first": "E",
+                        "middle": [
+                            "E"
+                        ],
+                        "last": "Aksoy",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "S",
+                        "middle": [],
+                        "last": "Baci",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "S",
+                        "middle": [],
+                        "last": "Cavdar",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2019,
+                "venue": "2020 IEEE Intelligent Vehicles Symposium (IV)",
+                "volume": "",
+                "issue": "",
+                "pages": "926--932",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "E. E. Aksoy, S. Baci, and S. Cavdar, \"Salsanet: Fast road and vehicle segmentation in lidar point clouds for autonomous driving,\" in 2020 IEEE Intelligent Vehicles Symposium (IV). IEEE, 2019, pp. 926-932.",
+                "links": null
+            },
+            "BIBREF18": {
+                "ref_id": "b18",
+                "title": "Lite-hdseg: Lidar semantic segmentation using lite harmonic dense convolutions",
+                "authors": [
+                    {
+                        "first": "R",
+                        "middle": [],
+                        "last": "Razani",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "R",
+                        "middle": [],
+                        "last": "Cheng",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "E",
+                        "middle": [],
+                        "last": "Taghavi",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "L",
+                        "middle": [],
+                        "last": "Bingbing",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2021,
+                "venue": "2021 IEEE International Conference on Robotics and Automation (ICRA)",
+                "volume": "",
+                "issue": "",
+                "pages": "9550--9556",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "R. Razani, R. Cheng, E. Taghavi, and L. Bingbing, \"Lite-hdseg: Lidar semantic segmentation using lite harmonic dense convolutions,\" in 2021 IEEE International Conference on Robotics and Automation (ICRA). IEEE, 2021, pp. 9550-9556.",
+                "links": null
+            },
+            "BIBREF19": {
+                "ref_id": "b19",
+                "title": "Fidnet: Lidar point cloud semantic segmentation with fully interpolation decoding",
+                "authors": [
+                    {
+                        "first": "Y",
+                        "middle": [],
+                        "last": "Zhao",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "L",
+                        "middle": [],
+                        "last": "Bai",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "X",
+                        "middle": [],
+                        "last": "Huang",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2021,
+                "venue": "2021 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)",
+                "volume": "",
+                "issue": "",
+                "pages": "4453--4458",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "Y. Zhao, L. Bai, and X. Huang, \"Fidnet: Lidar point cloud semantic segmentation with fully interpolation decoding,\" in 2021 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS). IEEE, 2021, pp. 4453-4458.",
+                "links": null
+            },
+            "BIBREF20": {
+                "ref_id": "b20",
+                "title": "Searching efficient 3d architectures with sparse point-voxel convolution",
+                "authors": [
+                    {
+                        "first": "H",
+                        "middle": [],
+                        "last": "Tang",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "Z",
+                        "middle": [],
+                        "last": "Liu",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "S",
+                        "middle": [],
+                        "last": "Zhao",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "Y",
+                        "middle": [],
+                        "last": "Lin",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "J",
+                        "middle": [],
+                        "last": "Lin",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "H",
+                        "middle": [],
+                        "last": "Wang",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "S",
+                        "middle": [],
+                        "last": "Han",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2020,
+                "venue": "ECCV",
+                "volume": "",
+                "issue": "",
+                "pages": "685--702",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "H. Tang, Z. Liu, S. Zhao, Y. Lin, J. Lin, H. Wang, and S. Han, \"Search- ing efficient 3d architectures with sparse point-voxel convolution,\" in ECCV. Springer, 2020, pp. 685-702.",
+                "links": null
+            },
+            "BIBREF21": {
+                "ref_id": "b21",
+                "title": "Rpvnet: A deep and efficient range-point-voxel fusion network for lidar point cloud segmentation",
+                "authors": [
+                    {
+                        "first": "J",
+                        "middle": [],
+                        "last": "Xu",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "R",
+                        "middle": [],
+                        "last": "Zhang",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "J",
+                        "middle": [],
+                        "last": "Dou",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "Y",
+                        "middle": [],
+                        "last": "Zhu",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "J",
+                        "middle": [],
+                        "last": "Sun",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "S",
+                        "middle": [],
+                        "last": "Pu",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2021,
+                "venue": "Proceedings of the IEEE/CVF International Conference on Computer Vision",
+                "volume": "",
+                "issue": "",
+                "pages": "",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "J. Xu, R. Zhang, J. Dou, Y. Zhu, J. Sun, and S. Pu, \"Rpvnet: A deep and efficient range-point-voxel fusion network for lidar point cloud segmentation,\" in Proceedings of the IEEE/CVF International Conference on Computer Vision, 2021, pp. 16 024-16 033.",
+                "links": null
+            },
+            "BIBREF22": {
+                "ref_id": "b22",
+                "title": "Segnext: Rethinking convolutional attention design for semantic segmentation",
+                "authors": [
+                    {
+                        "first": "M.-H",
+                        "middle": [],
+                        "last": "Guo",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "C.-Z",
+                        "middle": [],
+                        "last": "Lu",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "Q",
+                        "middle": [],
+                        "last": "Hou",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "Z",
+                        "middle": [],
+                        "last": "Liu",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "M.-M",
+                        "middle": [],
+                        "last": "Cheng",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "S.-M",
+                        "middle": [],
+                        "last": "Hu",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2022,
+                "venue": "",
+                "volume": "",
+                "issue": "",
+                "pages": "",
+                "other_ids": {
+                    "arXiv": [
+                        "arXiv:2209.08575"
+                    ]
+                },
+                "num": null,
+                "urls": [],
+                "raw_text": "M.-H. Guo, C.-Z. Lu, Q. Hou, Z. Liu, M.-M. Cheng, and S.-M. Hu, \"Segnext: Rethinking convolutional attention design for semantic segmentation,\" arXiv preprint arXiv:2209.08575, 2022.",
+                "links": null
+            },
+            "BIBREF23": {
+                "ref_id": "b23",
+                "title": "Splatnet: Sparse lattice networks for point cloud processing",
+                "authors": [
+                    {
+                        "first": "H",
+                        "middle": [],
+                        "last": "Su",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "V",
+                        "middle": [],
+                        "last": "Jampani",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "D",
+                        "middle": [],
+                        "last": "Sun",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "S",
+                        "middle": [],
+                        "last": "Maji",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "E",
+                        "middle": [],
+                        "last": "Kalogerakis",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "M.-H",
+                        "middle": [],
+                        "last": "Yang",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "J",
+                        "middle": [],
+                        "last": "Kautz",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2018,
+                "venue": "Proceedings of the IEEE conference on computer vision and pattern recognition",
+                "volume": "",
+                "issue": "",
+                "pages": "2530--2539",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "H. Su, V. Jampani, D. Sun, S. Maji, E. Kalogerakis, M.-H. Yang, and J. Kautz, \"Splatnet: Sparse lattice networks for point cloud processing,\" in Proceedings of the IEEE conference on computer vision and pattern recognition, 2018, pp. 2530-2539.",
+                "links": null
+            },
+            "BIBREF24": {
+                "ref_id": "b24",
+                "title": "Tangent convolutions for dense prediction in 3d",
+                "authors": [
+                    {
+                        "first": "M",
+                        "middle": [],
+                        "last": "Tatarchenko",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "J",
+                        "middle": [],
+                        "last": "Park",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "V",
+                        "middle": [],
+                        "last": "Koltun",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "Q.-Y",
+                        "middle": [],
+                        "last": "Zhou",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2018,
+                "venue": "Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition",
+                "volume": "",
+                "issue": "",
+                "pages": "3887--3896",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "M. Tatarchenko, J. Park, V. Koltun, and Q.-Y. Zhou, \"Tangent con- volutions for dense prediction in 3d,\" in Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition, 2018, pp. 3887-3896.",
+                "links": null
+            },
+            "BIBREF25": {
+                "ref_id": "b25",
+                "title": "Latticenet: Fast point cloud segmentation using permutohedral lattices",
+                "authors": [
+                    {
+                        "first": "R",
+                        "middle": [
+                            "A"
+                        ],
+                        "last": "Rosu",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "P",
+                        "middle": [],
+                        "last": "Sch\u00fctt",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "J",
+                        "middle": [],
+                        "last": "Quenzel",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "S",
+                        "middle": [],
+                        "last": "Behnke",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2019,
+                "venue": "",
+                "volume": "",
+                "issue": "",
+                "pages": "",
+                "other_ids": {
+                    "arXiv": [
+                        "arXiv:1912.05905"
+                    ]
+                },
+                "num": null,
+                "urls": [],
+                "raw_text": "R. A. Rosu, P. Sch\u00fctt, J. Quenzel, and S. Behnke, \"Latticenet: Fast point cloud segmentation using permutohedral lattices,\" arXiv preprint arXiv:1912.05905, 2019.",
+                "links": null
+            },
+            "BIBREF26": {
+                "ref_id": "b26",
+                "title": "Semantic segmentation for real point cloud scenes via bilateral augmentation and adaptive fusion",
+                "authors": [
+                    {
+                        "first": "S",
+                        "middle": [],
+                        "last": "Qiu",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "S",
+                        "middle": [],
+                        "last": "Anwar",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "N",
+                        "middle": [],
+                        "last": "Barnes",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2021,
+                "venue": "Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition",
+                "volume": "",
+                "issue": "",
+                "pages": "1757--1767",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "S. Qiu, S. Anwar, and N. Barnes, \"Semantic segmentation for real point cloud scenes via bilateral augmentation and adaptive fusion,\" in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, 2021, pp. 1757-1767.",
+                "links": null
+            },
+            "BIBREF27": {
+                "ref_id": "b27",
+                "title": "Multiscale interaction for real-time lidar data segmentation on an embedded platform",
+                "authors": [
+                    {
+                        "first": "S",
+                        "middle": [],
+                        "last": "Li",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "X",
+                        "middle": [],
+                        "last": "Chen",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "Y",
+                        "middle": [],
+                        "last": "Liu",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "D",
+                        "middle": [],
+                        "last": "Dai",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "C",
+                        "middle": [],
+                        "last": "Stachniss",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "J",
+                        "middle": [],
+                        "last": "Gall",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2021,
+                "venue": "IEEE Robotics and Automation Letters",
+                "volume": "7",
+                "issue": "2",
+                "pages": "738--745",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "S. Li, X. Chen, Y. Liu, D. Dai, C. Stachniss, and J. Gall, \"Multi- scale interaction for real-time lidar data segmentation on an embedded platform,\" IEEE Robotics and Automation Letters, vol. 7, no. 2, pp. 738-745, 2021.",
+                "links": null
+            },
+            "BIBREF28": {
+                "ref_id": "b28",
+                "title": "3d-mininet: Learning a 2d representation from point clouds for fast and efficient 3d lidar semantic segmentation",
+                "authors": [
+                    {
+                        "first": "I",
+                        "middle": [],
+                        "last": "Alonso",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "L",
+                        "middle": [],
+                        "last": "Riazuelo",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "L",
+                        "middle": [],
+                        "last": "Montesano",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "A",
+                        "middle": [
+                            "C"
+                        ],
+                        "last": "Murillo",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2020,
+                "venue": "IEEE Robotics and Automation Letters",
+                "volume": "5",
+                "issue": "4",
+                "pages": "5432--5439",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "I. Alonso, L. Riazuelo, L. Montesano, and A. C. Murillo, \"3d-mininet: Learning a 2d representation from point clouds for fast and efficient 3d lidar semantic segmentation,\" IEEE Robotics and Automation Letters, vol. 5, no. 4, pp. 5432-5439, 2020.",
+                "links": null
+            },
+            "BIBREF29": {
+                "ref_id": "b29",
+                "title": "Meta-rangeseg: Lidar sequence semantic segmentation using multiple feature aggregation",
+                "authors": [
+                    {
+                        "first": "S",
+                        "middle": [],
+                        "last": "Wang",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "J",
+                        "middle": [],
+                        "last": "Zhu",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "R",
+                        "middle": [],
+                        "last": "Zhang",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2022,
+                "venue": "",
+                "volume": "",
+                "issue": "",
+                "pages": "",
+                "other_ids": {
+                    "arXiv": [
+                        "arXiv:2202.13377"
+                    ]
+                },
+                "num": null,
+                "urls": [],
+                "raw_text": "S. Wang, J. Zhu, and R. Zhang, \"Meta-rangeseg: Lidar sequence semantic segmentation using multiple feature aggregation,\" arXiv preprint arXiv:2202.13377, 2022.",
+                "links": null
+            },
+            "BIBREF30": {
+                "ref_id": "b30",
+                "title": "Cenet: Toward concise and efficient lidar semantic segmentation for autonomous driving",
+                "authors": [
+                    {
+                        "first": "H.-X",
+                        "middle": [],
+                        "last": "Cheng",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "X.-F",
+                        "middle": [],
+                        "last": "Han",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "G.-Q",
+                        "middle": [],
+                        "last": "Xiao",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2022,
+                "venue": "2022 IEEE International Conference on Multimedia and Expo (ICME)",
+                "volume": "",
+                "issue": "",
+                "pages": "1--06",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "H.-X. Cheng, X.-F. Han, and G.-Q. Xiao, \"Cenet: Toward concise and efficient lidar semantic segmentation for autonomous driving,\" in 2022 IEEE International Conference on Multimedia and Expo (ICME). IEEE, 2022, pp. 01-06.",
+                "links": null
+            },
+            "BIBREF31": {
+                "ref_id": "b31",
+                "title": "Spsequencenet: Semantic segmentation network on 4d point clouds",
+                "authors": [
+                    {
+                        "first": "H",
+                        "middle": [],
+                        "last": "Shi",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "G",
+                        "middle": [],
+                        "last": "Lin",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "H",
+                        "middle": [],
+                        "last": "Wang",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "T.-Y",
+                        "middle": [],
+                        "last": "Hung",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "Z",
+                        "middle": [],
+                        "last": "Wang",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2020,
+                "venue": "Proceedings of the IEEE/CVF conference on computer vision and pattern recognition",
+                "volume": "",
+                "issue": "",
+                "pages": "4574--4583",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "H. Shi, G. Lin, H. Wang, T.-Y. Hung, and Z. Wang, \"Spsequencenet: Semantic segmentation network on 4d point clouds,\" in Proceedings of the IEEE/CVF conference on computer vision and pattern recognition, 2020, pp. 4574-4583.",
+                "links": null
+            },
+            "BIBREF32": {
+                "ref_id": "b32",
+                "title": "Lidar-based recurrent 3d semantic segmentation with temporal memory alignment",
+                "authors": [
+                    {
+                        "first": "F",
+                        "middle": [],
+                        "last": "Duerr",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "M",
+                        "middle": [],
+                        "last": "Pfaller",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "H",
+                        "middle": [],
+                        "last": "Weigel",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "J",
+                        "middle": [],
+                        "last": "Beyerer",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2020,
+                "venue": "2020 International Conference on 3D Vision (3DV)",
+                "volume": "",
+                "issue": "",
+                "pages": "781--790",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "F. Duerr, M. Pfaller, H. Weigel, and J. Beyerer, \"Lidar-based recurrent 3d semantic segmentation with temporal memory alignment,\" in 2020 International Conference on 3D Vision (3DV). IEEE, 2020, pp. 781- 790.",
+                "links": null
+            },
+            "BIBREF33": {
+                "ref_id": "b33",
+                "title": "Abstract flow for temporal semantic segmentation on the permutohedral lattice",
+                "authors": [
+                    {
+                        "first": "P",
+                        "middle": [],
+                        "last": "Schutt",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "R",
+                        "middle": [
+                            "A"
+                        ],
+                        "last": "Rosu",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "S",
+                        "middle": [],
+                        "last": "Behnke",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2022,
+                "venue": "2022 International Conference on Robotics and Automation (ICRA)",
+                "volume": "",
+                "issue": "",
+                "pages": "5139--5145",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "P. Schutt, R. A. Rosu, and S. Behnke, \"Abstract flow for temporal semantic segmentation on the permutohedral lattice,\" in 2022 Interna- tional Conference on Robotics and Automation (ICRA). IEEE, 2022, pp. 5139-5145.",
+                "links": null
+            },
+            "BIBREF34": {
+                "ref_id": "b34",
+                "title": "Multiscale interaction for real-time lidar data segmentation on an embedded platform",
+                "authors": [
+                    {
+                        "first": "S",
+                        "middle": [],
+                        "last": "Li",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "X",
+                        "middle": [],
+                        "last": "Chen",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "Y",
+                        "middle": [],
+                        "last": "Liu",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "D",
+                        "middle": [],
+                        "last": "Dai",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "C",
+                        "middle": [],
+                        "last": "Stachniss",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "J",
+                        "middle": [],
+                        "last": "Gall",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2021,
+                "venue": "IEEE Robotics Autom. Lett",
+                "volume": "",
+                "issue": "",
+                "pages": "",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "S. Li, X. Chen, Y. Liu, D. Dai, C. Stachniss, and J. Gall, \"Multi- scale interaction for real-time lidar data segmentation on an embedded platform,\" IEEE Robotics Autom. Lett., 2021.",
+                "links": null
+            },
+            "BIBREF35": {
+                "ref_id": "b35",
+                "title": "Automatic differentiation in pytorch",
+                "authors": [
+                    {
+                        "first": "A",
+                        "middle": [],
+                        "last": "Paszke",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "S",
+                        "middle": [],
+                        "last": "Gross",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "S",
+                        "middle": [],
+                        "last": "Chintala",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "G",
+                        "middle": [],
+                        "last": "Chanan",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "E",
+                        "middle": [],
+                        "last": "Yang",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "Z",
+                        "middle": [],
+                        "last": "Devito",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "Z",
+                        "middle": [],
+                        "last": "Lin",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "A",
+                        "middle": [],
+                        "last": "Desmaison",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "L",
+                        "middle": [],
+                        "last": "Antiga",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "A",
+                        "middle": [],
+                        "last": "Lerer",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2017,
+                "venue": "",
+                "volume": "",
+                "issue": "",
+                "pages": "",
+                "other_ids": {},
+                "num": null,
+                "urls": [],
+                "raw_text": "A. Paszke, S. Gross, S. Chintala, G. Chanan, E. Yang, Z. DeVito, Z. Lin, A. Desmaison, L. Antiga, and A. Lerer, \"Automatic differen- tiation in pytorch,\" 2017.",
+                "links": null
+            },
+            "BIBREF36": {
+                "ref_id": "b36",
+                "title": "Decoupled weight decay regularization",
+                "authors": [
+                    {
+                        "first": "I",
+                        "middle": [],
+                        "last": "Loshchilov",
+                        "suffix": ""
+                    },
+                    {
+                        "first": "F",
+                        "middle": [],
+                        "last": "Hutter",
+                        "suffix": ""
+                    }
+                ],
+                "year": 2017,
+                "venue": "",
+                "volume": "",
+                "issue": "",
+                "pages": "",
+                "other_ids": {
+                    "arXiv": [
+                        "arXiv:1711.05101"
+                    ]
+                },
+                "num": null,
+                "urls": [],
+                "raw_text": "I. Loshchilov and F. Hutter, \"Decoupled weight decay regularization,\" arXiv preprint arXiv:1711.05101, 2017.",
+                "links": null
+            }
+        },
+        "ref_entries": {
+            "FIGREF0": {
+                "uris": null,
+                "num": null,
+                "fig_num": "23",
+                "type_str": "figure",
+                "text": "Fig.1.Accuracy(mIoU) versus inference time. Our presented LENet obtains the promising results on both single scan and multiple scans semantic segmentation in SemanticKITTI test dataset[1]."
+            },
+            "FIGREF1": {
+                "uris": null,
+                "num": null,
+                "fig_num": "23",
+                "type_str": "figure",
+                "text": "Fig. 2. Illustration of our proposed LENet framework. The backbone network is consisted of MSCA and has the pyramid structure similar to ResNet34.The ICA module upsamples the low-dimensional feature maps to original size and aggregate it with the output of the previous IAC module. Then, the last classification head receives the feature maps from the last three ICA module and outputs the label of each point. Finally, we use K-nearest Neighbors (KNN)[6] to achieve post-processing."
+            },
+            "FIGREF2": {
+                "uris": null,
+                "num": null,
+                "fig_num": "4",
+                "type_str": "figure",
+                "text": "Fig. 4. Qualitative analysis on the SemanticKITTI validation set (sequence 08). Where (a) and b are the predictions of FIDNet and our method respectively, c is the semantic segmentation ground truth, d and e are segmentation error maps of FIDNet and our methods, where red indicates wrong prediction.TABLE III EVALUATION RESULTS ON THE SEMANTICPOSS TEST SPLIT."
+            }
+        }
+    }
+}
