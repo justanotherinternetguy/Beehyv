@@ -164,7 +164,7 @@ class SwarmOrchestrator:
         for claim in blackboard.claims:
             citation = claim.evidence[0].citation if claim.evidence else claim.paper_id
             citations.append(citation)
-            claim_lines.append(f"- {claim.paper_id}: {claim.text} (confidence {claim.confidence})")
+            claim_lines.append(f"- {claim.paper_id}: {claim.text}")
 
         critique_lines = [
             f"- {critique.agent_id} on {critique.target_claim_id}: {critique.text}"

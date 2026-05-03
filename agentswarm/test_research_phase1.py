@@ -54,7 +54,7 @@ def _make_claim(claim_id: str, paper_id: str, text: str):
     )
     return Claim(
         claim_id=claim_id, agent_id=f"expert:{paper_id}",
-        paper_id=paper_id, text=text, evidence=[ev], confidence=0.5,
+        paper_id=paper_id, text=text, evidence=[ev],
     )
 
 
@@ -107,6 +107,43 @@ def test_b1_synthesis_does_not_emit_old_boilerplate() -> None:
     )
     assert "stronger keyword overlap in the paper text" not in source, (
         "old hardcoded consensus boilerplate still present"
+    )
+
+
+# ── B4: confidence field is gone from Claim ──────────────────────────────────
+
+
+def test_b4_claim_has_no_confidence_field() -> None:
+    """The ``confidence`` field on Claim is removed in Phase 1."""
+    import dataclasses
+    from agentswarm.blackboard import Claim
+    fields = {f.name for f in dataclasses.fields(Claim)}
+    assert "confidence" not in fields, (
+        f"Claim still exposes confidence field: {sorted(fields)!r}"
+    )
+
+
+def test_b4_confidence_helper_removed_from_expert_module() -> None:
+    """The theatrical ``_confidence_from_evidence`` helper is deleted."""
+    import agentswarm.expert as expert_mod
+    assert not hasattr(expert_mod, "_confidence_from_evidence"), (
+        "_confidence_from_evidence should no longer be importable"
+    )
+
+
+def test_b4_expert_answer_does_not_set_confidence_kwarg() -> None:
+    """Source-level guard: PaperExpertAgent.answer must not pass confidence=."""
+    source = (REPO_ROOT / "agentswarm" / "expert.py").read_text(encoding="utf-8")
+    assert "confidence=" not in source, (
+        "expert.py still constructs Claim(confidence=...)"
+    )
+
+
+def test_b4_orchestrator_synthesis_does_not_print_confidence() -> None:
+    """Source-level guard: orchestrator must not stringify claim.confidence."""
+    source = (REPO_ROOT / "agentswarm" / "orchestrator.py").read_text(encoding="utf-8")
+    assert "claim.confidence" not in source, (
+        "orchestrator.py still references claim.confidence"
     )
 
 

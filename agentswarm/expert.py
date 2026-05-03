@@ -49,14 +49,12 @@ class PaperExpertAgent:
             paper_id=self.paper.paper_id,
         )
         claim_text = self._compose_answer(question, evidence)
-        confidence = _confidence_from_evidence(evidence)
         return Claim(
             claim_id=f"{self.paper.paper_id}:claim:{next(self._claim_counter)}",
             agent_id=self.agent_id,
             paper_id=self.paper.paper_id,
             text=claim_text,
             evidence=evidence,
-            confidence=confidence,
         )
 
     def critique(self, question: str, target: Claim) -> Critique:
@@ -334,13 +332,6 @@ class PaperExpertAgent:
             "architectures, optimizers, regularization, augmentation, scheduling, and anything else relevant. "
             "Never refuse to engage: if paper evidence is thin, lean on general expertise and say so briefly."
         )
-
-
-def _confidence_from_evidence(evidence: list) -> float:
-    if not evidence:
-        return 0.0
-    top_score = evidence[0].score
-    return round(min(0.95, 0.35 + top_score / 20), 2)
 
 
 def _shorten(text: str, limit: int = 260) -> str:
