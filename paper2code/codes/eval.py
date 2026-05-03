@@ -178,11 +178,12 @@ def main(args):
         "generated_n": generated_n,
         "request_json": request_json,
         "completion_json": completion_json,
+        # eval_result schema: {score: float, valid_n: int, score_lst: list[int], rationale_lst: list[str]}
         "eval_result": {
             "score": avg_score,
             "valid_n": len(all_scores),
-            "scroe_lst": all_scores,
-            "rationale_lst": rationales,    
+            "score_lst": all_scores,
+            "rationale_lst": rationales,
         },
     }
     

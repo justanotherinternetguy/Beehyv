@@ -1,4 +1,14 @@
 #!/usr/bin/env bash
+# Phase-1 (audit §7 row 16): SSH-key auth ONLY. The previous ASUS_GX10_SSH_PASS
+# env-var + sshpass path was removed because:
+#   - storing a password in a shell env var is a credential-leak surface;
+#   - sshpass is not installed by default on macOS or most Linux distros;
+#   - the script already accepts ssh_config, so per-host keys / agents are the
+#     idiomatic way to authenticate.
+#
+# To set this up once:
+#   ssh-copy-id -p "${ASUS_GX10_PORT:-22}" "${ASUS_GX10_HOST:-asus@100.123.34.54}"
+# After that, ssh-agent or ~/.ssh/config picks up the key automatically.
 set -euo pipefail
 
 usage() {
@@ -19,8 +29,10 @@ Options:
   --help               Show this help.
 
 Authentication:
-  Prefer SSH keys. If password auth is required, install sshpass locally and set
-  ASUS_GX10_SSH_PASS in your shell. Do not commit passwords into this repo.
+  SSH key authentication only. Run `ssh-copy-id -p $ASUS_GX10_PORT $ASUS_GX10_HOST`
+  once to install your key on the remote host. The legacy ASUS_GX10_SSH_PASS
+  env-var + sshpass path was removed in Phase 1 (audit §7 row 16) — set up keys
+  instead of resurrecting it.
 EOF
 }
 
@@ -93,13 +105,16 @@ for ((i = 0; i < ${#training_args[@]}; i++)); do
   esac
 done
 
-if [[ -n "${ASUS_GX10_SSH_PASS:-}" ]] && ! command -v sshpass >/dev/null 2>&1; then
+if [[ -n "${ASUS_GX10_SSH_PASS:-}" ]]; then
   cat >&2 <<'EOF'
-ASUS_GX10_SSH_PASS is set, but sshpass is not installed.
-Install sshpass, or set up SSH key authentication with:
-  ssh-copy-id asus@100.123.34.54
+ASUS_GX10_SSH_PASS is set, but Phase 1 (audit §7 row 16) removed the
+password-auth path. Use SSH keys instead:
+
+  ssh-copy-id -p "${ASUS_GX10_PORT:-22}" "${ASUS_GX10_HOST:-asus@100.123.34.54}"
+
+Unset ASUS_GX10_SSH_PASS once your key is installed.
 EOF
-  exit 127
+  exit 64
 fi
 
 control_path="${TMPDIR:-/tmp}/beehyv-asus-%r@%h:%p"
@@ -115,11 +130,8 @@ rsync_ssh=(ssh "${ssh_opts[@]}")
 
 ssh_cmd=(ssh "${ssh_opts[@]}" "$host")
 rsync_cmd=(rsync -az --delete)
-if [[ -n "${ASUS_GX10_SSH_PASS:-}" ]]; then
-  export SSHPASS="$ASUS_GX10_SSH_PASS"
-  ssh_cmd=(sshpass -e ssh "${ssh_opts[@]}" "$host")
-  rsync_cmd=(sshpass -e rsync -az --delete)
-fi
+# (Phase 1 audit §7 row 16) The sshpass / ASUS_GX10_SSH_PASS branch was
+# removed. SSH-key authentication is the only supported path.
 
 remote_dir_q="$(printf '%q' "$remote_dir")"
 metrics_cleanup=":"

@@ -28,14 +28,19 @@ class Evidence:
 
 @dataclass(frozen=True)
 class Claim:
-    """An evidence-backed position from a paper expert."""
+    """An evidence-backed position from a paper expert.
+
+    The ``confidence`` field was removed in Phase 1 (audit B4): the previous
+    formula was an unbounded BM25 score squashed into a 0..1 range and was
+    never used to gate any decision. Re-introduce only when there is a
+    calibrated probability to put in it.
+    """
 
     claim_id: str
     agent_id: str
     paper_id: str
     text: str
     evidence: list[Evidence]
-    confidence: float
 
 
 @dataclass(frozen=True)

@@ -620,6 +620,7 @@ class ResearchSwarmOrchestrator:
         coding_llm: PaperExpertLLM,
         problem_statement: str,
         debugging_llm: PaperExpertLLM | None = None,
+        judge_llm: PaperExpertLLM | None = None,
         metric_name: str = "test_accuracy",
         max_iterations: int = 2,
         max_agents: int = 3,
@@ -627,6 +628,7 @@ class ResearchSwarmOrchestrator:
         max_debug_attempts: int = 2,
         goal: float | None = None,
         min_delta: float = 0.001,
+        patience: int = 3,
         revert_on_regression: bool = True,
         session_dir: Path | None = None,
         logger=None,
@@ -639,6 +641,10 @@ class ResearchSwarmOrchestrator:
         self.metrics_path = metrics_path
         self.editable_files = [_normalize_relpath(path) for path in editable_files]
         self.planner_llm = planner_llm
+        # Reward-hacking guard: judge defaults to planner only when no separate
+        # judge LLM is supplied. Production callers must pass a distinct
+        # ``judge_llm`` (Pan et al. 2024, audit §7 row 2).
+        self.judge_llm = judge_llm or planner_llm
         self.metric_name = metric_name
         self.max_iterations = max_iterations
         self.max_agents = max_agents
@@ -646,6 +652,9 @@ class ResearchSwarmOrchestrator:
         self.max_debug_attempts = max_debug_attempts
         self.goal = goal
         self.min_delta = min_delta
+        if patience < 1:
+            raise ValueError("patience must be >= 1")
+        self.patience = patience
         self.revert_on_regression = revert_on_regression
         self.problem_statement = problem_statement
         self.logger = logger
@@ -708,6 +717,9 @@ class ResearchSwarmOrchestrator:
         current_result = baseline
         iterations: list[ResearchIteration] = []
         feedback_history: list[JudgeFeedback] = []
+        # Plateau circuit breaker (audit §7 row 3): count consecutive iterations
+        # that fail to improve the held-out metric by at least min_delta.
+        iters_without_improvement = 0
 
         for iteration in range(1, self.max_iterations + 1):
             if self._goal_reached(best_result):
@@ -871,6 +883,28 @@ class ResearchSwarmOrchestrator:
                 current_result = result
                 if self._is_better(result, best_result):
                     best_result = result
+
+            if self._improved_against_best(result, best_result):
+                iters_without_improvement = 0
+            else:
+                iters_without_improvement += 1
+            if iters_without_improvement >= self.patience:
+                self.event_log.event(
+                    "stopped_reason",
+                    {
+                        "reason": "plateau",
+                        "iteration": iteration,
+                        "patience": self.patience,
+                        "iters_without_improvement": iters_without_improvement,
+                        "metric_name": self.metric_name,
+                    },
+                )
+                if log:
+                    log.phase_done(
+                        f"Iteration {iteration} stopped: plateau "
+                        f"({iters_without_improvement} iters without improvement)"
+                    )
+                break
 
             if log:
                 log.phase_done(
@@ -1119,6 +1153,15 @@ class ResearchSwarmOrchestrator:
         coding: CodingResult,
         label: str = "judge",
     ) -> JudgeFeedback:
+        """Score one iteration.
+
+        Contract (audit §7 row 4):
+        * The keep / revise / revert decision is set ONLY by ``_numeric_decision``
+          before the LLM is consulted. The LLM cannot override it.
+        * The LLM call exists solely to produce the next-step prescription
+          fed to the following round of paper agents. Anything the model
+          says about the decision is discarded.
+        """
         previous_value = previous.metric_value(self.metric_name)
         new_value = current.metric_value(self.metric_name)
         delta = (
@@ -1126,6 +1169,8 @@ class ResearchSwarmOrchestrator:
             if previous_value is not None and new_value is not None
             else None
         )
+        # Source of truth for keep/revise/revert. Computed BEFORE the LLM is
+        # called and never overwritten by LLM output.
         decision = _numeric_decision(
             previous=previous,
             current=current,
@@ -1136,12 +1181,16 @@ class ResearchSwarmOrchestrator:
             {
                 "role": "system",
                 "content": (
-                    "You are the judge agent for an autonomous research loop. "
+                    "You are the next-step prescription agent for an autonomous research loop. "
+                    "You are NOT the judge — the keep/revise/revert decision has already been "
+                    "computed deterministically from the metric delta and is supplied to you "
+                    "as input. Your sole job is to write a concrete, actionable prescription "
+                    "for the next round of paper agents. "
+                    "DO NOT output your own keep/revise/revert verdict. "
+                    "DO NOT contradict, override, or restate the numeric decision. "
                     "Your ultimate goal is to improve the accuracy of the research model in focus. "
-                    "There is ALWAYS more headroom — your job is to give the next round a clear, "
-                    "actionable direction regardless of whether this iteration improved or regressed. "
-                    "A revert is not a failure — it is information. Extract the lesson and prescribe "
-                    "the next concrete change with confidence."
+                    "There is ALWAYS more headroom — extract the lesson from this iteration "
+                    "(success or regression) and prescribe the next concrete change with confidence."
                 ),
             },
             {
@@ -1152,22 +1201,25 @@ class ResearchSwarmOrchestrator:
                         f"Metric: {self.metric_name}",
                         f"Previous metrics: {_format_metrics(previous.metrics)}",
                         f"New metrics: {_format_metrics(current.metrics)}",
-                        f"Numeric decision: {decision}",
+                        f"Numeric decision (already final, do not echo): {decision}",
                         f"Changed files: {', '.join(coding.changed_files)}",
                         "Plan:",
                         plan.raw,
                         (
-                            "Write concise, actionable feedback for the next paper-agent round. "
-                            "Diagnose what worked or why it regressed, then prescribe 2-3 specific "
-                            "changes to try next. Be direct — name exact hyperparameters, layer types, "
-                            "or training tricks. Do not hedge or say 'it depends'."
+                            "Write concise, actionable next-step prescription for the next "
+                            "paper-agent round. Diagnose what worked or why it regressed, then "
+                            "prescribe 2-3 specific changes to try next. Be direct — name exact "
+                            "hyperparameters, layer types, or training tricks. Do not hedge or "
+                            "say 'it depends'. Do not output any line that begins with "
+                            "'DECISION:', 'VERDICT:', or 'JUDGE:' — those are reserved for the "
+                            "numeric decision pipeline."
                         ),
                     ]
                 ),
             },
         ]
         try:
-            raw = _complete(self.planner_llm, messages, self.logger, "judge-agent", "judging")
+            raw = _complete(self.judge_llm, messages, self.logger, "judge-agent", "judging")
         except RuntimeError as exc:
             raw = f"Judge LLM unavailable: {exc}. Numeric decision: {decision}."
         feedback = JudgeFeedback(
@@ -1327,6 +1379,24 @@ class ResearchSwarmOrchestrator:
         if incumbent_value is None:
             return True
         return candidate_value > incumbent_value
+
+    def _improved_against_best(
+        self,
+        candidate: ExperimentResult,
+        incumbent: ExperimentResult,
+    ) -> bool:
+        """Return True iff candidate beats incumbent by at least ``min_delta``.
+
+        Plateau-detection signal — distinct from ``_is_better`` (strict greater)
+        so trivial noise above 0 still counts as plateau.
+        """
+        candidate_value = candidate.metric_value(self.metric_name)
+        incumbent_value = incumbent.metric_value(self.metric_name)
+        if candidate_value is None:
+            return False
+        if incumbent_value is None:
+            return True
+        return (candidate_value - incumbent_value) >= self.min_delta
 
     def _goal_reached(self, result: ExperimentResult) -> bool:
         if self.goal is None:

@@ -10,6 +10,9 @@ Subcommands:
   codegen     Generate code repository from a cleaned JSON paper
 
 Run `python run.py <subcommand> --help` for options.
+
+Default OPENROUTER_MODEL ``nvidia/nemotron-3-super-120b-a12b:free`` was
+verified present in the OpenRouter catalog on 2026-05-03 (audit B9).
 """
 
 from __future__ import annotations
@@ -119,12 +122,16 @@ def cmd_research(args: argparse.Namespace) -> int:
         str(args.top_k),
         "--min-delta",
         str(args.min_delta),
+        "--patience",
+        str(args.patience),
         "--model",
         args.model,
         "--coding-model",
         args.coding_model,
         "--debugging-model",
         args.debugging_model,
+        "--judge-model",
+        args.judge_model,
         "--planner-max-tokens",
         str(args.planner_max_tokens),
         "--coding-max-tokens",
@@ -293,12 +300,32 @@ def main() -> int:
     p_research.add_argument("--top-k", type=int, default=4)
     p_research.add_argument("--goal", type=float, default=None)
     p_research.add_argument("--min-delta", type=float, default=0.001)
+    p_research.add_argument(
+        "--patience", type=int, default=3,
+        help="Stop after this many consecutive iterations without held-out improvement.",
+    )
     p_research.add_argument("--keep-regressions", action="store_true")
     p_research.add_argument("--dry-run", action="store_true")
     p_research.add_argument("--session-dir", default=None)
-    p_research.add_argument("--model", default=DEFAULT_OPENROUTER_MODEL)
-    p_research.add_argument("--coding-model", default=DEFAULT_OPENROUTER_MODEL)
-    p_research.add_argument("--debugging-model", default=DEFAULT_OPENROUTER_MODEL)
+    # Per-role model defaults: env OPENROUTER_PLANNER_MODEL / _CODER_MODEL /
+    # _JUDGE_MODEL fall back to OPENROUTER_MODEL. Judge MUST differ from
+    # planner (audit §7 row 2 — same-model judging causes reward hacking).
+    p_research.add_argument(
+        "--model",
+        default=os.environ.get("OPENROUTER_PLANNER_MODEL") or DEFAULT_OPENROUTER_MODEL,
+    )
+    p_research.add_argument(
+        "--coding-model",
+        default=os.environ.get("OPENROUTER_CODER_MODEL") or DEFAULT_OPENROUTER_MODEL,
+    )
+    p_research.add_argument(
+        "--debugging-model",
+        default=os.environ.get("OPENROUTER_CODER_MODEL") or DEFAULT_OPENROUTER_MODEL,
+    )
+    p_research.add_argument(
+        "--judge-model",
+        default=os.environ.get("OPENROUTER_JUDGE_MODEL") or DEFAULT_OPENROUTER_MODEL,
+    )
     p_research.add_argument("--planner-max-tokens", type=int, default=1600)
     p_research.add_argument("--coding-max-tokens", type=int, default=6000)
     p_research.add_argument("--debugging-max-tokens", type=int, default=6000)

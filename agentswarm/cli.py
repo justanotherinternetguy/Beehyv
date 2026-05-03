@@ -10,7 +10,13 @@ from pathlib import Path
 from .brainstorm import BrainstormOrchestrator
 from .code_retriever import CodeRetriever
 from .expert import PaperExpertAgent
-from .llm import OPENROUTER_MODEL, OpenRouterLLM
+from .llm import (
+    OPENROUTER_MODEL,
+    OpenRouterLLM,
+    resolve_coder_model,
+    resolve_judge_model,
+    resolve_planner_model,
+)
 from .log import SwarmLogger
 from .orchestrator import SwarmOrchestrator
 from .paper_loader import load_papers
@@ -174,6 +180,11 @@ def cmd_research(args: argparse.Namespace) -> int:
         max_tokens=args.debugging_max_tokens,
         temperature=args.coding_temperature,
     )
+    judge_llm = OpenRouterLLM(
+        model=args.judge_model,
+        max_tokens=args.planner_max_tokens,
+        temperature=args.temperature,
+    )
     agents = _build_agents(
         papers,
         retriever,
@@ -200,6 +211,7 @@ def cmd_research(args: argparse.Namespace) -> int:
         planner_llm=planner_llm,
         coding_llm=coding_llm,
         debugging_llm=debugging_llm,
+        judge_llm=judge_llm,
         problem_statement=args.problem,
         metric_name=args.metric,
         max_iterations=args.iterations,
@@ -208,6 +220,7 @@ def cmd_research(args: argparse.Namespace) -> int:
         max_debug_attempts=args.max_debug_attempts,
         goal=args.goal,
         min_delta=args.min_delta,
+        patience=args.patience,
         revert_on_regression=not args.keep_regressions,
         session_dir=Path(args.session_dir).expanduser().resolve() if args.session_dir else None,
         logger=logger,
@@ -306,18 +319,28 @@ def main() -> int:
                             help="Stop early when the metric reaches this value.")
     p_research.add_argument("--min-delta", type=float, default=0.001,
                             help="Minimum metric improvement counted as a keep decision.")
+    p_research.add_argument(
+        "--patience", type=int, default=3,
+        help="Stop after this many consecutive iterations without held-out improvement (audit §7 row 3).",
+    )
     p_research.add_argument("--keep-regressions", action="store_true",
                             help="Do not restore editable files when the judge sees a regression.")
     p_research.add_argument("--dry-run", action="store_true",
                             help="Run baseline, ideation, and planning without editing files.")
     p_research.add_argument("--session-dir", default=None,
                             help="Optional explicit artifact directory.")
-    p_research.add_argument("--model", default=OPENROUTER_MODEL,
-                            help="Planner/judge/paper-agent OpenRouter model.")
-    p_research.add_argument("--coding-model", default=OPENROUTER_MODEL,
-                            help="Coding-agent OpenRouter model.")
-    p_research.add_argument("--debugging-model", default=OPENROUTER_MODEL,
-                            help="Debugging-agent OpenRouter model.")
+    # Per-role model defaults resolve via .env: OPENROUTER_PLANNER_MODEL /
+    # OPENROUTER_CODER_MODEL / OPENROUTER_JUDGE_MODEL, falling back to
+    # OPENROUTER_MODEL. The judge MUST differ from the planner — same-model
+    # judging causes spontaneous reward hacking (audit §7 row 2).
+    p_research.add_argument("--model", default=resolve_planner_model(),
+                            help="Planner / paper-agent model (env: OPENROUTER_PLANNER_MODEL).")
+    p_research.add_argument("--coding-model", default=resolve_coder_model(),
+                            help="Coding-agent model (env: OPENROUTER_CODER_MODEL).")
+    p_research.add_argument("--debugging-model", default=resolve_coder_model(),
+                            help="Debugging-agent model (env: OPENROUTER_CODER_MODEL).")
+    p_research.add_argument("--judge-model", default=resolve_judge_model(),
+                            help="Judge model — MUST differ from planner (env: OPENROUTER_JUDGE_MODEL).")
     p_research.add_argument("--planner-max-tokens", type=int, default=1600)
     p_research.add_argument("--coding-max-tokens", type=int, default=6000)
     p_research.add_argument("--debugging-max-tokens", type=int, default=6000)

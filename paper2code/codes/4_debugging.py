@@ -112,6 +112,12 @@ def parse_args() -> argparse.Namespace:
         help="OpenAI chat model used for debugging.",
     )
     parser.add_argument(
+        "--output_repo_dir",
+        type=str,
+        required=True,
+        help="Directory containing the generated code repository to debug (must exist).",
+    )
+    parser.add_argument(
         "--save_num",
         type=int,
         default=1,
