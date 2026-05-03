@@ -62,8 +62,10 @@ class PaperExpertAgent:
     def critique(self, question: str, target: Claim) -> Critique:
         query = f"{question} {target.text}"
         evidence = self.retriever.search_evidence(query, top_k=3, paper_id=self.paper.paper_id)
-        stance = "context"
         text = self._compose_critique(target, evidence)
+        # B3 (audit §3): stance was hardcoded to "context"; classify it now so
+        # downstream synthesis can branch on support / qualify / rebut.
+        stance = self._classify_stance(target, text)
         return Critique(
             critique_id=f"{self.paper.paper_id}:critique:{next(self._critique_counter)}",
             agent_id=self.agent_id,
@@ -72,6 +74,46 @@ class PaperExpertAgent:
             text=text,
             evidence=evidence,
         )
+
+    # B3 (audit §3) — stance classifier. Cheap LLM micro-call: one token out.
+    _VALID_STANCES = ("support", "qualify", "rebut", "cannot_assess")
+
+    def _classify_stance(self, target: Claim, critique_text: str) -> str:
+        """Classify a critique relative to its target claim.
+
+        Returns one of ``support``, ``qualify``, ``rebut``, ``cannot_assess``.
+        Falls back to ``cannot_assess`` on any LLM failure or unparseable
+        response, so a flaky classifier can never crash a discussion run.
+        """
+        messages = [
+            {
+                "role": "system",
+                "content": (
+                    "Classify how a critique relates to the original claim. "
+                    "Output EXACTLY one token, no other text. Tokens: "
+                    "support, qualify, rebut, cannot_assess."
+                ),
+            },
+            {
+                "role": "user",
+                "content": (
+                    f"Original claim:\n{_shorten(target.text, 600)}\n\n"
+                    f"Critique by '{self.paper.title}':\n"
+                    f"{_shorten(critique_text, 1200)}\n\n"
+                    "Token:"
+                ),
+            },
+        ]
+        try:
+            raw = self.llm.complete(messages)
+        except Exception:  # noqa: BLE001 — classifier must never escalate
+            return "cannot_assess"
+        if not raw:
+            return "cannot_assess"
+        first = raw.strip().split()[0].rstrip(".,;:!?").lower() if raw.strip() else ""
+        if first in self._VALID_STANCES:
+            return first
+        return "cannot_assess"
 
     # ── Brainstorm methods ────────────────────────────────────────────────────
 

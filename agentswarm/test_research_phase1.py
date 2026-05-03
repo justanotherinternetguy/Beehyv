@@ -110,6 +110,104 @@ def test_b1_synthesis_does_not_emit_old_boilerplate() -> None:
     )
 
 
+# ── B3: stance classifier in PaperExpertAgent.critique ───────────────────────
+
+
+class _StanceLLM:
+    """Minimal LLM stub: returns a queued response per .complete() call."""
+
+    def __init__(self, responses):
+        self.responses = list(responses)
+        self.calls = []
+        self.model = "fake/stance-llm"
+
+    def complete(self, messages):
+        self.calls.append(messages)
+        if not self.responses:
+            return ""
+        return self.responses.pop(0)
+
+
+def _make_expert_with_llm(llm):
+    """Instantiate PaperExpertAgent against a fake paper and the given LLM."""
+    from agentswarm.expert import PaperExpertAgent
+    from agentswarm.paper_loader import Paper, PaperChunk
+    from agentswarm.retriever import KeywordRetriever
+
+    chunk = PaperChunk(
+        chunk_id="c0", paper_id="P1", paper_title="P1",
+        section="abstract", sec_num=None,
+        text=(
+            "Attention scales quadratically with sequence length; sparse "
+            "attention reduces this. The paper analyses claim text directly."
+        ),
+        source="abstract",
+    )
+    paper = Paper(
+        paper_id="P1", title="Test Paper",
+        abstract="A short abstract for the test fixture.",
+        path="(in-memory)", chunks=[chunk],
+    )
+    retriever = KeywordRetriever([paper])
+    return PaperExpertAgent(paper, retriever, llm=llm)
+
+
+def test_b3_stance_returns_valid_classification() -> None:
+    """When the classifier returns a valid token, Critique.stance reflects it."""
+    # Two complete() calls happen: (1) compose_critique, (2) classify_stance.
+    llm = _StanceLLM(["My paper supports this claim because ...", "support"])
+    agent = _make_expert_with_llm(llm)
+    target = _make_claim("c1", "P0", "Attention scales with sequence length squared.")
+    critique = agent.critique("how does attention scale?", target)
+    assert critique.stance == "support", (
+        f"expected 'support', got {critique.stance!r}; calls={len(llm.calls)}"
+    )
+
+
+def test_b3_stance_handles_messy_llm_output() -> None:
+    """Trailing punctuation / extra prose is tolerated; only the first token wins."""
+    llm = _StanceLLM(["composed critique text", "Rebut. (this directly contradicts the claim)"])
+    agent = _make_expert_with_llm(llm)
+    target = _make_claim("c1", "P0", "Sparse attention always beats dense.")
+    critique = agent.critique("q", target)
+    assert critique.stance == "rebut"
+
+
+def test_b3_stance_falls_back_on_invalid_response() -> None:
+    """Unrecognized tokens map to ``cannot_assess`` rather than leaking through."""
+    llm = _StanceLLM(["composed critique text", "definitely-maybe-supportive-ish"])
+    agent = _make_expert_with_llm(llm)
+    target = _make_claim("c1", "P0", "Some claim.")
+    critique = agent.critique("q", target)
+    assert critique.stance == "cannot_assess"
+
+
+def test_b3_stance_falls_back_on_llm_error() -> None:
+    """LLM exceptions during classification never escalate."""
+    class BoomLLM:
+        model = "fake/boom"
+        def __init__(self):
+            self.calls = 0
+        def complete(self, messages):  # noqa: ARG002
+            self.calls += 1
+            if self.calls == 1:
+                return "composed critique text"
+            raise RuntimeError("503 from upstream")
+
+    agent = _make_expert_with_llm(BoomLLM())
+    target = _make_claim("c1", "P0", "Some claim.")
+    critique = agent.critique("q", target)
+    assert critique.stance == "cannot_assess"
+
+
+def test_b3_stance_field_no_longer_hardcoded_context() -> None:
+    """The pre-fix hardcoded ``stance = "context"`` line must be gone."""
+    source = (REPO_ROOT / "agentswarm" / "expert.py").read_text(encoding="utf-8")
+    assert 'stance = "context"' not in source, (
+        "hardcoded stance='context' still present in expert.py"
+    )
+
+
 # ── §7 row 4: judge LLM cannot override numeric decision ─────────────────────
 
 
