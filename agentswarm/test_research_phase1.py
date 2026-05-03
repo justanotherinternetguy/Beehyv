@@ -110,6 +110,56 @@ def test_b1_synthesis_does_not_emit_old_boilerplate() -> None:
     )
 
 
+# ── §7 row 16: SSH password env-var + sshpass path removed ───────────────────
+
+
+def test_ssh_password_path_removed_from_remote_runner() -> None:
+    """tools/run_remote_problem.sh no longer authenticates via password.
+
+    The script may still reference ASUS_GX10_SSH_PASS solely to print a
+    helpful error if a user has it set; what is forbidden is any code path
+    that actually USES it (export SSHPASS=, sshpass invocation).
+    """
+    text = (REPO_ROOT / "tools" / "run_remote_problem.sh").read_text(encoding="utf-8")
+    # No live sshpass invocation.
+    assert "sshpass -e" not in text, (
+        "tools/run_remote_problem.sh still invokes sshpass"
+    )
+    # No SSHPASS env export.
+    assert "export SSHPASS" not in text, (
+        "tools/run_remote_problem.sh still exports SSHPASS"
+    )
+
+
+def test_remote_runner_documents_ssh_keys() -> None:
+    """The script header documents the SSH-key setup that replaced sshpass."""
+    text = (REPO_ROOT / "tools" / "run_remote_problem.sh").read_text(encoding="utf-8")
+    assert "ssh-copy-id" in text, (
+        "tools/run_remote_problem.sh should document `ssh-copy-id` for first-time setup"
+    )
+
+
+def test_remote_runner_rejects_sshpass_env_var_with_clear_message() -> None:
+    """If a user still sets ASUS_GX10_SSH_PASS, the script exits with a hint."""
+    import shutil
+    import subprocess
+
+    bash = shutil.which("bash")
+    if bash is None:
+        # No bash available — skip in environments where shell tests cannot run.
+        return
+    script = REPO_ROOT / "tools" / "run_remote_problem.sh"
+    proc = subprocess.run(
+        [bash, str(script), "--", "true"],
+        env={"PATH": "/usr/bin:/bin", "ASUS_GX10_SSH_PASS": "secret"},
+        capture_output=True, text=True, timeout=10,
+    )
+    assert proc.returncode != 0, "script must reject ASUS_GX10_SSH_PASS"
+    assert "ssh-copy-id" in proc.stderr or "ssh-copy-id" in proc.stdout, (
+        f"script should print ssh-copy-id remediation; stderr={proc.stderr!r}"
+    )
+
+
 # ── B5: doc/code reconciliation about loop stop semantics ────────────────────
 
 
