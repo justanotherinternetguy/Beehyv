@@ -41,6 +41,75 @@ def _stub_paper2code_utils() -> None:
     sys.modules["utils"] = utils
 
 
+# ── B1: real consensus extraction in SwarmOrchestrator.synthesize ────────────
+
+
+def _make_claim(claim_id: str, paper_id: str, text: str):
+    """Build a minimal Claim for synthesize tests."""
+    from agentswarm.blackboard import Claim, Evidence
+
+    ev = Evidence(
+        paper_id=paper_id, paper_title=paper_id, chunk_id="c0",
+        section="abstract", sec_num=None, text="ev", score=1.0,
+    )
+    return Claim(
+        claim_id=claim_id, agent_id=f"expert:{paper_id}",
+        paper_id=paper_id, text=text, evidence=[ev], confidence=0.5,
+    )
+
+
+def test_b1_consensus_clusters_overlapping_claims() -> None:
+    """Two claims with shared tokens form a consensus point; the third is a singleton."""
+    from agentswarm.blackboard import Blackboard
+    from agentswarm.orchestrator import SwarmOrchestrator
+
+    bb = Blackboard(question="how do transformers handle long context?")
+    bb.add_claim(_make_claim("c1", "P1",
+        "Transformers use attention with positional encoding to handle long context."))
+    bb.add_claim(_make_claim("c2", "P2",
+        "Transformers use attention with positional encoding for long context tasks."))
+    bb.add_claim(_make_claim("c3", "P3",
+        "Quaternion algebras over number fields parametrize abelian varieties."))
+
+    orch = SwarmOrchestrator(agents=[object()])
+    syn = orch.synthesize(bb)
+
+    assert len(syn.consensus) == 1, f"expected 1 consensus point, got {syn.consensus}"
+    assert "P1" in syn.consensus[0] and "P2" in syn.consensus[0], (
+        f"consensus should name both clustered papers: {syn.consensus[0]!r}"
+    )
+    assert any("P3" in d for d in syn.disagreements), (
+        f"P3 should appear in disagreements: {syn.disagreements}"
+    )
+
+
+def test_b1_no_consensus_when_all_claims_distinct() -> None:
+    """When no two claims overlap, consensus list says so explicitly."""
+    from agentswarm.blackboard import Blackboard
+    from agentswarm.orchestrator import SwarmOrchestrator
+
+    bb = Blackboard(question="q")
+    bb.add_claim(_make_claim("c1", "P1", "Quaternion algebras parametrize abelian varieties."))
+    bb.add_claim(_make_claim("c2", "P2", "Photonic crystals exhibit topological band gaps."))
+    bb.add_claim(_make_claim("c3", "P3", "Insect pollinator decline correlates with neonicotinoids."))
+
+    orch = SwarmOrchestrator(agents=[object()])
+    syn = orch.synthesize(bb)
+    assert len(syn.consensus) == 1
+    assert "no cross-paper consensus" in syn.consensus[0].lower()
+
+
+def test_b1_synthesis_does_not_emit_old_boilerplate() -> None:
+    """The pre-fix hardcoded consensus strings must not appear anymore."""
+    source = (REPO_ROOT / "agentswarm" / "orchestrator.py").read_text(encoding="utf-8")
+    assert "constrained to claims retrieved from each expert" not in source, (
+        "old hardcoded consensus boilerplate still present"
+    )
+    assert "stronger keyword overlap in the paper text" not in source, (
+        "old hardcoded consensus boilerplate still present"
+    )
+
+
 # ── §7 row 4: judge LLM cannot override numeric decision ─────────────────────
 
 
