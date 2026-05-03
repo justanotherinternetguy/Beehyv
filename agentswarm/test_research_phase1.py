@@ -41,6 +41,91 @@ def _stub_paper2code_utils() -> None:
     sys.modules["utils"] = utils
 
 
+# ── §7 row 3: --patience plateau circuit breaker + --test-split ──────────────
+
+
+def _make_orchestrator(**overrides):
+    """Construct a ResearchSwarmOrchestrator with fake LLMs for unit tests."""
+    from agentswarm.research import ResearchSwarmOrchestrator
+
+    class FakeLLM:
+        model = "fake/llm:test"
+        def complete(self, messages):  # noqa: ARG002
+            return "fake"
+
+    defaults = dict(
+        agents=[object()],
+        problem_dir=Path("/tmp"),
+        command=["true"],
+        metrics_path="m.json",
+        editable_files=["x.py"],
+        planner_llm=FakeLLM(),
+        coding_llm=FakeLLM(),
+        problem_statement="t",
+    )
+    defaults.update(overrides)
+    return ResearchSwarmOrchestrator(**defaults)
+
+
+def test_patience_default_is_3() -> None:
+    orch = _make_orchestrator()
+    assert orch.patience == 3
+
+
+def test_patience_arg_is_stored() -> None:
+    orch = _make_orchestrator(patience=7)
+    assert orch.patience == 7
+
+
+def test_patience_must_be_positive() -> None:
+    try:
+        _make_orchestrator(patience=0)
+    except ValueError:
+        return
+    raise AssertionError("expected ValueError for patience=0")
+
+
+def test_improved_against_best_requires_min_delta() -> None:
+    """Plateau detection: improvement must clear ``min_delta``."""
+    from agentswarm.research import ExperimentResult
+
+    orch = _make_orchestrator(min_delta=0.01)
+
+    def _r(value: float) -> ExperimentResult:
+        return ExperimentResult(
+            iteration=0, label="t", command=[], returncode=0, elapsed_s=0.0,
+            metrics={"test_accuracy": value},
+            stdout_path="", stderr_path="", metrics_path=None,
+        )
+
+    # +0.005 < min_delta=0.01 → not improvement (plateau tick)
+    assert orch._improved_against_best(_r(0.505), _r(0.500)) is False
+    # +0.02 >= min_delta → improvement (plateau reset)
+    assert orch._improved_against_best(_r(0.520), _r(0.500)) is True
+    # incumbent missing, candidate present → improvement
+    bad = ExperimentResult(
+        iteration=0, label="t", command=[], returncode=0, elapsed_s=0.0,
+        metrics={}, stdout_path="", stderr_path="", metrics_path=None,
+    )
+    assert orch._improved_against_best(_r(0.5), bad) is True
+    # candidate missing → no improvement
+    assert orch._improved_against_best(bad, _r(0.5)) is False
+
+
+def test_test_split_flag_in_mnist_argparser() -> None:
+    """research_problems/mnist_fcnn/train.py registers --test-split."""
+    source = (REPO_ROOT / "research_problems" / "mnist_fcnn" / "train.py").read_text(encoding="utf-8")
+    assert '"--test-split"' in source, "MNIST train.py missing --test-split flag"
+    assert "_three_way_split" in source, "MNIST train.py missing 80/10/10 split helper"
+
+
+def test_test_split_flag_in_imagenet_argparser() -> None:
+    """research_problems/imagenet_cnn/train.py registers --test-split."""
+    source = (REPO_ROOT / "research_problems" / "imagenet_cnn" / "train.py").read_text(encoding="utf-8")
+    assert '"--test-split"' in source, "ImageNet train.py missing --test-split flag"
+    assert "_three_way_split" in source, "ImageNet train.py missing 80/10/10 split helper"
+
+
 # ── §7 row 2: distinct planner / coder / judge model resolution ──────────────
 
 

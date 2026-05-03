@@ -12,7 +12,7 @@ from typing import Any
 
 import torch
 from torch import nn
-from torch.utils.data import DataLoader, Subset
+from torch.utils.data import ConcatDataset, DataLoader, Subset
 from torchvision import datasets, transforms
 
 from model import TRAINING_CONFIG, build_model
@@ -47,6 +47,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--device", default="auto")
     parser.add_argument("--metrics-out", default="logs/latest_metrics.json")
     parser.add_argument("--log-file", default="logs/train_events.jsonl")
+    parser.add_argument(
+        "--test-split", action="store_true",
+        help=(
+            "Deterministic 80/10/10 train/dev/test split (seed=0) of all "
+            "available data. When set, emits both dev_accuracy and "
+            "test_accuracy; the latter is computed only on the held-out 10% "
+            "the swarm has not trained on. Augmentation is disabled to keep "
+            "the partition deterministic across splits (audit §7 row 3)."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -64,7 +74,7 @@ def main() -> int:
         started = time.monotonic()
         _log(log, "run_start", {"args": vars(args), "training_config": config, "device": str(device)})
 
-        train_loader, test_loader = _load_data(args, config, seed)
+        train_loader, dev_loader, test_loader = _load_data(args, config, seed)
         model = build_model().to(device)
         optimizer = _make_optimizer(model, args, config)
         loss_fn = nn.CrossEntropyLoss()
@@ -79,12 +89,18 @@ def main() -> int:
                 **{f"train_{k}": v for k, v in train_metrics.items()},
                 **{f"test_{k}": v for k, v in test_metrics.items()},
             }
+            if dev_loader is not None:
+                dev_metrics = _score_model(model, dev_loader, loss_fn, device)
+                row.update({f"dev_{k}": v for k, v in dev_metrics.items()})
             history.append(row)
             _log(log, "epoch", row)
+            dev_str = (
+                f" dev_top1={row['dev_top1_accuracy']:.4f}" if dev_loader is not None else ""
+            )
             print(
                 f"epoch={epoch} train_top1={row['train_top1_accuracy']:.4f} "
                 f"test_top1={row['test_top1_accuracy']:.4f} "
-                f"test_top5={row['test_top5_accuracy']:.4f}"
+                f"test_top5={row['test_top5_accuracy']:.4f}{dev_str}"
             )
 
         final = history[-1] if history else {}
@@ -101,7 +117,14 @@ def main() -> int:
             "test_top1_accuracy": float(final.get("test_top1_accuracy", 0.0)),
             "test_top5_accuracy": float(final.get("test_top5_accuracy", 0.0)),
             "test_loss": float(final.get("test_loss", 0.0)),
+            "test_split_mode": bool(args.test_split),
         }
+        if dev_loader is not None:
+            metrics["dev_size"] = len(dev_loader.dataset)
+            metrics["dev_accuracy"] = float(final.get("dev_top1_accuracy", 0.0))
+            metrics["dev_top1_accuracy"] = float(final.get("dev_top1_accuracy", 0.0))
+            metrics["dev_top5_accuracy"] = float(final.get("dev_top5_accuracy", 0.0))
+            metrics["dev_loss"] = float(final.get("dev_loss", 0.0))
         metrics_path = Path(args.metrics_out)
         metrics_path.parent.mkdir(parents=True, exist_ok=True)
         metrics_path.write_text(json.dumps(metrics, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -111,7 +134,25 @@ def main() -> int:
     return 0
 
 
-def _load_data(args: argparse.Namespace, config: dict[str, Any], seed: int) -> tuple[DataLoader, DataLoader]:
+def _three_way_split(
+    dataset, seed: int = 0, fractions: tuple[float, float, float] = (0.8, 0.1, 0.1)
+) -> tuple[Subset, Subset, Subset]:
+    """Deterministic 80/10/10 (or other) train/dev/test split of a dataset."""
+    n = len(dataset)
+    g = torch.Generator().manual_seed(seed)
+    perm = torch.randperm(n, generator=g).tolist()
+    n_train = int(n * fractions[0])
+    n_dev = int(n * fractions[1])
+    return (
+        Subset(dataset, perm[:n_train]),
+        Subset(dataset, perm[n_train:n_train + n_dev]),
+        Subset(dataset, perm[n_train + n_dev:]),
+    )
+
+
+def _load_data(
+    args: argparse.Namespace, config: dict[str, Any], seed: int
+) -> tuple[DataLoader, DataLoader | None, DataLoader]:
     image_size = int(args.image_size if args.image_size is not None else config.get("image_size", 64))
     normalize = transforms.Normalize(mean=_TINY_MEAN, std=_TINY_STD)
 
@@ -125,6 +166,10 @@ def _load_data(args: argparse.Namespace, config: dict[str, Any], seed: int) -> t
         transforms.ToTensor(),
         normalize,
     ])
+    # In --test-split mode we re-shuffle train+val together, so per-index
+    # transforms must be identical across the partition. Use val_transform
+    # for the whole pool; loses augmentation but preserves reproducibility.
+    pool_transform = val_transform if args.test_split else train_transform
 
     train_limit = int(args.limit_train if args.limit_train is not None else config.get("limit_train", 5000))
     test_limit = int(args.limit_test if args.limit_test is not None else config.get("limit_test", 1000))
@@ -132,26 +177,42 @@ def _load_data(args: argparse.Namespace, config: dict[str, Any], seed: int) -> t
     if args.dataset == "tinyimagenet":
         root = Path(args.data_dir) / TINY_IMAGENET_DIR
         _ensure_val_reorganized(root)
-        train_data = datasets.ImageFolder(str(root / "train"), transform=train_transform)
+        train_data = datasets.ImageFolder(str(root / "train"), transform=pool_transform)
         test_data = datasets.ImageFolder(str(root / "val"), transform=val_transform)
     else:
         train_data = datasets.FakeData(
             size=train_limit, image_size=(3, image_size, image_size),
-            num_classes=200, transform=train_transform,
+            num_classes=200, transform=pool_transform,
         )
         test_data = datasets.FakeData(
             size=test_limit, image_size=(3, image_size, image_size),
             num_classes=200, transform=val_transform,
         )
 
-    train_data = _limited_subset(train_data, train_limit, seed)
-    test_data = _limited_subset(test_data, test_limit, seed + 1)
-
     batch_size = int(args.batch_size if args.batch_size is not None else config.get("batch_size", 32))
     generator = torch.Generator().manual_seed(seed)
+
+    if args.test_split:
+        full = ConcatDataset([train_data, test_data])
+        train_subset, dev_subset, test_subset = _three_way_split(full, seed=0)
+        train_subset = _limited_subset(train_subset, train_limit, seed)
+        dev_subset = _limited_subset(dev_subset, max(test_limit // 2 if test_limit > 0 else 0, 1), seed + 2)
+        test_subset = _limited_subset(test_subset, test_limit, seed + 1)
+        return (
+            DataLoader(train_subset, batch_size=batch_size, shuffle=True, generator=generator,
+                       num_workers=4, pin_memory=True),
+            DataLoader(dev_subset, batch_size=batch_size, shuffle=False,
+                       num_workers=4, pin_memory=True),
+            DataLoader(test_subset, batch_size=batch_size, shuffle=False,
+                       num_workers=4, pin_memory=True),
+        )
+
+    train_data = _limited_subset(train_data, train_limit, seed)
+    test_data = _limited_subset(test_data, test_limit, seed + 1)
     return (
         DataLoader(train_data, batch_size=batch_size, shuffle=True, generator=generator,
                    num_workers=4, pin_memory=True),
+        None,
         DataLoader(test_data, batch_size=batch_size, shuffle=False,
                    num_workers=4, pin_memory=True),
     )

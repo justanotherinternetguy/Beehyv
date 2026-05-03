@@ -628,6 +628,7 @@ class ResearchSwarmOrchestrator:
         max_debug_attempts: int = 2,
         goal: float | None = None,
         min_delta: float = 0.001,
+        patience: int = 3,
         revert_on_regression: bool = True,
         session_dir: Path | None = None,
         logger=None,
@@ -651,6 +652,9 @@ class ResearchSwarmOrchestrator:
         self.max_debug_attempts = max_debug_attempts
         self.goal = goal
         self.min_delta = min_delta
+        if patience < 1:
+            raise ValueError("patience must be >= 1")
+        self.patience = patience
         self.revert_on_regression = revert_on_regression
         self.problem_statement = problem_statement
         self.logger = logger
@@ -713,6 +717,9 @@ class ResearchSwarmOrchestrator:
         current_result = baseline
         iterations: list[ResearchIteration] = []
         feedback_history: list[JudgeFeedback] = []
+        # Plateau circuit breaker (audit §7 row 3): count consecutive iterations
+        # that fail to improve the held-out metric by at least min_delta.
+        iters_without_improvement = 0
 
         for iteration in range(1, self.max_iterations + 1):
             if self._goal_reached(best_result):
@@ -876,6 +883,28 @@ class ResearchSwarmOrchestrator:
                 current_result = result
                 if self._is_better(result, best_result):
                     best_result = result
+
+            if self._improved_against_best(result, best_result):
+                iters_without_improvement = 0
+            else:
+                iters_without_improvement += 1
+            if iters_without_improvement >= self.patience:
+                self.event_log.event(
+                    "stopped_reason",
+                    {
+                        "reason": "plateau",
+                        "iteration": iteration,
+                        "patience": self.patience,
+                        "iters_without_improvement": iters_without_improvement,
+                        "metric_name": self.metric_name,
+                    },
+                )
+                if log:
+                    log.phase_done(
+                        f"Iteration {iteration} stopped: plateau "
+                        f"({iters_without_improvement} iters without improvement)"
+                    )
+                break
 
             if log:
                 log.phase_done(
@@ -1332,6 +1361,24 @@ class ResearchSwarmOrchestrator:
         if incumbent_value is None:
             return True
         return candidate_value > incumbent_value
+
+    def _improved_against_best(
+        self,
+        candidate: ExperimentResult,
+        incumbent: ExperimentResult,
+    ) -> bool:
+        """Return True iff candidate beats incumbent by at least ``min_delta``.
+
+        Plateau-detection signal — distinct from ``_is_better`` (strict greater)
+        so trivial noise above 0 still counts as plateau.
+        """
+        candidate_value = candidate.metric_value(self.metric_name)
+        incumbent_value = incumbent.metric_value(self.metric_name)
+        if candidate_value is None:
+            return False
+        if incumbent_value is None:
+            return True
+        return (candidate_value - incumbent_value) >= self.min_delta
 
     def _goal_reached(self, result: ExperimentResult) -> bool:
         if self.goal is None:

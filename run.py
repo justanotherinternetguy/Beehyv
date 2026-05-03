@@ -122,6 +122,8 @@ def cmd_research(args: argparse.Namespace) -> int:
         str(args.top_k),
         "--min-delta",
         str(args.min_delta),
+        "--patience",
+        str(args.patience),
         "--model",
         args.model,
         "--coding-model",
@@ -298,6 +300,10 @@ def main() -> int:
     p_research.add_argument("--top-k", type=int, default=4)
     p_research.add_argument("--goal", type=float, default=None)
     p_research.add_argument("--min-delta", type=float, default=0.001)
+    p_research.add_argument(
+        "--patience", type=int, default=3,
+        help="Stop after this many consecutive iterations without held-out improvement.",
+    )
     p_research.add_argument("--keep-regressions", action="store_true")
     p_research.add_argument("--dry-run", action="store_true")
     p_research.add_argument("--session-dir", default=None)

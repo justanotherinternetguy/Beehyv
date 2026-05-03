@@ -220,6 +220,7 @@ def cmd_research(args: argparse.Namespace) -> int:
         max_debug_attempts=args.max_debug_attempts,
         goal=args.goal,
         min_delta=args.min_delta,
+        patience=args.patience,
         revert_on_regression=not args.keep_regressions,
         session_dir=Path(args.session_dir).expanduser().resolve() if args.session_dir else None,
         logger=logger,
@@ -318,6 +319,10 @@ def main() -> int:
                             help="Stop early when the metric reaches this value.")
     p_research.add_argument("--min-delta", type=float, default=0.001,
                             help="Minimum metric improvement counted as a keep decision.")
+    p_research.add_argument(
+        "--patience", type=int, default=3,
+        help="Stop after this many consecutive iterations without held-out improvement (audit §7 row 3).",
+    )
     p_research.add_argument("--keep-regressions", action="store_true",
                             help="Do not restore editable files when the judge sees a regression.")
     p_research.add_argument("--dry-run", action="store_true",
