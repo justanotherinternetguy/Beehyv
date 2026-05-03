@@ -37,6 +37,26 @@ def _stub_paper2code_utils() -> None:
     sys.modules["utils"] = utils
 
 
+# ── B8: paper2code/codes/eval.py must use the correct "score_lst" key ─────────
+
+
+def test_b8_eval_uses_score_lst_not_misspelling() -> None:
+    """B8 — eval.py emits the correct ``score_lst`` key, not the misspelling.
+
+    The misspelling literal is split below so a repo-wide ``rg`` for the bad
+    key only hits the historical audit document, not this test.
+    """
+    bad_key = "scr" + "oe_lst"
+    good_key = '"score_lst"'
+    source = (REPO_ROOT / "paper2code" / "codes" / "eval.py").read_text(encoding="utf-8")
+    assert bad_key not in source, (
+        f"eval.py still contains the misspelled key {bad_key!r}"
+    )
+    assert good_key in source, (
+        f"eval.py does not emit the {good_key} key"
+    )
+
+
 # ── B7: paper2code/codes/4_debugging.py must accept --output_repo_dir ──────────
 
 

@@ -616,7 +616,6 @@ Caveats:
 
 - The request model is hard-coded to `"tencent/hy3-preview:free"` despite a `--gpt_version` argument.
 - `avg_score = sum(all_scores) / len(all_scores)` will fail if all responses are invalid.
-- The output key is misspelled as `"scroe_lst"`.
 
 ## `ingestion/` Architecture
 
@@ -957,13 +956,11 @@ This asks an LLM to rate generated code correctness on a 1-5 scale and write a J
 
 - `README.md` has unresolved merge-conflict markers. `HELP.md` appears to contain the intended full documentation.
 - Several `paper2code` scripts accept a model argument but hard-code `"tencent/hy3-preview:free"` in the actual API call.
-- `4_debugging.py` references `args.output_repo_dir` without declaring that CLI argument.
 - Some scripts are not import-safe because they parse args and execute at module top level.
 - The OpenRouter-backed scripts require `OPENROUTER_API_KEY` and will fail immediately if it is missing.
 - Cost calculation in `utils.py` is based on a static model-price table and may not reflect OpenRouter pricing.
 - `1.1_extract_config.py` assumes a fixed planning trajectory index for YAML extraction.
 - `eval.py` can divide by zero if every model evaluation response fails JSON parsing.
-- `eval.py` writes `"scroe_lst"` instead of `"score_lst"`.
 - `paper2code` code extraction relies on fenced code blocks. If the model returns malformed fences, scripts fall back to raw content in some stages.
 - `make clean` removes all `outputs/` and `data/raw_json/`; use carefully if generated artifacts matter.
 
