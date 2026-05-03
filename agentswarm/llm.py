@@ -1,4 +1,11 @@
-"""LLM clients for paper expert agents."""
+"""LLM clients for paper expert agents.
+
+Default model: ``nvidia/nemotron-3-super-120b-a12b:free`` — verified present in
+the OpenRouter catalog on 2026-05-03 (see audit B9). If this id later
+disappears from the catalog, override per-role with the env vars documented
+in ``.env.example``: ``OPENROUTER_PLANNER_MODEL`` / ``OPENROUTER_CODER_MODEL``
+/ ``OPENROUTER_JUDGE_MODEL``.
+"""
 
 from __future__ import annotations
 

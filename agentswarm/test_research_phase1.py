@@ -37,6 +37,28 @@ def _stub_paper2code_utils() -> None:
     sys.modules["utils"] = utils
 
 
+# ── B9: default model id has a verification-date comment ─────────────────────
+
+
+def test_b9_llm_module_documents_default_model_verification() -> None:
+    """B9 — agentswarm/llm.py module docstring records the catalog-check date."""
+    source = (REPO_ROOT / "agentswarm" / "llm.py").read_text(encoding="utf-8")
+    assert "nvidia/nemotron-3-super-120b-a12b:free" in source, (
+        "default model id missing"
+    )
+    assert "2026-05-03" in source, (
+        "verification date missing from llm.py module docstring"
+    )
+
+
+def test_b9_run_module_documents_default_model_verification() -> None:
+    """B9 — run.py module docstring records the catalog-check date."""
+    source = (REPO_ROOT / "run.py").read_text(encoding="utf-8")
+    assert "2026-05-03" in source, (
+        "verification date missing from run.py module docstring"
+    )
+
+
 # ── B8: paper2code/codes/eval.py must use the correct "score_lst" key ─────────
 
 

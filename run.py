@@ -10,6 +10,9 @@ Subcommands:
   codegen     Generate code repository from a cleaned JSON paper
 
 Run `python run.py <subcommand> --help` for options.
+
+Default OPENROUTER_MODEL ``nvidia/nemotron-3-super-120b-a12b:free`` was
+verified present in the OpenRouter catalog on 2026-05-03 (audit B9).
 """
 
 from __future__ import annotations
