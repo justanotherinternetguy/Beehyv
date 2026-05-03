@@ -276,7 +276,9 @@ Main methods:
 - `cross_pollinate(area, seed, id_counter)`: asks the LLM for one hybrid idea combining this paper with another paper's seed.
 - `summarize_position(claim)`: formats a claim with a citation.
 
-Confidence is heuristic: no evidence gives `0.0`; otherwise confidence is `min(0.95, 0.35 + top_score / 20)` rounded to two decimals.
+(The previous heuristic `confidence` field on `Claim` was removed in
+Phase 1 — it was an unbounded BM25 score squashed into 0..1 with no
+probabilistic meaning and no consumer that gated on it.)
 
 ### Q&A Orchestration: `orchestrator.py`
 
@@ -837,6 +839,43 @@ run.py cmd_brainstorm
 ```
 
 Outputs are printed to stdout rather than written by default.
+
+### Feature: Autonomous Research Loop
+
+User command:
+
+```bash
+python run.py research research_problems/mnist_fcnn \
+    --papers data/cleaned_json/attention_is_all_you_need_cleaned.json \
+    --run-command "python train.py --download" \
+    --metric test_accuracy
+```
+
+Implementation path:
+
+```text
+run.py cmd_research
+  -> agentswarm.cli cmd_research
+    -> ResearchSwarmOrchestrator.run
+      -> baseline run
+      -> per iteration:
+         orchestration_diagnostic_agent.diagnose
+         seed_ideas / cross_pollinate
+         planning_agent.plan
+         coding_agent.apply_plan
+         experiment_runner.run (held-out test split)
+         judge (numeric decision + LLM prescription)
+         optional debugging loop
+```
+
+**Stop conditions (no magic accuracy threshold).** The loop terminates when ANY of the following fires — there is no built-in "until ≥90% accuracy" rule, despite earlier informal framing:
+
+- `--iterations N` reached (default 2). N is the *maximum* iterations, not a target.
+- `--patience K` plateau (default 3). If the best held-out metric does not improve by `--min-delta` for K consecutive iterations, the loop stops with `stopped_reason: "plateau"`.
+- `--goal G` met (default `None`, i.e. disabled). Set explicitly on the CLI to enforce an absolute threshold; the loop stops when the held-out metric reaches G.
+- Debugging cannot restore a valid metric run after `--max-debug-attempts` (default 2).
+
+This wiring is deliberate: outcome-only "loop until X%" rewards reward-hacking against a saturable benchmark (audit §6 R3, R4). Use plateau + held-out test split + jury judging as the honest stop signal.
 
 ### Feature: Paper-to-Code Generation
 

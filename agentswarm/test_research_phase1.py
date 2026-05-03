@@ -110,6 +110,52 @@ def test_b1_synthesis_does_not_emit_old_boilerplate() -> None:
     )
 
 
+# ── B5: doc/code reconciliation about loop stop semantics ────────────────────
+
+
+def test_b5_no_loop_until_x_percent_claim_in_user_docs() -> None:
+    """No user-facing doc claims the research loop runs until a fixed threshold.
+
+    The audit (§6 R3, R4) explicitly forbids "loop until X%" framing because
+    outcome-only rewards on saturable benchmarks invite reward hacking.
+    """
+    import re
+    pattern = re.compile(
+        r"(?:loop|run|iterate|continue).{0,40}until.{0,40}(?:90\s*%|0\.9|≥\s*0?\.?9)",
+        re.IGNORECASE | re.DOTALL,
+    )
+    for rel in ("README.md", "HELP.md", "DOCUMENTATION.md"):
+        path = REPO_ROOT / rel
+        if not path.exists():
+            continue
+        text = path.read_text(encoding="utf-8")
+        match = pattern.search(text)
+        assert match is None, (
+            f"{rel} contains a forbidden 'loop until X%' claim near: "
+            f"{text[max(0, match.start()-20):match.end()+20]!r}"
+        )
+
+
+def test_b5_documentation_describes_stop_conditions() -> None:
+    """DOCUMENTATION.md must describe the actual stop conditions."""
+    text = (REPO_ROOT / "DOCUMENTATION.md").read_text(encoding="utf-8")
+    # Must mention each of: --iterations, --patience, --goal.
+    assert "--iterations" in text, "DOCUMENTATION.md missing --iterations description"
+    assert "--patience" in text, "DOCUMENTATION.md missing --patience description"
+    assert "--goal" in text, "DOCUMENTATION.md missing --goal description"
+    assert "no magic" in text.lower() or "no built-in" in text.lower(), (
+        "DOCUMENTATION.md should explicitly disclaim the magic threshold"
+    )
+
+
+def test_b5_dead_confidence_formula_prose_removed() -> None:
+    """The B4 cleanup also retired the prose describing the deleted formula."""
+    text = (REPO_ROOT / "DOCUMENTATION.md").read_text(encoding="utf-8")
+    assert "0.35 + top_score / 20" not in text, (
+        "DOCUMENTATION.md still describes the deleted confidence formula"
+    )
+
+
 # ── B4: confidence field is gone from Claim ──────────────────────────────────
 
 
