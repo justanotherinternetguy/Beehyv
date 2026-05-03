@@ -41,6 +41,67 @@ def _stub_paper2code_utils() -> None:
     sys.modules["utils"] = utils
 
 
+# ── §7 row 4: judge LLM cannot override numeric decision ─────────────────────
+
+
+def test_judge_decision_set_by_numeric_not_llm() -> None:
+    """A bogus LLM response cannot flip the numeric keep/revert decision."""
+    from agentswarm.research import (
+        CodingResult, ExperimentResult, ResearchPlan,
+    )
+
+    class TrickyJudgeLLM:
+        """Tries to override the decision via its prose output."""
+        model = "fake/tricky-judge"
+        def complete(self, messages):  # noqa: ARG002
+            return "DECISION: revert\nVERDICT: this was awful, undo everything."
+
+    orch = _make_orchestrator(judge_llm=TrickyJudgeLLM(), min_delta=0.001)
+
+    def _result(iteration: int, label: str, value: float) -> ExperimentResult:
+        return ExperimentResult(
+            iteration=iteration, label=label, command=[], returncode=0,
+            elapsed_s=0.0, metrics={"test_accuracy": value},
+            stdout_path="", stderr_path="", metrics_path=None,
+        )
+
+    previous = _result(0, "baseline", 0.50)
+    current = _result(1, "judge", 0.60)  # +0.10 → numeric "keep"
+    plan = ResearchPlan(
+        iteration=1, summary="t", target_files=["x.py"], steps=["s"],
+        expected_effect="up", validation="t", raw="raw",
+    )
+    coding = CodingResult(
+        iteration=1, applied=True, changed_files=["x.py"],
+        raw_response_path="", notes="",
+    )
+
+    judge = orch._judge_iteration(
+        iteration=1, previous=previous, current=current, plan=plan, coding=coding,
+    )
+    # Despite the LLM yelling "DECISION: revert", numeric wins.
+    assert judge.decision == "keep", (
+        f"LLM should not override numeric decision; got {judge.decision!r}"
+    )
+    # Prose feedback IS captured (the LLM call still runs — just for prescription).
+    assert judge.raw, "judge prescription text should be captured"
+    assert "DECISION:" in judge.raw or "VERDICT:" in judge.raw, (
+        "test setup error: tricky LLM should have said its bogus verdict"
+    )
+
+
+def test_judge_system_prompt_forbids_decision_output() -> None:
+    """The judge LLM is told explicitly NOT to emit a decision verdict."""
+    source = (REPO_ROOT / "agentswarm" / "research.py").read_text(encoding="utf-8")
+    # Hardening: prompt must call out that decision is already final / not the LLM's job.
+    assert "next-step prescription agent" in source.lower(), (
+        "judge system prompt should identify itself as a prescription agent, not a judge"
+    )
+    assert "DO NOT output" in source, (
+        "judge prompt should explicitly forbid the LLM from outputting a verdict"
+    )
+
+
 # ── §7 row 3: --patience plateau circuit breaker + --test-split ──────────────
 
 

@@ -1153,6 +1153,15 @@ class ResearchSwarmOrchestrator:
         coding: CodingResult,
         label: str = "judge",
     ) -> JudgeFeedback:
+        """Score one iteration.
+
+        Contract (audit §7 row 4):
+        * The keep / revise / revert decision is set ONLY by ``_numeric_decision``
+          before the LLM is consulted. The LLM cannot override it.
+        * The LLM call exists solely to produce the next-step prescription
+          fed to the following round of paper agents. Anything the model
+          says about the decision is discarded.
+        """
         previous_value = previous.metric_value(self.metric_name)
         new_value = current.metric_value(self.metric_name)
         delta = (
@@ -1160,6 +1169,8 @@ class ResearchSwarmOrchestrator:
             if previous_value is not None and new_value is not None
             else None
         )
+        # Source of truth for keep/revise/revert. Computed BEFORE the LLM is
+        # called and never overwritten by LLM output.
         decision = _numeric_decision(
             previous=previous,
             current=current,
@@ -1170,12 +1181,16 @@ class ResearchSwarmOrchestrator:
             {
                 "role": "system",
                 "content": (
-                    "You are the judge agent for an autonomous research loop. "
+                    "You are the next-step prescription agent for an autonomous research loop. "
+                    "You are NOT the judge — the keep/revise/revert decision has already been "
+                    "computed deterministically from the metric delta and is supplied to you "
+                    "as input. Your sole job is to write a concrete, actionable prescription "
+                    "for the next round of paper agents. "
+                    "DO NOT output your own keep/revise/revert verdict. "
+                    "DO NOT contradict, override, or restate the numeric decision. "
                     "Your ultimate goal is to improve the accuracy of the research model in focus. "
-                    "There is ALWAYS more headroom — your job is to give the next round a clear, "
-                    "actionable direction regardless of whether this iteration improved or regressed. "
-                    "A revert is not a failure — it is information. Extract the lesson and prescribe "
-                    "the next concrete change with confidence."
+                    "There is ALWAYS more headroom — extract the lesson from this iteration "
+                    "(success or regression) and prescribe the next concrete change with confidence."
                 ),
             },
             {
@@ -1186,15 +1201,18 @@ class ResearchSwarmOrchestrator:
                         f"Metric: {self.metric_name}",
                         f"Previous metrics: {_format_metrics(previous.metrics)}",
                         f"New metrics: {_format_metrics(current.metrics)}",
-                        f"Numeric decision: {decision}",
+                        f"Numeric decision (already final, do not echo): {decision}",
                         f"Changed files: {', '.join(coding.changed_files)}",
                         "Plan:",
                         plan.raw,
                         (
-                            "Write concise, actionable feedback for the next paper-agent round. "
-                            "Diagnose what worked or why it regressed, then prescribe 2-3 specific "
-                            "changes to try next. Be direct — name exact hyperparameters, layer types, "
-                            "or training tricks. Do not hedge or say 'it depends'."
+                            "Write concise, actionable next-step prescription for the next "
+                            "paper-agent round. Diagnose what worked or why it regressed, then "
+                            "prescribe 2-3 specific changes to try next. Be direct — name exact "
+                            "hyperparameters, layer types, or training tricks. Do not hedge or "
+                            "say 'it depends'. Do not output any line that begins with "
+                            "'DECISION:', 'VERDICT:', or 'JUDGE:' — those are reserved for the "
+                            "numeric decision pipeline."
                         ),
                     ]
                 ),
