@@ -620,6 +620,7 @@ class ResearchSwarmOrchestrator:
         coding_llm: PaperExpertLLM,
         problem_statement: str,
         debugging_llm: PaperExpertLLM | None = None,
+        judge_llm: PaperExpertLLM | None = None,
         metric_name: str = "test_accuracy",
         max_iterations: int = 2,
         max_agents: int = 3,
@@ -639,6 +640,10 @@ class ResearchSwarmOrchestrator:
         self.metrics_path = metrics_path
         self.editable_files = [_normalize_relpath(path) for path in editable_files]
         self.planner_llm = planner_llm
+        # Reward-hacking guard: judge defaults to planner only when no separate
+        # judge LLM is supplied. Production callers must pass a distinct
+        # ``judge_llm`` (Pan et al. 2024, audit §7 row 2).
+        self.judge_llm = judge_llm or planner_llm
         self.metric_name = metric_name
         self.max_iterations = max_iterations
         self.max_agents = max_agents
@@ -1167,7 +1172,7 @@ class ResearchSwarmOrchestrator:
             },
         ]
         try:
-            raw = _complete(self.planner_llm, messages, self.logger, "judge-agent", "judging")
+            raw = _complete(self.judge_llm, messages, self.logger, "judge-agent", "judging")
         except RuntimeError as exc:
             raw = f"Judge LLM unavailable: {exc}. Numeric decision: {decision}."
         feedback = JudgeFeedback(

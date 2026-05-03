@@ -22,6 +22,26 @@ OPENROUTER_MODEL = os.environ.get("OPENROUTER_MODEL", "nvidia/nemotron-3-super-1
 RETRYABLE_HTTP_STATUSES = {408, 409, 425, 429, 500, 502, 503, 504}
 
 
+def resolve_planner_model() -> str:
+    """Resolve the planner model: env ``OPENROUTER_PLANNER_MODEL`` falls back to ``OPENROUTER_MODEL``."""
+    return os.environ.get("OPENROUTER_PLANNER_MODEL") or OPENROUTER_MODEL
+
+
+def resolve_coder_model() -> str:
+    """Resolve the coder model: env ``OPENROUTER_CODER_MODEL`` falls back to ``OPENROUTER_MODEL``."""
+    return os.environ.get("OPENROUTER_CODER_MODEL") or OPENROUTER_MODEL
+
+
+def resolve_judge_model() -> str:
+    """Resolve the judge model: env ``OPENROUTER_JUDGE_MODEL`` falls back to ``OPENROUTER_MODEL``.
+
+    Reward-hacking guard: keep this distinct from the planner model. Same-model
+    judging causes the judge to validate the author's spurious correlations
+    (Pan et al. 2024, "Spontaneous Reward Hacking in Iterative Self-Refinement").
+    """
+    return os.environ.get("OPENROUTER_JUDGE_MODEL") or OPENROUTER_MODEL
+
+
 class PaperExpertLLM(Protocol):
     """Completion interface used by paper expert agents."""
 

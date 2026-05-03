@@ -22,6 +22,10 @@ import types
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+# Ensure ``import agentswarm`` works whether the file is run via pytest from
+# the repo root or directly via ``python agentswarm/test_research_phase1.py``.
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
@@ -35,6 +39,113 @@ def _stub_paper2code_utils() -> None:
     utils.extract_planning = lambda *a, **k: ["", "", ""]
     utils.get_llm_client_and_model = lambda *a, **k: (None, "fake/model")
     sys.modules["utils"] = utils
+
+
+# ── §7 row 2: distinct planner / coder / judge model resolution ──────────────
+
+
+def test_resolve_planner_model_uses_env_var() -> None:
+    """Planner model resolves OPENROUTER_PLANNER_MODEL when set."""
+    import os
+    from agentswarm import llm
+    old = os.environ.get("OPENROUTER_PLANNER_MODEL")
+    try:
+        os.environ["OPENROUTER_PLANNER_MODEL"] = "test/planner:v1"
+        assert llm.resolve_planner_model() == "test/planner:v1"
+    finally:
+        if old is None:
+            os.environ.pop("OPENROUTER_PLANNER_MODEL", None)
+        else:
+            os.environ["OPENROUTER_PLANNER_MODEL"] = old
+
+
+def test_resolve_planner_model_falls_back_to_openrouter_model() -> None:
+    """Planner model falls back to OPENROUTER_MODEL when its env var is unset."""
+    import os
+    from agentswarm import llm
+    old = os.environ.pop("OPENROUTER_PLANNER_MODEL", None)
+    try:
+        assert llm.resolve_planner_model() == llm.OPENROUTER_MODEL
+    finally:
+        if old is not None:
+            os.environ["OPENROUTER_PLANNER_MODEL"] = old
+
+
+def test_resolve_judge_model_falls_back_to_openrouter_model() -> None:
+    """Judge model falls back to OPENROUTER_MODEL when its env var is unset."""
+    import os
+    from agentswarm import llm
+    old = os.environ.pop("OPENROUTER_JUDGE_MODEL", None)
+    try:
+        assert llm.resolve_judge_model() == llm.OPENROUTER_MODEL
+    finally:
+        if old is not None:
+            os.environ["OPENROUTER_JUDGE_MODEL"] = old
+
+
+def test_env_example_planner_differs_from_judge() -> None:
+    """The example .env keeps planner ≠ judge — the reward-hacking guard."""
+    env_example = (REPO_ROOT / ".env.example").read_text(encoding="utf-8")
+
+    def _value(key: str) -> str:
+        for line in env_example.splitlines():
+            line = line.strip()
+            if line.startswith(f"{key}=") and not line.startswith("#"):
+                return line.split("=", 1)[1]
+        raise AssertionError(f"{key} not found in .env.example")
+
+    planner = _value("OPENROUTER_PLANNER_MODEL")
+    judge = _value("OPENROUTER_JUDGE_MODEL")
+    assert planner, "OPENROUTER_PLANNER_MODEL has no value"
+    assert judge, "OPENROUTER_JUDGE_MODEL has no value"
+    assert planner != judge, (
+        f".env.example uses identical planner and judge ({planner!r}); the guard "
+        "against same-model reward hacking requires them to differ."
+    )
+
+
+def test_research_orchestrator_judge_llm_independent_of_planner() -> None:
+    """ResearchSwarmOrchestrator wires judge_llm separately when provided."""
+    from pathlib import Path
+    from agentswarm.research import ResearchSwarmOrchestrator
+
+    class FakeLLM:
+        def __init__(self, name: str) -> None:
+            self.model = name
+
+        def complete(self, messages):  # noqa: ARG002
+            return self.model
+
+    planner = FakeLLM("planner-model")
+    coder = FakeLLM("coder-model")
+    judge = FakeLLM("judge-model")
+    orch = ResearchSwarmOrchestrator(
+        agents=[object()],
+        problem_dir=Path("/tmp"),
+        command=["true"],
+        metrics_path="m.json",
+        editable_files=["x.py"],
+        planner_llm=planner,
+        coding_llm=coder,
+        judge_llm=judge,
+        problem_statement="t",
+    )
+    assert orch.judge_llm is judge, "judge_llm should be the supplied instance"
+    assert orch.planner_llm is planner
+    assert orch.judge_llm is not orch.planner_llm
+
+    # When judge_llm is omitted, falls back to planner_llm.
+    orch2 = ResearchSwarmOrchestrator(
+        agents=[object()],
+        problem_dir=Path("/tmp"),
+        command=["true"],
+        metrics_path="m.json",
+        editable_files=["x.py"],
+        planner_llm=planner,
+        coding_llm=coder,
+        problem_statement="t",
+    )
+    assert orch2.judge_llm is planner, "judge_llm should fall back to planner_llm"
 
 
 # ── B9: default model id has a verification-date comment ─────────────────────
